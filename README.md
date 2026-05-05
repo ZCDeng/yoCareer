@@ -2,8 +2,8 @@
 
 [English](https://github.com/ZCDeng/yoCareer/blob/main/README.md) | [Español](https://github.com/ZCDeng/yoCareer/blob/main/README.es.md) | [Português (Brasil)](https://github.com/ZCDeng/yoCareer/blob/main/README.pt-BR.md) | [한국어](https://github.com/ZCDeng/yoCareer/blob/main/README.ko-KR.md) | [日本語](https://github.com/ZCDeng/yoCareer/blob/main/README.ja.md) | [Русский](https://github.com/ZCDeng/yoCareer/blob/main/README.ru.md) | [简体中文](https://github.com/ZCDeng/yoCareer/blob/main/README.cn.md) | [繁體中文](https://github.com/ZCDeng/yoCareer/blob/main/README.zh-TW.md)
 
-<u>我花了几个月时间用笨办法找工作。所以我设计了一个我希望当时就有的系统。</u>\
-公司用 AI 筛选候选人。**我只是给候选人提供了 AI 来_选择_公司。**\
+<u>很多人花几个月时间用笨办法找工作。所以我设计了一个希望能派上用场的系统。</u>\
+公司用 AI 筛选候选人。我只是给候选人提供了 AI 来_选择_公司。\
 <u>现在它开源了。</u>
 
 ---
