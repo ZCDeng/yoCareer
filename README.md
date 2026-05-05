@@ -243,9 +243,7 @@ yoCareer/
 
 ## 关于作者
 
-我是 Santiago -- 应用 AI 负责人，前创始人（创建并出售了一家仍在运营并带有我名字的企业）。我构建 yoCareer 来管理我自己的求职。它奏效了：我用它拿到了我目前的职位。
-
-我的作品集和其他开源项目 → [github.com/ZCDeng/yoCareer](https://github.com/ZCDeng/yoCareer)
+我的作品集和其他开源项目 → https://github.com/ZCDeng/Boris-Token-Slim
 
 ## 重要免责声明
 
