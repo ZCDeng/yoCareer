@@ -10,6 +10,7 @@
 # - company_page: public career page link extraction with Playwright.
 # - manual_signal_import: local NDJSON signal import from user-provided/exported posts.
 # - reach_read_url: optional external Reach bridge for public URLs when configured.
+# - reach_signal_search: optional external Reach bridge for social/community searches.
 # - manual_only: visible-page review or user-provided imports only.
 
 title_filter:
@@ -83,6 +84,32 @@ signal_imports:
     provider: manual_signal_import
     path: data/signals.ndjson
     notes: "One JSON object per line. Use for pasted/exported Weibo, Xiaohongshu, WeChat public article, group-forward, or recruiter-post signals."
+
+signal_searches:
+  - name: Weibo AI hiring signals
+    enabled: false
+    provider: reach_signal_search
+    platform: weibo
+    query: '"大模型" "招聘" "算法"'
+    default_confidence: 0.66
+    default_action: save_for_manual_review
+    notes: "Requires YOCAREER_REACH_SIGNAL_SEARCH_CMD. Do not use login-gated or private-account content."
+
+  - name: V2EX AI jobs
+    enabled: false
+    provider: reach_signal_search
+    platform: v2ex
+    query: 'AI 大模型 后端 算法 招聘'
+    default_confidence: 0.68
+    default_action: save_for_manual_review
+
+  - name: GitHub hiring mentions
+    enabled: false
+    provider: reach_signal_search
+    platform: github
+    query: '"大模型" "招聘" "AI Engineer"'
+    default_confidence: 0.65
+    default_action: save_for_manual_review
 
 tracked_companies:
   - name: Alibaba

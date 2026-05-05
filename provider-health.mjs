@@ -48,6 +48,7 @@ function countProviders(config) {
     ...(config.tracked_companies || []).filter(c => c.enabled !== false),
     ...(config.restricted_platforms || []).filter(p => p.enabled !== false).map(p => ({ ...p, provider: 'manual_only' })),
     ...(config.signal_imports || []).filter(s => s.enabled !== false),
+    ...(config.signal_searches || []).filter(s => s.enabled !== false),
   ];
 
   for (const row of rows) {
@@ -91,18 +92,31 @@ function checkManualImports(config) {
   return info('manual_signal_import', `${imports.length} configured; missing local file(s): ${missing.join(', ')}`);
 }
 
-function checkReachBridge() {
-  const command = process.env.YOCAREER_REACH_READ_URL_CMD || '';
+function checkBridge(label, envName, detail) {
+  const command = process.env[envName] || '';
   if (!command) {
-    return warn('reach_read_url', 'Set YOCAREER_REACH_READ_URL_CMD to enable an external Reach bridge');
+    return warn(label, `Set ${envName} to enable ${detail}`);
   }
 
   const binary = command.trim().split(/\s+/)[0];
   if (!binary || !commandExists(binary)) {
-    return warn('reach_read_url', `Configured command is not executable: ${command}`);
+    return warn(label, `Configured command is not executable: ${command}`);
   }
 
-  return ok('reach_read_url', `Bridge command configured: ${command}`);
+  return ok(label, `Bridge command configured: ${command}`);
+}
+
+function checkReachReadUrlBridge() {
+  return checkBridge('reach_read_url', 'YOCAREER_REACH_READ_URL_CMD', 'public URL extraction');
+}
+
+function checkReachSignalSearchBridge(config) {
+  const searches = (config.signal_searches || []).filter(s => s.enabled !== false);
+  if (searches.length === 0) {
+    return info('reach_signal_search', 'No enabled signal_searches configured');
+  }
+
+  return checkBridge('reach_signal_search', 'YOCAREER_REACH_SIGNAL_SEARCH_CMD', `${searches.length} configured signal search(es)`);
 }
 
 function printCapability(capability) {
@@ -127,7 +141,8 @@ async function main() {
     await checkPlaywright(),
     checkManualImports(config),
     ok('manual_only', 'Restricted/login-gated platforms remain manual'),
-    checkReachBridge(),
+    checkReachReadUrlBridge(),
+    checkReachSignalSearchBridge(config),
   ];
 
   for (const capability of capabilities) printCapability(capability);
@@ -137,7 +152,7 @@ async function main() {
     console.log(`  - ${provider}: ${count}`);
   }
 
-  console.log('\nReach note: Node scripts cannot call Codex/MCP tools directly. Configure a local bridge command only when Reach is exposed as a CLI or wrapper that accepts a URL argument and returns extractable text or JSON.');
+  console.log('\nReach note: Node scripts cannot call Codex/MCP tools directly. Configure local bridge commands only when Reach is exposed as CLI/wrappers. URL bridges receive: <url>. Signal-search bridges receive: <platform> <query>.');
 }
 
 main().catch(err => {

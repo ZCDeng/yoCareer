@@ -42,6 +42,7 @@ const FETCH_TIMEOUT_MS = 10_000;
 const PAGE_TIMEOUT_MS = 20_000;
 const POST_LOAD_WAIT_MS = 2_000;
 const REACH_READ_URL_CMD = process.env.YOCAREER_REACH_READ_URL_CMD || '';
+const REACH_SIGNAL_SEARCH_CMD = process.env.YOCAREER_REACH_SIGNAL_SEARCH_CMD || '';
 
 const JOB_LINK_HINTS = [
   'job',
@@ -170,9 +171,10 @@ function sleep(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
 
-function runCommandWithUrl(command, url) {
+function runBridgeCommand(command, args) {
   return new Promise((resolve, reject) => {
-    const child = spawn('sh', ['-lc', `${command} "$1"`, 'yocareer-reach', url], {
+    const positional = args.map((_, idx) => `"$${idx + 1}"`).join(' ');
+    const child = spawn('sh', ['-lc', `${command} ${positional}`, 'yocareer-bridge', ...args], {
       stdio: ['ignore', 'pipe', 'pipe'],
       env: process.env,
     });
@@ -187,6 +189,10 @@ function runCommandWithUrl(command, url) {
       else reject(new Error(stderr.trim() || `command exited with ${code}`));
     });
   });
+}
+
+function runCommandWithUrl(command, url) {
+  return runBridgeCommand(command, [url]);
 }
 
 // ── Signal model ────────────────────────────────────────────────────
@@ -277,6 +283,53 @@ function signalsFromReachOutput(output, company) {
   }
 
   return Array.from(unique.values());
+}
+
+function signalsFromBridgeOutput(output, defaults) {
+  const trimmed = output.trim();
+  if (!trimmed) return { signals: [], errors: [] };
+
+  if (trimmed.startsWith('{') || trimmed.startsWith('[')) {
+    const parsed = JSON.parse(trimmed);
+    const rows = Array.isArray(parsed) ? parsed : parsed.signals || parsed.results || parsed.posts || [];
+    return {
+      signals: rows.map(row => normalizeSignal({
+        ...row,
+        kind: row.kind || defaults.kind || 'community_post',
+        source_platform: row.source_platform || defaults.source_platform,
+        confidence: row.confidence ?? defaults.confidence ?? 0.66,
+        recommended_action: row.recommended_action || defaults.recommended_action || 'save_for_manual_review',
+        source: row.source || defaults.source,
+      })),
+      errors: [],
+    };
+  }
+
+  const signals = [];
+  const errors = [];
+  for (const [idx, line] of trimmed.split('\n').entries()) {
+    const clean = line.trim();
+    if (!clean || clean.startsWith('#')) continue;
+    try {
+      const row = JSON.parse(clean);
+      signals.push(normalizeSignal({
+        ...row,
+        kind: row.kind || defaults.kind || 'community_post',
+        source_platform: row.source_platform || defaults.source_platform,
+        confidence: row.confidence ?? defaults.confidence ?? 0.66,
+        recommended_action: row.recommended_action || defaults.recommended_action || 'save_for_manual_review',
+        source: row.source || defaults.source,
+      }));
+    } catch (err) {
+      errors.push({
+        company: defaults.name,
+        provider: defaults.provider,
+        error: `bridge output line ${idx + 1}: ${err.message}`,
+      });
+    }
+  }
+
+  return { signals, errors };
 }
 
 // ── Title filtering ─────────────────────────────────────────────────
@@ -525,6 +578,48 @@ async function scanReachReadUrl(company) {
   };
 }
 
+async function scanReachSignalSearch(source) {
+  if (!source.query) {
+    return {
+      provider: 'reach_signal_search',
+      signals: [],
+      skipped: [{ company: source.name, reason: 'missing_query' }],
+      errors: [],
+      found: 0,
+    };
+  }
+
+  if (!REACH_SIGNAL_SEARCH_CMD) {
+    return {
+      provider: 'reach_signal_search',
+      signals: [],
+      skipped: [{ company: source.name, reason: 'reach_signal_search_bridge_unavailable' }],
+      errors: [],
+      found: 0,
+    };
+  }
+
+  const platform = source.platform || source.source_platform || 'web';
+  const output = await runBridgeCommand(REACH_SIGNAL_SEARCH_CMD, [platform, source.query]);
+  const parsed = signalsFromBridgeOutput(output, {
+    name: source.name,
+    provider: 'reach_signal_search',
+    kind: source.kind || 'community_post',
+    source_platform: platform,
+    confidence: source.default_confidence ?? 0.66,
+    recommended_action: source.default_action || 'save_for_manual_review',
+    source: source.name,
+  });
+
+  return {
+    provider: 'reach_signal_search',
+    signals: parsed.signals,
+    skipped: [],
+    errors: parsed.errors,
+    found: parsed.signals.length,
+  };
+}
+
 async function scanManualOnly(company) {
   return {
     provider: 'manual_only',
@@ -605,6 +700,7 @@ async function scanCompany(company, context) {
     if (provider === 'ats_api') return await scanAtsApi(company, context);
     if (provider === 'company_page') return await scanCompanyPage(company, context.browser);
     if (provider === 'reach_read_url') return await scanReachReadUrl(company);
+    if (provider === 'reach_signal_search') return await scanReachSignalSearch(company);
     if (provider === 'manual_only') return await scanManualOnly(company);
     if (provider === 'manual_signal_import') return await scanManualSignalImport(company);
     return {
@@ -745,15 +841,17 @@ async function main() {
     .map(p => ({ name: p.name, provider: 'manual_only', reason: p.reason }));
   const signalImports = (config.signal_imports || [])
     .filter(s => s.enabled !== false);
+  const signalSearches = (config.signal_searches || [])
+    .filter(s => s.enabled !== false);
 
   const titleFilter = buildTitleFilter(config.title_filter);
   const seenUrls = loadSeenUrls();
   const seenCompanyRoles = loadSeenCompanyRoles();
   const date = new Date().toISOString().slice(0, 10);
 
-  const groups = splitByProvider([...companies, ...restrictedPlatforms, ...signalImports]);
+  const groups = splitByProvider([...companies, ...restrictedPlatforms, ...signalImports, ...signalSearches]);
   const groupSummary = Array.from(groups.entries()).map(([provider, items]) => `${provider}=${items.length}`).join(', ');
-  console.log(`Scanning ${companies.length} companies + ${signalImports.length} signal imports + ${restrictedPlatforms.length} restricted platforms (${groupSummary || 'none'})`);
+  console.log(`Scanning ${companies.length} companies + ${signalImports.length} signal imports + ${signalSearches.length} signal searches + ${restrictedPlatforms.length} restricted platforms (${groupSummary || 'none'})`);
   if (dryRun) console.log('(dry run — no files will be written)\n');
 
   const context = { titleFilter, seenUrls, seenCompanyRoles, filterCompany, browser: null };
@@ -774,8 +872,13 @@ async function main() {
     allResults.push(...await parallelMap(importSources, API_CONCURRENCY, source => scanCompany(source, context)));
   }
 
+  const searchSources = groups.get('reach_signal_search') || [];
+  if (searchSources.length > 0) {
+    allResults.push(...await parallelMap(searchSources, API_CONCURRENCY, source => scanCompany(source, context)));
+  }
+
   const unsupportedCompanies = Array.from(groups.entries())
-    .filter(([provider]) => !['ats_api', 'company_page', 'reach_read_url', 'manual_only', 'manual_signal_import'].includes(provider))
+    .filter(([provider]) => !['ats_api', 'company_page', 'reach_read_url', 'reach_signal_search', 'manual_only', 'manual_signal_import'].includes(provider))
     .flatMap(([, items]) => items);
   if (unsupportedCompanies.length > 0) {
     allResults.push(...await parallelMap(unsupportedCompanies, API_CONCURRENCY, company => scanCompany(company, context)));
@@ -829,6 +932,7 @@ async function main() {
   console.log(`${'━'.repeat(45)}`);
   console.log(`Companies scanned:     ${companies.length}`);
   console.log(`Signal imports:        ${signalImports.length}`);
+  console.log(`Signal searches:       ${signalSearches.length}`);
   console.log(`Restricted platforms:  ${restrictedPlatforms.length}`);
   console.log(`Signals found:         ${totalFound}`);
   console.log(`Filtered by title:     ${totalFiltered} removed`);

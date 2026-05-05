@@ -129,7 +129,7 @@ Goal: collect fresh hiring intent from social and community channels.
 Status: started with local manual signal import.
 
 - Add `signal_provider` support.
-- Integrate available Reach tools for Weibo, V2EX, GitHub, Bilibili, and X/Twitter.
+- Integrate available Reach tools for Weibo, V2EX, GitHub, Bilibili, and X/Twitter through an explicit `reach_signal_search` bridge.
 - Add adapter placeholders for Xiaohongshu and WeChat public articles.
 - Support manual import for private group forwards, pasted posts, screenshots, and public account articles.
 - Classify signals as official job, recruiter post, referral signal, or community post.
