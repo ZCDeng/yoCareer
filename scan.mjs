@@ -44,6 +44,15 @@ const POST_LOAD_WAIT_MS = 2_000;
 const REACH_READ_URL_CMD = process.env.YOCAREER_REACH_READ_URL_CMD || '';
 const REACH_SIGNAL_SEARCH_CMD = process.env.YOCAREER_REACH_SIGNAL_SEARCH_CMD || '';
 
+const SIGNAL_THRESHOLDS = {
+  official_job: 0.7,
+  recruiter_post: 0.82,
+  referral_signal: 0.82,
+  community_post: 1,
+};
+
+const REVIEW_ONLY_KINDS = new Set(['community_post']);
+
 const JOB_LINK_HINTS = [
   'job',
   'jobs',
@@ -218,6 +227,7 @@ function normalizeSignal(input) {
     evidence_text: input.evidence_text || title,
     recommended_action: input.recommended_action || 'apply_on_official_site',
     source: input.source || input.source_platform || input.provider || 'unknown',
+    scoring_notes: input.scoring_notes || [],
   };
 }
 
@@ -351,6 +361,40 @@ function hasJobLinkHint(text, url) {
   return JOB_LINK_HINTS.some(hint => haystack.includes(hint.toLowerCase()));
 }
 
+function signalThreshold(signal) {
+  return SIGNAL_THRESHOLDS[signal.kind] ?? 0.8;
+}
+
+function classifySignalRoute(signal) {
+  if (REVIEW_ONLY_KINDS.has(signal.kind)) {
+    return { route: 'review', reason: `${signal.kind}_requires_manual_review` };
+  }
+
+  if (signal.recommended_action === 'save_for_manual_review') {
+    return { route: 'review', reason: 'manual_review_requested' };
+  }
+
+  const threshold = signalThreshold(signal);
+  if (signal.confidence < threshold) {
+    return { route: 'review', reason: `confidence_below_${threshold}` };
+  }
+
+  return { route: 'pipeline', reason: 'meets_threshold' };
+}
+
+function evidenceForReview(signal) {
+  const evidence = `${signal.title} ${signal.evidence_text} ${signal.source_author}`.toLowerCase();
+  const notes = [];
+  if (/(外包|驻场|派遣|外派|人力外包|od\b)/i.test(evidence)) notes.push('possible_outsourcing');
+  if (/(急招|高薪诚聘|日结|兼职|课程顾问|保险|招商)/i.test(evidence)) notes.push('possible_spam_or_low_fit');
+  if (!signal.url && signal.kind !== 'official_job') notes.push('missing_source_url');
+  if (!signal.company || normalizeKey(signal.company) === 'unknown') notes.push('unknown_company');
+  if (signal.kind !== 'official_job' && (!signal.evidence_text || signal.evidence_text.length < 20)) {
+    notes.push('thin_evidence');
+  }
+  return notes;
+}
+
 // ── Dedup ───────────────────────────────────────────────────────────
 
 function loadSeenUrls() {
@@ -423,14 +467,15 @@ function dedupAndFilterSignals(signals, context) {
       filtered++;
       continue;
     }
-    if (signal.confidence < 0.7) {
+    const reviewNotes = evidenceForReview(signal);
+    const route = classifySignalRoute(signal);
+    if (route.route === 'review' || reviewNotes.length > 0) {
       lowConfidence++;
-      held.push({ ...signal, hold_reason: 'low_confidence' });
-      continue;
-    }
-    if (signal.recommended_action === 'save_for_manual_review') {
-      lowConfidence++;
-      held.push({ ...signal, hold_reason: 'manual_review_requested' });
+      held.push({
+        ...signal,
+        hold_reason: route.route === 'review' ? route.reason : 'risk_notes',
+        scoring_notes: [...(signal.scoring_notes || []), ...reviewNotes],
+      });
       continue;
     }
     if (signal.url && context.seenUrls.has(signal.url)) {
@@ -783,6 +828,7 @@ function appendToSignalReview(signals, date) {
     `- URL: ${s.url || 'N/A'}`,
     `- Confidence: ${s.confidence}`,
     `- Reason: ${s.hold_reason || 'manual_review'}`,
+    `- Scoring notes: ${(s.scoring_notes || []).join(', ') || 'N/A'}`,
     `- Recommended action: ${s.recommended_action}`,
     `- Evidence: ${escapeReviewText(s.evidence_text) || 'N/A'}`,
   ].join('\n')).join('\n');
@@ -901,7 +947,7 @@ async function main() {
   let totalFound = 0;
   let totalFiltered = 0;
   let totalDupes = 0;
-  let totalLowConfidence = 0;
+  let totalHeldForReview = 0;
   const newSignals = [];
   const heldSignals = [];
   const errors = [];
@@ -916,7 +962,7 @@ async function main() {
     heldSignals.push(...filtered.held);
     totalFiltered += filtered.filtered;
     totalDupes += filtered.duplicates;
-    totalLowConfidence += filtered.lowConfidence;
+    totalHeldForReview += filtered.lowConfidence;
   }
 
   if (!dryRun && newSignals.length > 0) {
@@ -936,7 +982,7 @@ async function main() {
   console.log(`Restricted platforms:  ${restrictedPlatforms.length}`);
   console.log(`Signals found:         ${totalFound}`);
   console.log(`Filtered by title:     ${totalFiltered} removed`);
-  console.log(`Low confidence:        ${totalLowConfidence} held for review`);
+  console.log(`Held for review:       ${totalHeldForReview}`);
   console.log(`Duplicates:            ${totalDupes} skipped`);
   console.log(`New signals added:     ${newSignals.length}`);
 

@@ -137,6 +137,7 @@ Status: started with local manual signal import.
 ### v0.4 — Signal Normalization and Confidence
 
 Goal: prevent noisy social data from polluting the job pipeline.
+Status: started with kind-specific confidence routing and review notes.
 
 - Normalize all provider outputs into the recruitment signal model.
 - Score freshness, source reliability, evidence quality, and actionability.
