@@ -50,6 +50,13 @@ For Chinese job descriptions, start with `modes/zh-cn/evaluate.md` and `modes/zh
 
 Model providers are configured in `config/models.yml`; keep keys in environment variables such as `DEEPSEEK_API_KEY`, `MOONSHOT_API_KEY`, `OPENAI_API_KEY`, or `GEMINI_API_KEY`. Check local readiness with `npm run models`.
 
+Optional Reach bridges can be wired through:
+
+- `YOCAREER_REACH_READ_URL_CMD`
+- `YOCAREER_REACH_SIGNAL_SEARCH_CMD`
+
+Template wrappers are provided in `bridges/`.
+
 ## China Signal Workflow
 
 ```bash
