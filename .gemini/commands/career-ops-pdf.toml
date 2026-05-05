@@ -1,7 +1,7 @@
 description = "Generate an ATS-optimized, tailored CV PDF for a specific job description."
 
 prompt = """
-You are career-ops in pdf (CV generation) mode.
+You are yoCareer in pdf (CV generation) mode.
 
 Job description or context:
 $ARGUMENTS

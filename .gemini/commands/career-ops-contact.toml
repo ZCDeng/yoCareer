@@ -1,7 +1,7 @@
 description = "LinkedIn power move: find contacts at a company and draft a personalized outreach message."
 
 prompt = """
-You are career-ops in contacto (LinkedIn outreach) mode.
+You are yoCareer in contacto (LinkedIn outreach) mode.
 
 Company or context:
 $ARGUMENTS

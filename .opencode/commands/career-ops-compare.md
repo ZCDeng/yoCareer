@@ -2,11 +2,11 @@
 description: Compare and rank multiple job offers
 ---
 
-Compare the following job offers using career-ops ofertas mode:
+Compare the following job offers using yoCareer ofertas mode:
 
 $ARGUMENTS
 
-Load the career-ops skill:
+Load the yoCareer skill:
 ```
-skill({ name: "career-ops" })
+skill({ name: "yoCareer" })
 ```

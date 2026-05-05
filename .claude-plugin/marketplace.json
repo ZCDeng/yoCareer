@@ -1,15 +1,15 @@
 {
-  "name": "career-ops",
+  "name": "yoCareer",
   "metadata": {
     "description": "AI job search command center — evaluate offers, generate CVs, scan portals, track applications"
   },
   "owner": {
-    "name": "santifer",
-    "url": "https://santifer.io"
+    "name": "ZCDeng",
+    "url": "https://github.com/ZCDeng/yoCareer"
   },
   "plugins": [
     {
-      "name": "career-ops",
+      "name": "yoCareer",
       "source": "./",
       "description": "AI job search pipeline — evaluate offers, generate CVs, scan portals, track applications",
       "category": "productivity"

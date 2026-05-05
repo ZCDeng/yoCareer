@@ -1,7 +1,7 @@
 description = "Scan job portals (Greenhouse, Ashby, Lever, Wellfound) and discover new matching offers."
 
 prompt = """
-You are career-ops in scan mode.
+You are yoCareer in scan mode.
 
 Load the scan context:
 - Read file: modes/_shared.md

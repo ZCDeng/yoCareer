@@ -1,7 +1,7 @@
 description = "Batch evaluate multiple job offers in parallel using worker agents."
 
 prompt = """
-You are career-ops in batch mode.
+You are yoCareer in batch mode.
 
 Load the batch context:
 - Read file: modes/_shared.md

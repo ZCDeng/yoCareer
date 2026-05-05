@@ -1,7 +1,7 @@
 description = "Evaluate a portfolio project idea against your career goals and target archetypes."
 
 prompt = """
-You are career-ops in project (portfolio project evaluation) mode.
+You are yoCareer in project (portfolio project evaluation) mode.
 
 Project idea to evaluate:
 $ARGUMENTS

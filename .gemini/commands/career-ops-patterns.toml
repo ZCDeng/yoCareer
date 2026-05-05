@@ -1,7 +1,7 @@
 description = "Analyze rejection patterns and improve targeting based on your application history."
 
 prompt = """
-You are career-ops in patterns (rejection analysis) mode.
+You are yoCareer in patterns (rejection analysis) mode.
 
 Load the patterns context:
 - Read file: modes/patterns.md

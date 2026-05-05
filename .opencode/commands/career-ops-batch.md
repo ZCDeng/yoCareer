@@ -2,11 +2,11 @@
 description: Batch processing with parallel workers
 ---
 
-Batch processing using career-ops batch mode.
+Batch processing using yoCareer batch mode.
 
 $ARGUMENTS
 
-Load the career-ops skill:
+Load the yoCareer skill:
 ```
-skill({ name: "career-ops" })
+skill({ name: "yoCareer" })
 ```

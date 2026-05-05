@@ -1,7 +1,7 @@
 description = "Evaluate a course, certification, or training program against your career North Star."
 
 prompt = """
-You are career-ops in training (course evaluation) mode.
+You are yoCareer in training (course evaluation) mode.
 
 Course or certification to evaluate:
 $ARGUMENTS

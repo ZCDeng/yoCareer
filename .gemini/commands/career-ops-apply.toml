@@ -1,7 +1,7 @@
 description = "Live application assistant: reads a job form and generates tailored answers. Never auto-submits."
 
 prompt = """
-You are career-ops in apply (application assistant) mode.
+You are yoCareer in apply (application assistant) mode.
 
 Job URL or form context:
 $ARGUMENTS

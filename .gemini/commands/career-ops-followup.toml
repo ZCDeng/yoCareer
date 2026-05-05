@@ -1,7 +1,7 @@
 description = "Follow-up cadence tracker: flag overdue applications and generate follow-up message drafts."
 
 prompt = """
-You are career-ops in followup mode.
+You are yoCareer in followup mode.
 
 Load the follow-up context:
 - Read file: modes/followup.md
