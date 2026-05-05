@@ -56,11 +56,11 @@ URL bridges receive one argument: `<url>`. Signal-search bridges receive two arg
 
 Reference bridge templates:
 
-- [bridges/README.md](/Users/zcdeng/yoCareer/bridges/README.md)
-- [bridges/reach-read-url.mjs](/Users/zcdeng/yoCareer/bridges/reach-read-url.mjs)
-- [bridges/reach-signal-search.mjs](/Users/zcdeng/yoCareer/bridges/reach-signal-search.mjs)
-- [bridges/reach-read-url.example.sh](/Users/zcdeng/yoCareer/bridges/reach-read-url.example.sh)
-- [bridges/reach-signal-search.example.sh](/Users/zcdeng/yoCareer/bridges/reach-signal-search.example.sh)
+- [bridges/README.md](../bridges/README.md)
+- [bridges/reach-read-url.mjs](../bridges/reach-read-url.mjs)
+- [bridges/reach-signal-search.mjs](../bridges/reach-signal-search.mjs)
+- [bridges/reach-read-url.example.sh](../bridges/reach-read-url.example.sh)
+- [bridges/reach-signal-search.example.sh](../bridges/reach-signal-search.example.sh)
 
 **Exit codes:** `0` report generated, `1` configuration error or no `portals.yml` found.
 
