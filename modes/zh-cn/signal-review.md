@@ -51,6 +51,7 @@
 只在用户确认人工核验后建议命令。例如：
 
 ```bash
+npm run signals -- draft --index 1
 npm run signals -- promote --index 1
 npm run signals -- discard --index 1
 ```

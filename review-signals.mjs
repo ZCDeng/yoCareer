@@ -5,6 +5,7 @@
  *
  * Commands:
  *   node review-signals.mjs list
+ *   node review-signals.mjs draft --index 1
  *   node review-signals.mjs promote --index 1 [--dry-run]
  *   node review-signals.mjs discard --index 1 [--dry-run]
  */
@@ -147,6 +148,76 @@ function listSignals(blocks) {
   }
 }
 
+function parseScoringNotes(value) {
+  return String(value || '')
+    .split(',')
+    .map(item => item.trim())
+    .filter(Boolean);
+}
+
+function draftAction(block) {
+  const notes = parseScoringNotes(block.scoringNotes);
+  const risky = notes.includes('possible_outsourcing') || notes.includes('possible_spam_or_low_fit');
+  const unknownCompany = notes.includes('unknown_company');
+  const missingSource = notes.includes('missing_source_url');
+  const action = block.recommendedAction || 'save_for_manual_review';
+
+  const verificationQuestions = [
+    '这是正式员工 HC 还是外包/驻场/派遣？',
+    '岗位是否仍在招聘，是否有官方 JD 或投递链接？',
+    '岗位所属团队、汇报线和工作地点是什么？',
+  ];
+
+  if (unknownCompany) verificationQuestions.push('公司全称和主体是什么，是否能核验主体信息？');
+  if (missingSource) verificationQuestions.push('是否可以补充原始链接或可核验截图来源？');
+
+  let command = `npm run signals -- promote --index ${block.index}`;
+  let decision = 'promote';
+  let message = `你好，我关注到你发布的「${block.title}」。我在相关方向有可复用经验，想先确认岗位是否仍开放，以及正式编制和团队信息，便于我判断后续投递方式。`;
+
+  if (action === 'save_for_manual_review' || risky || unknownCompany || missingSource) {
+    decision = 'keep_review';
+    command = '# keep in review queue';
+    message = `你好，我对「${block.title}」方向感兴趣。为避免误投，想先确认岗位的正式编制、团队归属、工作地点和官方投递入口，再决定是否推进。`;
+  } else if (action === 'ask_for_referral') {
+    decision = 'promote_referral';
+    message = `你好，我在该岗位相关方向有实战经验，想请教你这类岗位当前最看重的能力点。如果方便，也希望了解是否支持内推流程。`;
+  }
+
+  if (action === 'skip_low_confidence') {
+    decision = 'discard';
+    command = `npm run signals -- discard --index ${block.index}`;
+    message = '该信号证据不足，建议先丢弃，后续若出现官方链接再重新评估。';
+  }
+
+  return {
+    decision,
+    command,
+    message,
+    verificationQuestions,
+    notes,
+  };
+}
+
+function printDraft(block) {
+  const draft = draftAction(block);
+  console.log(`#${block.index} ${block.company} | ${block.title}`);
+  console.log(`Decision: ${draft.decision}`);
+  console.log(`Suggested command: ${draft.command}`);
+  console.log('\nMessage draft:');
+  console.log(draft.message);
+  console.log('\nVerification questions:');
+  for (const question of draft.verificationQuestions) {
+    console.log(`- ${question}`);
+  }
+  if (draft.notes.length > 0) {
+    console.log('\nRisk notes:');
+    for (const note of draft.notes) {
+      console.log(`- ${note}`);
+    }
+  }
+}
+
 function main() {
   const args = parseArgs(process.argv.slice(2));
   const { text, blocks } = loadReview();
@@ -156,7 +227,7 @@ function main() {
     return;
   }
 
-  if (!['promote', 'discard'].includes(args.command)) {
+  if (!['draft', 'promote', 'discard'].includes(args.command)) {
     console.error(`Unknown command: ${args.command}`);
     process.exit(1);
   }
@@ -165,6 +236,11 @@ function main() {
   if (!block) {
     console.error('No matching signal found. Use `npm run signals -- list` to inspect indexes.');
     process.exit(1);
+  }
+
+  if (args.command === 'draft') {
+    printDraft(block);
+    return;
   }
 
   const date = new Date().toISOString().slice(0, 10);

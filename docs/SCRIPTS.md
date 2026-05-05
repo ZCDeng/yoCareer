@@ -58,10 +58,13 @@ Lists, promotes, or discards signals held in `data/signal-review.md`. Promotion 
 
 ```bash
 npm run signals -- list
+npm run signals -- draft --index 1
 npm run signals -- promote --index 1 --dry-run
 npm run signals -- promote --index 1
 npm run signals -- discard --index 1
 ```
+
+`draft` prints a suggested action, outreach message draft, and verification questions based on signal type and risk notes.
 
 Use this after `npm run scan` finds social, community, or low-confidence signals that need manual verification.
 
