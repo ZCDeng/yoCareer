@@ -148,6 +148,7 @@ Status: started with kind-specific confidence routing and review notes.
 ### v0.5 — Action Flow
 
 Goal: generate the right next step for each signal type.
+Status: implemented for local review promotion/discard and Chinese review guidance.
 
 - Official job: recommend official application and tailored CV.
 - Recruiter post: draft concise recruiter message for manual sending.
@@ -158,6 +159,7 @@ Goal: generate the right next step for each signal type.
 ### v0.6 — Multi-Model and Chinese Evaluation Loop
 
 Goal: make evaluation usable with different model providers.
+Status: implemented for provider configuration and health checks.
 
 - Add model configuration examples for OpenAI-compatible providers, Gemini, and CLI agents.
 - Keep API keys in `.env` or environment variables only.

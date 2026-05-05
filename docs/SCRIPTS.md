@@ -8,7 +8,9 @@ All scripts live in the project root as `.mjs` modules and are exposed via `npm 
 |---------|--------|---------|
 | `npm run doctor` | `doctor.mjs` | Validate setup prerequisites |
 | `npm run providers` | `provider-health.mjs` | Report scanner provider availability |
+| `npm run signals` | `review-signals.mjs` | Review, promote, or discard held signals |
 | `npm run verify` | `verify-pipeline.mjs` | Check pipeline data integrity |
+| `npm run models` | `model-health.mjs` | Validate model provider configuration |
 | `npm run normalize` | `normalize-statuses.mjs` | Fix non-canonical statuses |
 | `npm run dedup` | `dedup-tracker.mjs` | Remove duplicate tracker entries |
 | `npm run merge` | `merge-tracker.mjs` | Merge batch TSVs into applications.md |
@@ -50,6 +52,23 @@ Reach is optional. If no local Reach bridge command is configured, yoCareer rema
 
 ---
 
+## signals
+
+Lists, promotes, or discards signals held in `data/signal-review.md`. Promotion appends the signal to `data/pipeline.md`, records `promoted_from_review` in `data/scan-history.tsv`, and archives the original review block. Discard records `discarded_from_review` and archives the block without adding it to the pipeline.
+
+```bash
+npm run signals -- list
+npm run signals -- promote --index 1 --dry-run
+npm run signals -- promote --index 1
+npm run signals -- discard --index 1
+```
+
+Use this after `npm run scan` finds social, community, or low-confidence signals that need manual verification.
+
+**Exit codes:** `0` operation completed, `1` no matching signal or invalid command.
+
+---
+
 ## verify
 
 Health check for pipeline data integrity. Validates `data/applications.md` against seven rules: canonical statuses (per `templates/states.yml`), no duplicate company+role pairs, all report links point to existing files, scores match `X.XX/5` / `N/A` / `DUP`, rows have proper pipe-delimited format, no pending TSVs in `batch/tracker-additions/`, and no markdown bold in scores.
@@ -59,6 +78,26 @@ npm run verify
 ```
 
 **Exit codes:** `0` pipeline clean (zero errors), `1` errors found. Warnings (e.g. possible duplicates) do not cause a non-zero exit.
+
+---
+
+## models
+
+Validates `config/models.yml` when present, otherwise `config/models.example.yml`. It checks provider shape, API-key environment variable names, and whether configured CLI commands are present. It does not call remote model APIs.
+
+```bash
+npm run models
+cp config/models.example.yml config/models.yml
+DEEPSEEK_API_KEY=... npm run models
+```
+
+Supported provider types:
+
+- `openai_compatible`
+- `gemini`
+- `cli`
+
+**Exit codes:** `0` config shape valid, `1` invalid provider config.
 
 ---
 

@@ -1,0 +1,39 @@
+# yoCareer model configuration example.
+# Copy to config/models.yml and customize. Keep API keys in environment variables.
+
+default: deepseek
+
+providers:
+  deepseek:
+    type: openai_compatible
+    base_url: "https://api.deepseek.com/v1"
+    model: "deepseek-chat"
+    api_key_env: "DEEPSEEK_API_KEY"
+
+  kimi:
+    type: openai_compatible
+    base_url: "https://api.moonshot.cn/v1"
+    model: "kimi-k2-0711-preview"
+    api_key_env: "MOONSHOT_API_KEY"
+
+  openai:
+    type: openai_compatible
+    base_url: "https://api.openai.com/v1"
+    model: "gpt-4.1-mini"
+    api_key_env: "OPENAI_API_KEY"
+
+  gemini_api:
+    type: gemini
+    model: "gemini-2.0-flash"
+    api_key_env: "GEMINI_API_KEY"
+
+  gemini_cli:
+    type: cli
+    command: "gemini"
+    args:
+      - "-p"
+
+  codex_cli:
+    type: cli
+    command: "codex"
+    args: []

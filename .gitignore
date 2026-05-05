@@ -5,6 +5,7 @@ data/pipeline.md
 data/scan-history.tsv
 data/signals.ndjson
 data/signal-review.md
+data/signal-review-archive.md
 reports/*.md
 !reports/.gitkeep
 output/*
@@ -24,6 +25,7 @@ writing-samples/*
 
 # User config and customization (never auto-updated)
 config/profile.yml
+config/models.yml
 portals.yml
 modes/_profile.md
 .update-dismissed

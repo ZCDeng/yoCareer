@@ -10,6 +10,7 @@ These files contain your personal data, customizations, and work product. Update
 |------|---------|
 | `cv.md` | Your CV in markdown |
 | `config/profile.yml` | Your identity, targets, comp range |
+| `config/models.yml` | Your local model provider choices and environment-variable names |
 | `modes/_profile.md` | Your archetypes, narrative, negotiation scripts |
 | `article-digest.md` | Your proof points from portfolio |
 | `interview-prep/story-bank.md` | Your accumulated STAR+R stories |
@@ -19,6 +20,7 @@ These files contain your personal data, customizations, and work product. Update
 | `data/scan-history.tsv` | Your scan history |
 | `data/signals.ndjson` | User-provided or exported fragmented recruitment signals |
 | `data/signal-review.md` | Low-confidence signal review queue |
+| `data/signal-review-archive.md` | Reviewed signal archive |
 | `data/follow-ups.md` | Your follow-up history |
 | `writing-samples/*` | Your personal writing samples for style calibration |
 | `reports/*` | Your evaluation reports |
