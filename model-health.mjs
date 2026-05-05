@@ -46,7 +46,7 @@ function checkProvider(name, provider) {
     return {
       name,
       status: hasKey ? 'ready' : 'configured',
-      detail: `${provider.model} @ ${provider.base_url}; ${provider.api_key_env} ${hasKey ? 'set' : 'not set'}`,
+      detail: `${provider.model} @ ${provider.base_url}; credential environment ${hasKey ? 'set' : 'not set'}`,
     };
   }
 
@@ -58,7 +58,7 @@ function checkProvider(name, provider) {
     return {
       name,
       status: hasKey ? 'ready' : 'configured',
-      detail: `${provider.model}; ${provider.api_key_env} ${hasKey ? 'set' : 'not set'}`,
+      detail: `${provider.model}; credential environment ${hasKey ? 'set' : 'not set'}`,
     };
   }
 

@@ -557,7 +557,14 @@ async function scanCompanyPage(company, browser) {
     for (const link of links) {
       const text = link.text.replace(/\s+/g, ' ').trim();
       const href = link.href;
-      if (!href || href.startsWith('javascript:') || href.startsWith('mailto:')) continue;
+      if (!href) continue;
+      let parsedHref;
+      try {
+        parsedHref = new URL(href);
+      } catch {
+        continue;
+      }
+      if (!['http:', 'https:'].includes(parsedHref.protocol)) continue;
       if (text.length < 2 || text.length > 120) continue;
       if (!hasJobLinkHint(text, href)) continue;
       if (!unique.has(href)) unique.set(href, { text, href });
