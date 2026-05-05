@@ -21,6 +21,7 @@ import {
   readFileSync,
   writeFileSync,
 } from 'fs';
+import { spawn } from 'child_process';
 import yaml from 'js-yaml';
 
 const parseYaml = yaml.load;
@@ -40,6 +41,7 @@ const COMPANY_PAGE_CONCURRENCY = 2;
 const FETCH_TIMEOUT_MS = 10_000;
 const PAGE_TIMEOUT_MS = 20_000;
 const POST_LOAD_WAIT_MS = 2_000;
+const REACH_READ_URL_CMD = process.env.YOCAREER_REACH_READ_URL_CMD || '';
 
 const JOB_LINK_HINTS = [
   'job',
@@ -168,6 +170,25 @@ function sleep(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
 
+function runCommandWithUrl(command, url) {
+  return new Promise((resolve, reject) => {
+    const child = spawn('sh', ['-lc', `${command} "$1"`, 'yocareer-reach', url], {
+      stdio: ['ignore', 'pipe', 'pipe'],
+      env: process.env,
+    });
+    let stdout = '';
+    let stderr = '';
+
+    child.stdout.on('data', chunk => { stdout += chunk.toString(); });
+    child.stderr.on('data', chunk => { stderr += chunk.toString(); });
+    child.on('error', reject);
+    child.on('close', code => {
+      if (code === 0) resolve(stdout);
+      else reject(new Error(stderr.trim() || `command exited with ${code}`));
+    });
+  });
+}
+
 // ── Signal model ────────────────────────────────────────────────────
 
 function normalizeSignal(input) {
@@ -207,6 +228,55 @@ function jobToSignal(job, source) {
     evidence_text: job.title,
     source,
   });
+}
+
+function inferTitleFromUrl(url) {
+  try {
+    const parsed = new URL(url);
+    const tail = parsed.pathname.split('/').filter(Boolean).pop() || parsed.hostname;
+    return decodeURIComponent(tail).replace(/[-_]+/g, ' ').trim();
+  } catch {
+    return '';
+  }
+}
+
+function signalsFromReachOutput(output, company) {
+  const trimmed = output.trim();
+  if (!trimmed) return [];
+
+  if (trimmed.startsWith('{') || trimmed.startsWith('[')) {
+    const parsed = JSON.parse(trimmed);
+    const rows = Array.isArray(parsed) ? parsed : parsed.signals || parsed.jobs || parsed.links || [];
+    if (Array.isArray(rows)) {
+      return rows.map(row => normalizeSignal({
+        ...row,
+        company: row.company || company.name,
+        source_platform: row.source_platform || 'reach_read_url',
+        confidence: row.confidence ?? 0.74,
+        source: row.source || 'reach-read-url',
+      }));
+    }
+  }
+
+  const unique = new Map();
+  for (const match of trimmed.matchAll(/https?:\/\/[^\s"'<>）)]+/g)) {
+    const url = match[0];
+    const title = inferTitleFromUrl(url);
+    if (!hasJobLinkHint(title, url)) continue;
+    unique.set(url, normalizeSignal({
+      kind: 'official_job',
+      company: company.name,
+      role: title,
+      title,
+      url,
+      source_platform: 'reach_read_url',
+      confidence: 0.74,
+      evidence_text: title,
+      source: 'reach-read-url',
+    }));
+  }
+
+  return Array.from(unique.values());
 }
 
 // ── Title filtering ─────────────────────────────────────────────────
@@ -407,6 +477,10 @@ async function scanCompanyPage(company, browser) {
       source: 'company-page',
     }));
 
+    if (signals.length === 0 && REACH_READ_URL_CMD && company.reach_fallback !== false) {
+      return await scanReachReadUrl(company);
+    }
+
     return {
       provider: 'company_page',
       signals,
@@ -417,6 +491,38 @@ async function scanCompanyPage(company, browser) {
   } finally {
     await page.close();
   }
+}
+
+async function scanReachReadUrl(company) {
+  if (!company.careers_url && !company.url) {
+    return {
+      provider: 'reach_read_url',
+      signals: [],
+      skipped: [{ company: company.name, reason: 'missing_url' }],
+      errors: [],
+      found: 0,
+    };
+  }
+
+  if (!REACH_READ_URL_CMD) {
+    return {
+      provider: 'reach_read_url',
+      signals: [],
+      skipped: [{ company: company.name, reason: 'reach_bridge_unavailable' }],
+      errors: [],
+      found: 0,
+    };
+  }
+
+  const output = await runCommandWithUrl(REACH_READ_URL_CMD, company.careers_url || company.url);
+  const signals = signalsFromReachOutput(output, company);
+  return {
+    provider: 'reach_read_url',
+    signals,
+    skipped: [],
+    errors: [],
+    found: signals.length,
+  };
 }
 
 async function scanManualOnly(company) {
@@ -498,6 +604,7 @@ async function scanCompany(company, context) {
   try {
     if (provider === 'ats_api') return await scanAtsApi(company, context);
     if (provider === 'company_page') return await scanCompanyPage(company, context.browser);
+    if (provider === 'reach_read_url') return await scanReachReadUrl(company);
     if (provider === 'manual_only') return await scanManualOnly(company);
     if (provider === 'manual_signal_import') return await scanManualSignalImport(company);
     return {
@@ -668,7 +775,7 @@ async function main() {
   }
 
   const unsupportedCompanies = Array.from(groups.entries())
-    .filter(([provider]) => !['ats_api', 'company_page', 'manual_only', 'manual_signal_import'].includes(provider))
+    .filter(([provider]) => !['ats_api', 'company_page', 'reach_read_url', 'manual_only', 'manual_signal_import'].includes(provider))
     .flatMap(([, items]) => items);
   if (unsupportedCompanies.length > 0) {
     allResults.push(...await parallelMap(unsupportedCompanies, API_CONCURRENCY, company => scanCompany(company, context)));
@@ -681,6 +788,11 @@ async function main() {
       return await parallelMap(pageCompanies, COMPANY_PAGE_CONCURRENCY, company => scanCompany(company, context));
     });
     allResults.push(...pageResults);
+  }
+
+  const reachCompanies = groups.get('reach_read_url') || [];
+  if (reachCompanies.length > 0) {
+    allResults.push(...await parallelMap(reachCompanies, API_CONCURRENCY, company => scanCompany(company, context)));
   }
 
   let totalFound = 0;

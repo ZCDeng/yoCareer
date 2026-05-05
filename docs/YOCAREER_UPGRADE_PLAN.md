@@ -120,6 +120,7 @@ Status: in progress on `feat/provider-scanner`.
 - Add `company_page` provider for public company career sites.
 - Use Playwright and DOM extraction for visible job links.
 - Use `reach_read_url` as dynamic-page fallback when available.
+- Report Reach availability through provider health checks before relying on it.
 - Preserve `--dry-run` as a strict no-write mode.
 
 ### v0.3 — Fragmented Signal Sources

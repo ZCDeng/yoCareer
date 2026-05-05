@@ -7,6 +7,7 @@ All scripts live in the project root as `.mjs` modules and are exposed via `npm 
 | Command | Script | Purpose |
 |---------|--------|---------|
 | `npm run doctor` | `doctor.mjs` | Validate setup prerequisites |
+| `npm run providers` | `provider-health.mjs` | Report scanner provider availability |
 | `npm run verify` | `verify-pipeline.mjs` | Check pipeline data integrity |
 | `npm run normalize` | `normalize-statuses.mjs` | Fix non-canonical statuses |
 | `npm run dedup` | `dedup-tracker.mjs` | Remove duplicate tracker entries |
@@ -30,6 +31,21 @@ npm run doctor
 ```
 
 **Exit codes:** `0` all checks passed, `1` one or more checks failed (fix messages printed).
+
+---
+
+## providers
+
+Reports scanner provider availability for the local runtime: ATS APIs, Playwright company pages, manual signal imports, restricted manual-only platforms, and optional Reach bridge configuration.
+
+```bash
+npm run providers
+YOCAREER_REACH_READ_URL_CMD="reach read-url" npm run providers
+```
+
+Reach is optional. If no local Reach bridge command is configured, yoCareer remains usable through `ats_api`, `company_page`, and `manual_signal_import`.
+
+**Exit codes:** `0` report generated, `1` configuration error or no `portals.yml` found.
 
 ---
 

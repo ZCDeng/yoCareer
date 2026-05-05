@@ -9,6 +9,7 @@
 # - ats_api: Greenhouse, Ashby, and Lever public APIs detected from api/careers_url.
 # - company_page: public career page link extraction with Playwright.
 # - manual_signal_import: local NDJSON signal import from user-provided/exported posts.
+# - reach_read_url: optional external Reach bridge for public URLs when configured.
 # - manual_only: visible-page review or user-provided imports only.
 
 title_filter:
