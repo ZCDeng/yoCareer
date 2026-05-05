@@ -4,6 +4,14 @@
 # Default principle:
 # - Prefer public company career pages and user-provided imports.
 # - Do not automate login, CAPTCHA, bulk scraping, or mass messaging on BOSS/Zhaopin/Liepin/51job/Lagou/Maimai.
+#
+# Supported providers:
+# - ats_api: Greenhouse, Ashby, and Lever public APIs detected from api/careers_url.
+# - company_page: public career page link extraction with Playwright.
+# - manual_signal_import: local NDJSON signal import from user-provided/exported posts.
+# - reach_read_url: optional external Reach bridge for public URLs when configured.
+# - reach_signal_search: optional external Reach bridge for social/community searches.
+# - manual_only: visible-page review or user-provided imports only.
 
 title_filter:
   positive:
@@ -70,39 +78,79 @@ search_queries:
     query: 'site:iguopin.com "人工智能" OR "大模型" OR "数据"'
     enabled: false
 
+signal_imports:
+  - name: Local social signal inbox
+    enabled: true
+    provider: manual_signal_import
+    path: data/signals.ndjson
+    notes: "One JSON object per line. Use for pasted/exported Weibo, Xiaohongshu, WeChat public article, group-forward, or recruiter-post signals."
+
+signal_searches:
+  - name: Weibo AI hiring signals
+    enabled: false
+    provider: reach_signal_search
+    platform: weibo
+    query: '"大模型" "招聘" "算法"'
+    default_confidence: 0.66
+    default_action: save_for_manual_review
+    notes: "Requires YOCAREER_REACH_SIGNAL_SEARCH_CMD. Do not use login-gated or private-account content."
+
+  - name: V2EX AI jobs
+    enabled: false
+    provider: reach_signal_search
+    platform: v2ex
+    query: 'AI 大模型 后端 算法 招聘'
+    default_confidence: 0.68
+    default_action: save_for_manual_review
+
+  - name: GitHub hiring mentions
+    enabled: false
+    provider: reach_signal_search
+    platform: github
+    query: '"大模型" "招聘" "AI Engineer"'
+    default_confidence: 0.65
+    default_action: save_for_manual_review
+
 tracked_companies:
   - name: Alibaba
     enabled: true
+    provider: company_page
     careers_url: "https://talent.alibaba.com"
     notes: "Public career site. Verify role page manually before evaluation."
 
   - name: Tencent
     enabled: true
+    provider: company_page
     careers_url: "https://careers.tencent.com"
     notes: "Public career site. Campus and social recruiting are separate."
 
   - name: ByteDance
     enabled: true
+    provider: company_page
     careers_url: "https://jobs.bytedance.com"
     notes: "Public career site. Check city and business line carefully."
 
   - name: Huawei
     enabled: true
+    provider: company_page
     careers_url: "https://career.huawei.com"
     notes: "Public career site. Separate campus and experienced-hire flows."
 
   - name: Meituan
     enabled: true
+    provider: company_page
     careers_url: "https://zhaopin.meituan.com"
     notes: "Public career site. Verify location and business group."
 
   - name: JD
     enabled: true
+    provider: company_page
     careers_url: "https://zhaopin.jd.com"
     notes: "Public career site."
 
   - name: Xiaomi
     enabled: true
+    provider: company_page
     careers_url: "https://hr.xiaomi.com"
     notes: "Public career site."
 

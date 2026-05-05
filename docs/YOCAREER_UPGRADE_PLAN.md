@@ -113,20 +113,23 @@ Status: partially complete.
 ### v0.2 — Official Job Sources
 
 Goal: make public company career pages useful.
+Status: in progress on `feat/provider-scanner`.
 
 - Refactor `scan.mjs` into a provider architecture.
 - Keep existing Greenhouse, Ashby, and Lever API support.
 - Add `company_page` provider for public company career sites.
 - Use Playwright and DOM extraction for visible job links.
 - Use `reach_read_url` as dynamic-page fallback when available.
+- Report Reach availability through provider health checks before relying on it.
 - Preserve `--dry-run` as a strict no-write mode.
 
 ### v0.3 — Fragmented Signal Sources
 
 Goal: collect fresh hiring intent from social and community channels.
+Status: started with local manual signal import.
 
 - Add `signal_provider` support.
-- Integrate available Reach tools for Weibo, V2EX, GitHub, Bilibili, and X/Twitter.
+- Integrate available Reach tools for Weibo, V2EX, GitHub, Bilibili, and X/Twitter through an explicit `reach_signal_search` bridge.
 - Add adapter placeholders for Xiaohongshu and WeChat public articles.
 - Support manual import for private group forwards, pasted posts, screenshots, and public account articles.
 - Classify signals as official job, recruiter post, referral signal, or community post.
@@ -134,6 +137,7 @@ Goal: collect fresh hiring intent from social and community channels.
 ### v0.4 — Signal Normalization and Confidence
 
 Goal: prevent noisy social data from polluting the job pipeline.
+Status: started with kind-specific confidence routing and review notes.
 
 - Normalize all provider outputs into the recruitment signal model.
 - Score freshness, source reliability, evidence quality, and actionability.
@@ -144,6 +148,7 @@ Goal: prevent noisy social data from polluting the job pipeline.
 ### v0.5 — Action Flow
 
 Goal: generate the right next step for each signal type.
+Status: implemented for local review promotion/discard and Chinese review guidance.
 
 - Official job: recommend official application and tailored CV.
 - Recruiter post: draft concise recruiter message for manual sending.
@@ -154,6 +159,7 @@ Goal: generate the right next step for each signal type.
 ### v0.6 — Multi-Model and Chinese Evaluation Loop
 
 Goal: make evaluation usable with different model providers.
+Status: implemented for provider configuration and health checks.
 
 - Add model configuration examples for OpenAI-compatible providers, Gemini, and CLI agents.
 - Keep API keys in `.env` or environment variables only.

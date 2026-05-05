@@ -4,6 +4,8 @@
   "description": "China-market AI job search operations system adapted from career-ops",
   "scripts": {
     "doctor": "node doctor.mjs",
+    "providers": "node provider-health.mjs",
+    "signals": "node review-signals.mjs",
     "verify": "node verify-pipeline.mjs",
     "normalize": "node normalize-statuses.mjs",
     "dedup": "node dedup-tracker.mjs",
@@ -15,7 +17,8 @@
     "rollback": "node update-system.mjs rollback",
     "liveness": "node check-liveness.mjs",
     "scan": "node scan.mjs",
-    "gemini:eval": "node gemini-eval.mjs"
+    "gemini:eval": "node gemini-eval.mjs",
+    "models": "node model-health.mjs"
   },
   "keywords": [
     "ai",

@@ -13,6 +13,7 @@ This fork currently adds:
 - China portal template: `templates/portals.cn.example.yml`
 - Chinese shared evaluation context: `modes/zh-cn/_shared.md`
 - Chinese job evaluation mode: `modes/zh-cn/evaluate.md`
+- Chinese signal review mode: `modes/zh-cn/signal-review.md`
 
 ## Product Boundary
 
@@ -35,6 +36,7 @@ yoCareer should not:
 
 ```bash
 cp config/profile.example.yml config/profile.yml
+cp config/models.example.yml config/models.yml
 cp templates/portals.cn.example.yml portals.yml
 ```
 
@@ -45,6 +47,21 @@ Then add:
 - Optional `writing-samples/` files for tone calibration.
 
 For Chinese job descriptions, start with `modes/zh-cn/evaluate.md` and `modes/zh-cn/_shared.md` as the evaluation contract.
+
+Model providers are configured in `config/models.yml`; keep keys in environment variables such as `DEEPSEEK_API_KEY`, `MOONSHOT_API_KEY`, `OPENAI_API_KEY`, or `GEMINI_API_KEY`. Check local readiness with `npm run models`.
+
+## China Signal Workflow
+
+```bash
+npm run providers
+npm run scan -- --dry-run
+npm run scan
+npm run signals -- list
+npm run signals -- promote --index 1
+npm run signals -- discard --index 2
+```
+
+Use `data/signals.ndjson` for pasted or exported social/community hiring signals. High-confidence official jobs enter `data/pipeline.md`; noisy social/community signals are held in `data/signal-review.md` until manually reviewed.
 
 ## Upstream
 
