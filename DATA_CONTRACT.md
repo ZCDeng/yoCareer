@@ -17,6 +17,8 @@ These files contain your personal data, customizations, and work product. Update
 | `data/applications.md` | Your application tracker |
 | `data/pipeline.md` | Your URL inbox |
 | `data/scan-history.tsv` | Your scan history |
+| `data/signals.ndjson` | User-provided or exported fragmented recruitment signals |
+| `data/signal-review.md` | Low-confidence signal review queue |
 | `data/follow-ups.md` | Your follow-up history |
 | `writing-samples/*` | Your personal writing samples for style calibration |
 | `reports/*` | Your evaluation reports |

@@ -8,6 +8,7 @@
 # Supported providers:
 # - ats_api: Greenhouse, Ashby, and Lever public APIs detected from api/careers_url.
 # - company_page: public career page link extraction with Playwright.
+# - manual_signal_import: local NDJSON signal import from user-provided/exported posts.
 # - manual_only: visible-page review or user-provided imports only.
 
 title_filter:
@@ -74,6 +75,13 @@ search_queries:
   - name: Guopin — 国企 AI
     query: 'site:iguopin.com "人工智能" OR "大模型" OR "数据"'
     enabled: false
+
+signal_imports:
+  - name: Local social signal inbox
+    enabled: true
+    provider: manual_signal_import
+    path: data/signals.ndjson
+    notes: "One JSON object per line. Use for pasted/exported Weibo, Xiaohongshu, WeChat public article, group-forward, or recruiter-post signals."
 
 tracked_companies:
   - name: Alibaba

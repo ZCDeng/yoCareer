@@ -31,6 +31,7 @@ const PORTALS_PATH = 'portals.yml';
 const SCAN_HISTORY_PATH = 'data/scan-history.tsv';
 const PIPELINE_PATH = 'data/pipeline.md';
 const APPLICATIONS_PATH = 'data/applications.md';
+const SIGNAL_REVIEW_PATH = 'data/signal-review.md';
 
 mkdirSync('data', { recursive: true });
 
@@ -172,6 +173,7 @@ function sleep(ms) {
 function normalizeSignal(input) {
   const title = (input.title || input.role || '').trim();
   const role = (input.role || title).trim();
+  const confidence = Number(input.confidence);
   return {
     kind: input.kind || 'official_job',
     company: (input.company || '').trim(),
@@ -185,7 +187,7 @@ function normalizeSignal(input) {
     contact_hint: input.contact_hint || '',
     posted_at: input.posted_at || '',
     freshness: input.freshness || 'unknown',
-    confidence: Number.isFinite(input.confidence) ? input.confidence : 0.7,
+    confidence: Number.isFinite(confidence) ? confidence : 0.7,
     evidence_text: input.evidence_text || title,
     recommended_action: input.recommended_action || 'apply_on_official_site',
     source: input.source || input.source_platform || input.provider || 'unknown',
@@ -280,6 +282,7 @@ function normalizeKey(value) {
 
 function dedupAndFilterSignals(signals, context) {
   const accepted = [];
+  const held = [];
   let filtered = 0;
   let duplicates = 0;
   let lowConfidence = 0;
@@ -293,8 +296,18 @@ function dedupAndFilterSignals(signals, context) {
       filtered++;
       continue;
     }
+    if (context.filterCompany && !signal.company.toLowerCase().includes(context.filterCompany)) {
+      filtered++;
+      continue;
+    }
     if (signal.confidence < 0.7) {
       lowConfidence++;
+      held.push({ ...signal, hold_reason: 'low_confidence' });
+      continue;
+    }
+    if (signal.recommended_action === 'save_for_manual_review') {
+      lowConfidence++;
+      held.push({ ...signal, hold_reason: 'manual_review_requested' });
       continue;
     }
     if (signal.url && context.seenUrls.has(signal.url)) {
@@ -313,7 +326,7 @@ function dedupAndFilterSignals(signals, context) {
     accepted.push(signal);
   }
 
-  return { accepted, filtered, duplicates, lowConfidence };
+  return { accepted, held, filtered, duplicates, lowConfidence };
 }
 
 // ── Providers ───────────────────────────────────────────────────────
@@ -416,12 +429,77 @@ async function scanManualOnly(company) {
   };
 }
 
+function parseManualSignalContent(text, source) {
+  const trimmed = text.trim();
+  if (!trimmed) return { signals: [], errors: [] };
+
+  if (trimmed.startsWith('[')) {
+    const rows = JSON.parse(trimmed);
+    if (!Array.isArray(rows)) throw new Error('JSON import must be an array or NDJSON');
+    return {
+      signals: rows.map(row => normalizeSignal({
+        ...row,
+        source_platform: row.source_platform || source.source_platform || source.name,
+        source: row.source || source.name,
+      })),
+      errors: [],
+    };
+  }
+
+  const signals = [];
+  const errors = [];
+  const lines = text.split('\n');
+  for (const [idx, line] of lines.entries()) {
+    const clean = line.trim();
+    if (!clean || clean.startsWith('#')) continue;
+    try {
+      const row = JSON.parse(clean);
+      signals.push(normalizeSignal({
+        ...row,
+        source_platform: row.source_platform || source.source_platform || source.name,
+        source: row.source || source.name,
+      }));
+    } catch (err) {
+      errors.push({
+        company: source.name,
+        provider: 'manual_signal_import',
+        error: `${source.path}:${idx + 1}: ${err.message}`,
+      });
+    }
+  }
+
+  return { signals, errors };
+}
+
+async function scanManualSignalImport(source) {
+  const path = source.path || 'data/signals.ndjson';
+  if (!existsSync(path)) {
+    return {
+      provider: 'manual_signal_import',
+      signals: [],
+      skipped: [{ company: source.name, reason: `missing_import_file:${path}` }],
+      errors: [],
+      found: 0,
+    };
+  }
+
+  const parsed = parseManualSignalContent(readFileSync(path, 'utf-8'), { ...source, path });
+  return {
+    provider: 'manual_signal_import',
+    signals: parsed.signals,
+    skipped: [],
+    errors: parsed.errors,
+    found: parsed.signals.length,
+  };
+}
+
 async function scanCompany(company, context) {
   const provider = resolveProvider(company);
   try {
     if (provider === 'ats_api') return await scanAtsApi(company, context);
     if (provider === 'company_page') return await scanCompanyPage(company, context.browser);
     if (provider === 'manual_only') return await scanManualOnly(company);
+    if (provider === 'manual_signal_import') return await scanManualSignalImport(company);
     return {
       provider,
       signals: [],
@@ -483,6 +561,32 @@ function appendToScanHistory(signals, date) {
   appendFileSync(SCAN_HISTORY_PATH, lines, 'utf-8');
 }
 
+function escapeReviewText(value) {
+  return String(value || '').replace(/\s+/g, ' ').trim().slice(0, 500);
+}
+
+function appendToSignalReview(signals, date) {
+  if (signals.length === 0) return;
+
+  const header = existsSync(SIGNAL_REVIEW_PATH)
+    ? ''
+    : '# Signal Review\n\nLow-confidence or explicitly review-only recruitment signals.\n';
+  const blocks = signals.map(s => [
+    '',
+    `## ${escapeReviewText(s.company)} | ${escapeReviewText(s.title)}`,
+    '',
+    `- Date: ${date}`,
+    `- Source: ${escapeReviewText(s.source_platform)}`,
+    `- URL: ${s.url || 'N/A'}`,
+    `- Confidence: ${s.confidence}`,
+    `- Reason: ${s.hold_reason || 'manual_review'}`,
+    `- Recommended action: ${s.recommended_action}`,
+    `- Evidence: ${escapeReviewText(s.evidence_text) || 'N/A'}`,
+  ].join('\n')).join('\n');
+
+  appendFileSync(SIGNAL_REVIEW_PATH, `${header}${blocks}\n`, 'utf-8');
+}
+
 // ── Parallel execution ─────────────────────────────────────────────
 
 async function parallelMap(items, limit, fn) {
@@ -532,18 +636,20 @@ async function main() {
     .filter(p => p.enabled !== false)
     .filter(p => !filterCompany || p.name.toLowerCase().includes(filterCompany))
     .map(p => ({ name: p.name, provider: 'manual_only', reason: p.reason }));
+  const signalImports = (config.signal_imports || [])
+    .filter(s => s.enabled !== false);
 
   const titleFilter = buildTitleFilter(config.title_filter);
   const seenUrls = loadSeenUrls();
   const seenCompanyRoles = loadSeenCompanyRoles();
   const date = new Date().toISOString().slice(0, 10);
 
-  const groups = splitByProvider([...companies, ...restrictedPlatforms]);
+  const groups = splitByProvider([...companies, ...restrictedPlatforms, ...signalImports]);
   const groupSummary = Array.from(groups.entries()).map(([provider, items]) => `${provider}=${items.length}`).join(', ');
-  console.log(`Scanning ${companies.length} companies + ${restrictedPlatforms.length} restricted platforms (${groupSummary || 'none'})`);
+  console.log(`Scanning ${companies.length} companies + ${signalImports.length} signal imports + ${restrictedPlatforms.length} restricted platforms (${groupSummary || 'none'})`);
   if (dryRun) console.log('(dry run — no files will be written)\n');
 
-  const context = { titleFilter, seenUrls, seenCompanyRoles, browser: null };
+  const context = { titleFilter, seenUrls, seenCompanyRoles, filterCompany, browser: null };
   const allResults = [];
 
   const apiCompanies = groups.get('ats_api') || [];
@@ -556,8 +662,13 @@ async function main() {
     allResults.push(...await parallelMap(manualCompanies, API_CONCURRENCY, company => scanCompany(company, context)));
   }
 
+  const importSources = groups.get('manual_signal_import') || [];
+  if (importSources.length > 0) {
+    allResults.push(...await parallelMap(importSources, API_CONCURRENCY, source => scanCompany(source, context)));
+  }
+
   const unsupportedCompanies = Array.from(groups.entries())
-    .filter(([provider]) => !['ats_api', 'company_page', 'manual_only'].includes(provider))
+    .filter(([provider]) => !['ats_api', 'company_page', 'manual_only', 'manual_signal_import'].includes(provider))
     .flatMap(([, items]) => items);
   if (unsupportedCompanies.length > 0) {
     allResults.push(...await parallelMap(unsupportedCompanies, API_CONCURRENCY, company => scanCompany(company, context)));
@@ -577,6 +688,7 @@ async function main() {
   let totalDupes = 0;
   let totalLowConfidence = 0;
   const newSignals = [];
+  const heldSignals = [];
   const errors = [];
   const skipped = [];
 
@@ -586,6 +698,7 @@ async function main() {
     skipped.push(...(result.skipped || []));
     const filtered = dedupAndFilterSignals(result.signals || [], context);
     newSignals.push(...filtered.accepted);
+    heldSignals.push(...filtered.held);
     totalFiltered += filtered.filtered;
     totalDupes += filtered.duplicates;
     totalLowConfidence += filtered.lowConfidence;
@@ -595,11 +708,15 @@ async function main() {
     appendToPipeline(newSignals);
     appendToScanHistory(newSignals, date);
   }
+  if (!dryRun && heldSignals.length > 0) {
+    appendToSignalReview(heldSignals, date);
+  }
 
   console.log(`\n${'━'.repeat(45)}`);
   console.log(`Recruitment Signal Scan — ${date}`);
   console.log(`${'━'.repeat(45)}`);
   console.log(`Companies scanned:     ${companies.length}`);
+  console.log(`Signal imports:        ${signalImports.length}`);
   console.log(`Restricted platforms:  ${restrictedPlatforms.length}`);
   console.log(`Signals found:         ${totalFound}`);
   console.log(`Filtered by title:     ${totalFiltered} removed`);
@@ -633,6 +750,15 @@ async function main() {
     } else {
       console.log(`\nResults saved to ${PIPELINE_PATH} and ${SCAN_HISTORY_PATH}`);
     }
+  }
+
+  if (heldSignals.length > 0) {
+    console.log('\nHeld for review:');
+    for (const s of heldSignals.slice(0, 12)) {
+      console.log(`  ? ${s.company} | ${s.title} | ${s.source_platform} | reason=${s.hold_reason}`);
+    }
+    if (heldSignals.length > 12) console.log(`  ... ${heldSignals.length - 12} more`);
+    if (!dryRun) console.log(`\nReview queue saved to ${SIGNAL_REVIEW_PATH}`);
   }
 
   console.log('\n→ Run /career-ops pipeline to evaluate new signals promoted to the pipeline.');

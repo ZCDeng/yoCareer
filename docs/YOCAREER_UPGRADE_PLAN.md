@@ -125,6 +125,7 @@ Status: in progress on `feat/provider-scanner`.
 ### v0.3 — Fragmented Signal Sources
 
 Goal: collect fresh hiring intent from social and community channels.
+Status: started with local manual signal import.
 
 - Add `signal_provider` support.
 - Integrate available Reach tools for Weibo, V2EX, GitHub, Bilibili, and X/Twitter.

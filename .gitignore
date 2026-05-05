@@ -3,6 +3,8 @@ cv.md
 data/applications.md
 data/pipeline.md
 data/scan-history.tsv
+data/signals.ndjson
+data/signal-review.md
 reports/*.md
 !reports/.gitkeep
 output/*
