@@ -8,6 +8,7 @@ All scripts live in the project root as `.mjs` modules and are exposed via `npm 
 |---------|--------|---------|
 | `npm run doctor` | `doctor.mjs` | Validate setup prerequisites |
 | `npm run providers` | `provider-health.mjs` | Report scanner provider availability |
+| `npm run bridge:smoke` | `bridge-smoke.mjs` | Smoke-test Reach bridge commands |
 | `npm run signals` | `review-signals.mjs` | Review, promote, or discard held signals |
 | `npm run verify` | `verify-pipeline.mjs` | Check pipeline data integrity |
 | `npm run models` | `model-health.mjs` | Validate model provider configuration |
@@ -55,6 +56,23 @@ Reference bridge templates:
 - [bridges/reach-signal-search.example.sh](/Users/zcdeng/yoCareer/bridges/reach-signal-search.example.sh)
 
 **Exit codes:** `0` report generated, `1` configuration error or no `portals.yml` found.
+
+---
+
+## bridge:smoke
+
+Executes configured bridge commands with sample arguments and checks whether output is valid JSON with a `signals` array.
+
+```bash
+npm run bridge:smoke
+YOCAREER_REACH_READ_URL_CMD="./bridges/reach-read-url.example.sh" \
+YOCAREER_REACH_SIGNAL_SEARCH_CMD="./bridges/reach-signal-search.example.sh" \
+npm run bridge:smoke
+```
+
+Use this before running scans to validate bridge wiring.
+
+**Exit codes:** `0` script completed (per-bridge results are printed as `ok` / `failed` / `invalid` / `skipped`).
 
 ---
 

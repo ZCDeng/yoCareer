@@ -5,6 +5,7 @@
   "scripts": {
     "doctor": "node doctor.mjs",
     "providers": "node provider-health.mjs",
+    "bridge:smoke": "node bridge-smoke.mjs",
     "signals": "node review-signals.mjs",
     "verify": "node verify-pipeline.mjs",
     "normalize": "node normalize-statuses.mjs",
