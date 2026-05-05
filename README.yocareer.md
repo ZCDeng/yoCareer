@@ -55,7 +55,10 @@ Optional Reach bridges can be wired through:
 - `YOCAREER_REACH_READ_URL_CMD`
 - `YOCAREER_REACH_SIGNAL_SEARCH_CMD`
 
-Template wrappers are provided in `bridges/`.
+Built-in local wrappers are provided in `bridges/` and auto-used when env vars are unset:
+
+- `bridges/reach-read-url.mjs`
+- `bridges/reach-signal-search.mjs`
 
 ## China Signal Workflow
 

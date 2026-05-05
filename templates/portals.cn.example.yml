@@ -96,7 +96,7 @@ signal_searches:
     notes: "Requires YOCAREER_REACH_SIGNAL_SEARCH_CMD. Do not use login-gated or private-account content."
 
   - name: V2EX AI jobs
-    enabled: false
+    enabled: true
     provider: reach_signal_search
     platform: v2ex
     query: 'AI 大模型 后端 算法 招聘'

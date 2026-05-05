@@ -2,12 +2,19 @@
 
 yoCareer treats Reach/Seek as optional local bridges. Scanner scripts call shell commands and parse JSON output.
 
+Built-in default bridges:
+
+- `./bridges/reach-read-url.mjs` (public URL extraction)
+- `./bridges/reach-signal-search.mjs` (platform+query search)
+
+If these files exist, scanner scripts use them automatically even when env vars are not set.
+
 ## 1) URL Bridge
 
 Environment variable:
 
 ```bash
-YOCAREER_REACH_READ_URL_CMD="./bridges/reach-read-url.example.sh"
+YOCAREER_REACH_READ_URL_CMD="./bridges/reach-read-url.mjs"
 ```
 
 Command contract:
@@ -38,7 +45,7 @@ Minimal output shape:
 Environment variable:
 
 ```bash
-YOCAREER_REACH_SIGNAL_SEARCH_CMD="./bridges/reach-signal-search.example.sh"
+YOCAREER_REACH_SIGNAL_SEARCH_CMD="./bridges/reach-signal-search.mjs"
 ```
 
 Command contract:
@@ -69,7 +76,20 @@ Minimal output shape:
 
 ```bash
 npm run providers
+npm run bridge:smoke
 npm run scan -- --dry-run
 ```
 
 If a bridge is misconfigured, scanner output should report an explicit `skipped` reason instead of failing silently.
+
+## Notes on the Built-in Default
+
+- `reach-signal-search.mjs` currently supports:
+  - `x` / `twitter` via `xreach`
+  - `v2ex` via public V2EX API
+  - `github` via `gh search issues`
+- `reach-read-url.mjs` supports:
+  - `x` status URLs via `xreach tweet`
+  - generic public URLs via `r.jina.ai/<url>`
+
+For Weibo/Xiaohongshu/WeChat and other login-gated channels, keep using user-provided exports or replace default scripts with your own local bridge command.

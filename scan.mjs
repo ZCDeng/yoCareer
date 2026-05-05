@@ -41,8 +41,14 @@ const COMPANY_PAGE_CONCURRENCY = 2;
 const FETCH_TIMEOUT_MS = 10_000;
 const PAGE_TIMEOUT_MS = 20_000;
 const POST_LOAD_WAIT_MS = 2_000;
-const REACH_READ_URL_CMD = process.env.YOCAREER_REACH_READ_URL_CMD || '';
-const REACH_SIGNAL_SEARCH_CMD = process.env.YOCAREER_REACH_SIGNAL_SEARCH_CMD || '';
+const REACH_READ_URL_CMD = resolveBridgeCommand(
+  process.env.YOCAREER_REACH_READ_URL_CMD || '',
+  './bridges/reach-read-url.mjs',
+);
+const REACH_SIGNAL_SEARCH_CMD = resolveBridgeCommand(
+  process.env.YOCAREER_REACH_SIGNAL_SEARCH_CMD || '',
+  './bridges/reach-signal-search.mjs',
+);
 
 const SIGNAL_THRESHOLDS = {
   official_job: 0.7,
@@ -74,6 +80,12 @@ const JOB_LINK_HINTS = [
   '加入我们',
   '人才',
 ];
+
+function resolveBridgeCommand(explicitCommand, defaultScriptPath) {
+  const command = String(explicitCommand || '').trim();
+  if (command) return command;
+  return existsSync(defaultScriptPath) ? defaultScriptPath : '';
+}
 
 // ── Provider resolution ─────────────────────────────────────────────
 

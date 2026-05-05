@@ -47,13 +47,20 @@ YOCAREER_REACH_READ_URL_CMD="reach read-url" npm run providers
 YOCAREER_REACH_SIGNAL_SEARCH_CMD="reach signal-search" npm run providers
 ```
 
-Reach is optional. If no local Reach bridge command is configured, yoCareer remains usable through `ats_api`, `company_page`, and `manual_signal_import`. URL bridges receive one argument: `<url>`. Signal-search bridges receive two arguments: `<platform> <query>`.
+Reach is optional. If no env command is configured, yoCareer auto-detects built-in local bridge scripts:
+
+- `./bridges/reach-read-url.mjs`
+- `./bridges/reach-signal-search.mjs`
+
+URL bridges receive one argument: `<url>`. Signal-search bridges receive two arguments: `<platform> <query>`.
 
 Reference bridge templates:
 
-- [bridges/README.md](/Users/zcdeng/yoCareer/bridges/README.md)
-- [bridges/reach-read-url.example.sh](/Users/zcdeng/yoCareer/bridges/reach-read-url.example.sh)
-- [bridges/reach-signal-search.example.sh](/Users/zcdeng/yoCareer/bridges/reach-signal-search.example.sh)
+- [bridges/README.md](../bridges/README.md)
+- [bridges/reach-read-url.mjs](../bridges/reach-read-url.mjs)
+- [bridges/reach-signal-search.mjs](../bridges/reach-signal-search.mjs)
+- [bridges/reach-read-url.example.sh](../bridges/reach-read-url.example.sh)
+- [bridges/reach-signal-search.example.sh](../bridges/reach-signal-search.example.sh)
 
 **Exit codes:** `0` report generated, `1` configuration error or no `portals.yml` found.
 
@@ -65,8 +72,8 @@ Executes configured bridge commands with sample arguments and checks whether out
 
 ```bash
 npm run bridge:smoke
-YOCAREER_REACH_READ_URL_CMD="./bridges/reach-read-url.example.sh" \
-YOCAREER_REACH_SIGNAL_SEARCH_CMD="./bridges/reach-signal-search.example.sh" \
+YOCAREER_REACH_READ_URL_CMD="./bridges/reach-read-url.mjs" \
+YOCAREER_REACH_SIGNAL_SEARCH_CMD="./bridges/reach-signal-search.mjs" \
 npm run bridge:smoke
 ```
 

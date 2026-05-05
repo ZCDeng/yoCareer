@@ -93,9 +93,13 @@ function checkManualImports(config) {
 }
 
 function checkBridge(label, envName, detail) {
-  const command = process.env[envName] || '';
+  const explicitCommand = (process.env[envName] || '').trim();
+  const defaultScript = label === 'reach_read_url'
+    ? './bridges/reach-read-url.mjs'
+    : './bridges/reach-signal-search.mjs';
+  const command = explicitCommand || (existsSync(defaultScript) ? defaultScript : '');
   if (!command) {
-    return warn(label, `Set ${envName} to enable ${detail}`);
+    return warn(label, `Set ${envName} or create ${defaultScript} to enable ${detail}`);
   }
 
   const binary = command.trim().split(/\s+/)[0];
@@ -103,7 +107,10 @@ function checkBridge(label, envName, detail) {
     return warn(label, `Configured command is not executable: ${command}`);
   }
 
-  return ok(label, `Bridge command configured: ${command}`);
+  if (explicitCommand) {
+    return ok(label, `Bridge command configured via ${envName}: ${command}`);
+  }
+  return info(label, `Using default local bridge script: ${command}`);
 }
 
 function checkReachReadUrlBridge() {

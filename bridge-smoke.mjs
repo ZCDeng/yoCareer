@@ -5,9 +5,22 @@
  */
 
 import { spawn } from 'child_process';
+import { existsSync } from 'fs';
 
-const REACH_READ_URL_CMD = process.env.YOCAREER_REACH_READ_URL_CMD || '';
-const REACH_SIGNAL_SEARCH_CMD = process.env.YOCAREER_REACH_SIGNAL_SEARCH_CMD || '';
+const REACH_READ_URL_CMD = resolveBridgeCommand(
+  process.env.YOCAREER_REACH_READ_URL_CMD || '',
+  './bridges/reach-read-url.mjs',
+);
+const REACH_SIGNAL_SEARCH_CMD = resolveBridgeCommand(
+  process.env.YOCAREER_REACH_SIGNAL_SEARCH_CMD || '',
+  './bridges/reach-signal-search.mjs',
+);
+
+function resolveBridgeCommand(explicitCommand, defaultScriptPath) {
+  const command = String(explicitCommand || '').trim();
+  if (command) return command;
+  return existsSync(defaultScriptPath) ? defaultScriptPath : '';
+}
 
 function runBridge(command, args) {
   return new Promise((resolve, reject) => {
@@ -49,7 +62,7 @@ async function main() {
   console.log('=====================\n');
 
   const urlSample = 'https://example.com/jobs/123';
-  const searchSample = ['weibo', '大模型 招聘'];
+  const searchSample = ['v2ex', 'AI 大模型 招聘'];
 
   const readResult = await runBridge(REACH_READ_URL_CMD, [urlSample]);
   if (readResult.skipped) {
