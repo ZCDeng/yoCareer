@@ -1,0 +1,128 @@
+# yoCareer China Portal Configuration
+# Copy to portals.yml and customize for your target roles.
+#
+# Default principle:
+# - Prefer public company career pages and user-provided imports.
+# - Do not automate login, CAPTCHA, bulk scraping, or mass messaging on BOSS/Zhaopin/Liepin/51job/Lagou/Maimai.
+
+title_filter:
+  positive:
+    - "AI"
+    - "AIGC"
+    - "大模型"
+    - "生成式 AI"
+    - "智能体"
+    - "Agent"
+    - "算法"
+    - "机器学习"
+    - "深度学习"
+    - "NLP"
+    - "多模态"
+    - "推荐"
+    - "搜索"
+    - "后端"
+    - "平台"
+    - "架构师"
+    - "解决方案"
+    - "产品经理"
+    - "技术产品"
+    - "数据"
+  negative:
+    - "实习"
+    - "兼职"
+    - "外包"
+    - "驻场"
+    - "电话销售"
+    - "课程顾问"
+    - "招商"
+    - "保险"
+    - "区块链"
+    - "Web3"
+  seniority_boost:
+    - "高级"
+    - "资深"
+    - "专家"
+    - "负责人"
+    - "架构师"
+    - "Tech Lead"
+    - "Staff"
+    - "Principal"
+    - "Lead"
+
+search_queries:
+  - name: Company Careers — 大模型
+    query: '"大模型" "招聘" "职位" "AI"'
+    enabled: true
+
+  - name: Campus — AI 校招
+    query: '"校招" "大模型" "算法" "机器学习"'
+    enabled: true
+
+  - name: Niuke — AI 社招
+    query: 'site:nowcoder.com "大模型" "社招" "算法"'
+    enabled: true
+
+  - name: V2EX — 酷工作 AI
+    query: 'site:v2ex.com/go/jobs "AI" OR "大模型" OR "后端"'
+    enabled: true
+
+  - name: Guopin — 国企 AI
+    query: 'site:iguopin.com "人工智能" OR "大模型" OR "数据"'
+    enabled: false
+
+tracked_companies:
+  - name: Alibaba
+    enabled: true
+    careers_url: "https://talent.alibaba.com"
+    notes: "Public career site. Verify role page manually before evaluation."
+
+  - name: Tencent
+    enabled: true
+    careers_url: "https://careers.tencent.com"
+    notes: "Public career site. Campus and social recruiting are separate."
+
+  - name: ByteDance
+    enabled: true
+    careers_url: "https://jobs.bytedance.com"
+    notes: "Public career site. Check city and business line carefully."
+
+  - name: Huawei
+    enabled: true
+    careers_url: "https://career.huawei.com"
+    notes: "Public career site. Separate campus and experienced-hire flows."
+
+  - name: Meituan
+    enabled: true
+    careers_url: "https://zhaopin.meituan.com"
+    notes: "Public career site. Verify location and business group."
+
+  - name: JD
+    enabled: true
+    careers_url: "https://zhaopin.jd.com"
+    notes: "Public career site."
+
+  - name: Xiaomi
+    enabled: true
+    careers_url: "https://hr.xiaomi.com"
+    notes: "Public career site."
+
+restricted_platforms:
+  - name: BOSS直聘
+    default_mode: "manual_import_only"
+    reason: "Avoid automated login, scraping, simulated user behavior, and mass messaging."
+
+  - name: 智联招聘
+    default_mode: "manual_import_only"
+    reason: "Use pasted JD, screenshots, or user-exported records."
+
+  - name: 猎聘
+    default_mode: "manual_import_only"
+    reason: "Use visible-page assistance only after user review."
+
+  - name: 前程无忧
+    default_mode: "manual_import_only"
+    reason: "Avoid bulk crawling and account automation."
+
+  - name: 脉脉
+    default_mode: "manual_import_only"
+    reason: "Private social/contact data should be user-provided and minimized."
