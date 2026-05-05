@@ -9,6 +9,7 @@ The upstream project is a local AI job-search command center. This fork keeps th
 This fork currently adds:
 
 - China-market adaptation notes: `docs/CHINA_MARKET_ADAPTATION.md`
+- China signal-first upgrade roadmap: `docs/YOCAREER_UPGRADE_PLAN.md`
 - China portal template: `templates/portals.cn.example.yml`
 - Chinese shared evaluation context: `modes/zh-cn/_shared.md`
 - Chinese job evaluation mode: `modes/zh-cn/evaluate.md`
