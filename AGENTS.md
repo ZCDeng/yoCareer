@@ -1,4 +1,4 @@
-# Career-Ops for Codex
+# yoCareer for Codex
 
 Read `CLAUDE.md` for all project instructions, routing, and behavioral rules. They apply equally to Codex.
 

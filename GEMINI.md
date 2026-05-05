@@ -1,10 +1,10 @@
-# Career-Ops — AI Job Search Pipeline (Gemini CLI)
+# yoCareer — AI Job Search Pipeline (Gemini CLI)
 
 > This file is auto-loaded by the Gemini CLI as persistent context.
 > It is the Gemini equivalent of CLAUDE.md.
 > All slash commands are defined in `.gemini/commands/`.
 
-## What is career-ops
+## What is yoCareer
 
 AI-powered job search automation: pipeline tracking, offer evaluation, CV generation, portal scanning, batch processing. Originally built on Claude Code, now fully supported on Gemini CLI and OpenCode.
 
@@ -39,21 +39,21 @@ When using [Gemini CLI](https://github.com/google-gemini/gemini-cli), the follow
 
 | Command | Claude Code Equivalent | Description |
 |---------|------------------------|-------------|
-| `/career-ops` | `/career-ops` | Show menu or evaluate JD |
-| `/career-ops-pipeline` | `/career-ops pipeline` | Process pending URLs from inbox |
-| `/career-ops-evaluate` | `/career-ops oferta` | Evaluate job offer (A-G scoring) |
-| `/career-ops-compare` | `/career-ops ofertas` | Compare and rank multiple offers |
-| `/career-ops-contact` | `/career-ops contacto` | LinkedIn outreach |
-| `/career-ops-deep` | `/career-ops deep` | Deep company research |
-| `/career-ops-pdf` | `/career-ops pdf` | Generate ATS-optimized CV |
-| `/career-ops-training` | `/career-ops training` | Evaluate course/cert |
-| `/career-ops-project` | `/career-ops project` | Evaluate portfolio project |
-| `/career-ops-tracker` | `/career-ops tracker` | Application status overview |
-| `/career-ops-apply` | `/career-ops apply` | Live application assistant |
-| `/career-ops-scan` | `/career-ops scan` | Scan portals for new offers |
-| `/career-ops-batch` | `/career-ops batch` | Batch processing |
-| `/career-ops-patterns` | `/career-ops patterns` | Analyze rejection patterns |
-| `/career-ops-followup` | `/career-ops followup` | Follow-up cadence tracker |
+| `/yoCareer` | `/yoCareer` | Show menu or evaluate JD |
+| `/yoCareer-pipeline` | `/yoCareer pipeline` | Process pending URLs from inbox |
+| `/yoCareer-evaluate` | `/yoCareer oferta` | Evaluate job offer (A-G scoring) |
+| `/yoCareer-compare` | `/yoCareer ofertas` | Compare and rank multiple offers |
+| `/yoCareer-contact` | `/yoCareer contacto` | LinkedIn outreach |
+| `/yoCareer-deep` | `/yoCareer deep` | Deep company research |
+| `/yoCareer-pdf` | `/yoCareer pdf` | Generate ATS-optimized CV |
+| `/yoCareer-training` | `/yoCareer training` | Evaluate course/cert |
+| `/yoCareer-project` | `/yoCareer project` | Evaluate portfolio project |
+| `/yoCareer-tracker` | `/yoCareer tracker` | Application status overview |
+| `/yoCareer-apply` | `/yoCareer apply` | Live application assistant |
+| `/yoCareer-scan` | `/yoCareer scan` | Scan portals for new offers |
+| `/yoCareer-batch` | `/yoCareer batch` | Batch processing |
+| `/yoCareer-patterns` | `/yoCareer patterns` | Analyze rejection patterns |
+| `/yoCareer-followup` | `/yoCareer followup` | Follow-up cadence tracker |
 
 **All commands share the same evaluation logic** in `modes/*.md`. The `modes/` files are shared between Claude Code, OpenCode, and Gemini CLI.
 

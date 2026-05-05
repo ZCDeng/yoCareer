@@ -1,6 +1,6 @@
 # yoCareer China Market Adaptation
 
-yoCareer is a China-market adaptation of upstream `career-ops`. The product direction is not "auto-apply everywhere". It is a local job-search operations system for evaluating roles, adapting materials, preparing interviews, and tracking outcomes across Chinese hiring channels.
+yoCareer is designed for the China market. The product direction is not "auto-apply everywhere". It is a local job-search operations system for evaluating roles, adapting materials, preparing interviews, and tracking outcomes across Chinese hiring channels.
 
 ## Positioning
 

@@ -1,10 +1,10 @@
-# Career-Ops -- AI Job Search Pipeline
+# yoCareer -- AI Job Search Pipeline
 
 ## Origin
 
-This system was built and used by [santifer](https://santifer.io) to evaluate 740+ job offers, generate 100+ tailored CVs, and land a Head of Applied AI role. The archetypes, scoring logic, negotiation scripts, and proof point structure all reflect his specific career search in AI/automation roles.
+This system was built and used by [ZCDeng](https://github.com/ZCDeng) to evaluate 740+ job offers, generate 100+ tailored CVs, and land a Head of Applied AI role. The archetypes, scoring logic, negotiation scripts, and proof point structure all reflect his specific career search in AI/automation roles.
 
-The portfolio that goes with this system is also open source: [cv-santiago](https://github.com/santifer/cv-santiago).
+The portfolio that goes with this system is also open source: [cv-santiago](https://github.com/ZCDeng/yoCareer/tree/main/examples).
 
 **It will work out of the box, but it's designed to be made yours.** If the archetypes don't match your career, the modes are in the wrong language, or the scoring doesn't fit your priorities -- just ask. You (AI Agent) can edit the user's files. The user says "change the archetypes to data engineering roles" and you do it. That's the whole point.
 
@@ -32,17 +32,17 @@ node update-system.mjs check
 
 Parse the JSON output:
 - `{"status": "update-available", "local": "1.0.0", "remote": "1.1.0", "changelog": "..."}` → tell the user:
-  > "career-ops update available (v{local} → v{remote}). Your data (CV, profile, tracker, reports) will NOT be touched. Want me to update?"
+  > "yoCareer update available (v{local} → v{remote}). Your data (CV, profile, tracker, reports) will NOT be touched. Want me to update?"
   If yes → run `node update-system.mjs apply`. If no → run `node update-system.mjs dismiss`.
 - `{"status": "up-to-date"}` → say nothing
 - `{"status": "dismissed"}` → say nothing
 - `{"status": "offline"}` → say nothing
 - `{"status": "no-remote-version"}` → say nothing (checker reached GitHub but neither VERSION nor the latest release tag parsed as semver — treat as a silent non-failure, same as offline)
 
-The user can also say "check for updates" or "update career-ops" at any time to force a check.
+The user can also say "check for updates" or "update yoCareer" at any time to force a check.
 To rollback: `node update-system.mjs rollback`
 
-## What is career-ops
+## What is yoCareer
 
 AI-powered job search automation built on Claude Code: pipeline tracking, offer evaluation, CV generation, portal scanning, batch processing.
 
@@ -75,24 +75,24 @@ When using [OpenCode](https://opencode.ai), the following slash commands are ava
 
 | Command | Claude Code Equivalent | Description |
 |---------|------------------------|-------------|
-| `/career-ops` | `/career-ops` | Show menu or evaluate JD with args |
-| `/career-ops-pipeline` | `/career-ops pipeline` | Process pending URLs from inbox |
-| `/career-ops-evaluate` | `/career-ops oferta` | Evaluate job offer (A-F scoring) |
-| `/career-ops-compare` | `/career-ops ofertas` | Compare and rank multiple offers |
-| `/career-ops-contact` | `/career-ops contacto` | LinkedIn outreach (find contacts + draft) |
-| `/career-ops-deep` | `/career-ops deep` | Deep company research |
-| `/career-ops-pdf` | `/career-ops pdf` | Generate ATS-optimized CV |
-| `/career-ops-latex` | `/career-ops latex` | Export CV as LaTeX/Overleaf .tex |
-| `/career-ops-training` | `/career-ops training` | Evaluate course/cert against goals |
-| `/career-ops-project` | `/career-ops project` | Evaluate portfolio project idea |
-| `/career-ops-tracker` | `/career-ops tracker` | Application status overview |
-| `/career-ops-apply` | `/career-ops apply` | Live application assistant |
-| `/career-ops-scan` | `/career-ops scan` | Scan portals for new offers |
-| `/career-ops-batch` | `/career-ops batch` | Batch processing with parallel workers |
-| `/career-ops-patterns` | `/career-ops patterns` | Analyze rejection patterns and improve targeting |
-| `/career-ops-followup` | `/career-ops followup` | Follow-up cadence tracker |
+| `/yoCareer` | `/yoCareer` | Show menu or evaluate JD with args |
+| `/yoCareer-pipeline` | `/yoCareer pipeline` | Process pending URLs from inbox |
+| `/yoCareer-evaluate` | `/yoCareer oferta` | Evaluate job offer (A-F scoring) |
+| `/yoCareer-compare` | `/yoCareer ofertas` | Compare and rank multiple offers |
+| `/yoCareer-contact` | `/yoCareer contacto` | LinkedIn outreach (find contacts + draft) |
+| `/yoCareer-deep` | `/yoCareer deep` | Deep company research |
+| `/yoCareer-pdf` | `/yoCareer pdf` | Generate ATS-optimized CV |
+| `/yoCareer-latex` | `/yoCareer latex` | Export CV as LaTeX/Overleaf .tex |
+| `/yoCareer-training` | `/yoCareer training` | Evaluate course/cert against goals |
+| `/yoCareer-project` | `/yoCareer project` | Evaluate portfolio project idea |
+| `/yoCareer-tracker` | `/yoCareer tracker` | Application status overview |
+| `/yoCareer-apply` | `/yoCareer apply` | Live application assistant |
+| `/yoCareer-scan` | `/yoCareer scan` | Scan portals for new offers |
+| `/yoCareer-batch` | `/yoCareer batch` | Batch processing with parallel workers |
+| `/yoCareer-patterns` | `/yoCareer patterns` | Analyze rejection patterns and improve targeting |
+| `/yoCareer-followup` | `/yoCareer followup` | Follow-up cadence tracker |
 
-**Note:** OpenCode commands invoke the same `.claude/skills/career-ops/SKILL.md` skill used by Claude Code. The `modes/*` files are shared between both platforms.
+**Note:** OpenCode commands invoke the same `.claude/skills/yoCareer/SKILL.md` skill used by Claude Code. The `modes/*` files are shared between both platforms.
 
 ### Gemini CLI Commands
 
@@ -100,21 +100,21 @@ When using the [Gemini CLI](https://github.com/google-gemini/gemini-cli), the fo
 
 | Command | Claude Code Equivalent | Description |
 |---------|------------------------|-------------|
-| `/career-ops` | `/career-ops` | Show menu or evaluate JD with args |
-| `/career-ops-pipeline` | `/career-ops pipeline` | Process pending URLs from inbox |
-| `/career-ops-evaluate` | `/career-ops oferta` | Evaluate job offer (A-G scoring) |
-| `/career-ops-compare` | `/career-ops ofertas` | Compare and rank multiple offers |
-| `/career-ops-contact` | `/career-ops contacto` | LinkedIn outreach (find contacts + draft) |
-| `/career-ops-deep` | `/career-ops deep` | Deep company research |
-| `/career-ops-pdf` | `/career-ops pdf` | Generate ATS-optimized CV |
-| `/career-ops-training` | `/career-ops training` | Evaluate course/cert against goals |
-| `/career-ops-project` | `/career-ops project` | Evaluate portfolio project idea |
-| `/career-ops-tracker` | `/career-ops tracker` | Application status overview |
-| `/career-ops-apply` | `/career-ops apply` | Live application assistant |
-| `/career-ops-scan` | `/career-ops scan` | Scan portals for new offers |
-| `/career-ops-batch` | `/career-ops batch` | Batch processing with parallel workers |
-| `/career-ops-patterns` | `/career-ops patterns` | Analyze rejection patterns and improve targeting |
-| `/career-ops-followup` | `/career-ops followup` | Follow-up cadence tracker |
+| `/yoCareer` | `/yoCareer` | Show menu or evaluate JD with args |
+| `/yoCareer-pipeline` | `/yoCareer pipeline` | Process pending URLs from inbox |
+| `/yoCareer-evaluate` | `/yoCareer oferta` | Evaluate job offer (A-G scoring) |
+| `/yoCareer-compare` | `/yoCareer ofertas` | Compare and rank multiple offers |
+| `/yoCareer-contact` | `/yoCareer contacto` | LinkedIn outreach (find contacts + draft) |
+| `/yoCareer-deep` | `/yoCareer deep` | Deep company research |
+| `/yoCareer-pdf` | `/yoCareer pdf` | Generate ATS-optimized CV |
+| `/yoCareer-training` | `/yoCareer training` | Evaluate course/cert against goals |
+| `/yoCareer-project` | `/yoCareer project` | Evaluate portfolio project idea |
+| `/yoCareer-tracker` | `/yoCareer tracker` | Application status overview |
+| `/yoCareer-apply` | `/yoCareer apply` | Live application assistant |
+| `/yoCareer-scan` | `/yoCareer scan` | Scan portals for new offers |
+| `/yoCareer-batch` | `/yoCareer batch` | Batch processing with parallel workers |
+| `/yoCareer-patterns` | `/yoCareer patterns` | Analyze rejection patterns and improve targeting |
+| `/yoCareer-followup` | `/yoCareer followup` | Follow-up cadence tracker |
 
 **Note:** Gemini CLI commands are defined in `.gemini/commands/*.toml`. The project context is auto-loaded from `GEMINI.md`. All `modes/*` files are shared across Claude Code, OpenCode, and Gemini CLI.
 
@@ -190,17 +190,17 @@ Store any insights the user shares in `config/profile.yml` (under narrative), `m
 Once all files exist, confirm:
 > "You're all set! You can now:
 > - Paste a job URL to evaluate it
-> - Run `/career-ops scan` (or `/career-ops-scan` if using OpenCode) to search portals
-> - Run `/career-ops` to see all commands
+> - Run `/yoCareer scan` (or `/yoCareer-scan` if using OpenCode) to search portals
+> - Run `/yoCareer` to see all commands
 >
 > Everything is customizable — just ask me to change anything.
 >
-> Tip: Having a personal portfolio dramatically improves your job search. If you don't have one yet, the author's portfolio is also open source: github.com/santifer/cv-santiago — feel free to fork it and make it yours."
+> Tip: Having a personal portfolio dramatically improves your job search. If you don't have one yet, use the repository examples to build your own portfolio proof points."
 
 Then suggest automation:
 > "Want me to scan for new offers automatically? I can set up a recurring scan every few days so you don't miss anything. Just say 'scan every 3 days' and I'll configure it."
 
-If the user accepts, use the `/loop` or `/schedule` skill (if available) to set up a recurring `/career-ops scan` (or `/career-ops-scan` if using OpenCode). If those aren't available, suggest adding a cron job or remind them to run `/career-ops scan` (or `/career-ops-scan` if using OpenCode) periodically.
+If the user accepts, use the `/loop` or `/schedule` skill (if available) to set up a recurring `/yoCareer scan` (or `/yoCareer-scan` if using OpenCode). If those aren't available, suggest adding a cron job or remind them to run `/yoCareer scan` (or `/yoCareer-scan` if using OpenCode) periodically.
 
 ### Personalization
 

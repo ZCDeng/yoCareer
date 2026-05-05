@@ -1,12 +1,12 @@
 # yoCareer
 
-yoCareer is a China-market adaptation of [`career-ops`](https://github.com/santifer/career-ops).
+yoCareer is a local AI job-search operations project focused on Chinese hiring channels.
 
-The upstream project is a local AI job-search command center. This fork keeps the local-first, human-in-the-loop architecture and starts adapting it for Chinese hiring channels, Chinese resumes, domestic job-market signals, and China-specific compliance boundaries.
+It keeps a local-first, human-in-the-loop architecture for evaluating roles, adapting resumes, preparing interviews, and tracking outcomes with compliance-aware workflows.
 
 ## Current Scope
 
-This fork currently adds:
+Current China-focused additions:
 
 - China-market adaptation notes: `docs/CHINA_MARKET_ADAPTATION.md`
 - China signal-first upgrade roadmap: `docs/YOCAREER_UPGRADE_PLAN.md`
@@ -73,12 +73,8 @@ npm run signals -- discard --index 2
 
 Use `data/signals.ndjson` for pasted or exported social/community hiring signals. High-confidence official jobs enter `data/pipeline.md`; noisy social/community signals are held in `data/signal-review.md` until manually reviewed.
 
-## Upstream
+## Repository
 
-The original upstream remote is kept as:
+Primary repository:
 
-```bash
-git remote -v
-```
-
-Use `upstream` to pull future improvements from `santifer/career-ops`, and keep China-specific changes isolated where possible.
+- `https://github.com/ZCDeng/yoCareer`
