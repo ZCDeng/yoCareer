@@ -883,6 +883,24 @@ function splitByProvider(companies) {
   return groups;
 }
 
+function normalizeSearchQueries(searchQueries) {
+  return (searchQueries || [])
+    .filter(query => query?.enabled !== false)
+    .filter(query => String(query?.query || '').trim() !== '')
+    .map((query, idx) => ({
+      name: query.name || `search-query-${idx + 1}`,
+      provider: 'reach_signal_search',
+      platform: query.platform || 'web',
+      query: String(query.query || '').trim(),
+      kind: query.kind || 'official_job',
+      default_confidence: Number.isFinite(Number(query.default_confidence))
+        ? Number(query.default_confidence)
+        : 0.74,
+      default_action: query.default_action || 'apply_on_official_site',
+      notes: query.notes || 'source:search_queries',
+    }));
+}
+
 // ── Main ────────────────────────────────────────────────────────────
 
 async function main() {
@@ -908,15 +926,24 @@ async function main() {
     .filter(s => s.enabled !== false);
   const signalSearches = (config.signal_searches || [])
     .filter(s => s.enabled !== false);
+  const searchQueries = normalizeSearchQueries(config.search_queries);
 
   const titleFilter = buildTitleFilter(config.title_filter);
   const seenUrls = loadSeenUrls();
   const seenCompanyRoles = loadSeenCompanyRoles();
   const date = new Date().toISOString().slice(0, 10);
 
-  const groups = splitByProvider([...companies, ...restrictedPlatforms, ...signalImports, ...signalSearches]);
+  const groups = splitByProvider([
+    ...companies,
+    ...restrictedPlatforms,
+    ...signalImports,
+    ...signalSearches,
+    ...searchQueries,
+  ]);
   const groupSummary = Array.from(groups.entries()).map(([provider, items]) => `${provider}=${items.length}`).join(', ');
-  console.log(`Scanning ${companies.length} companies + ${signalImports.length} signal imports + ${signalSearches.length} signal searches + ${restrictedPlatforms.length} restricted platforms (${groupSummary || 'none'})`);
+  console.log(
+    `Scanning ${companies.length} companies + ${signalImports.length} signal imports + ${signalSearches.length} signal searches + ${searchQueries.length} search queries + ${restrictedPlatforms.length} restricted platforms (${groupSummary || 'none'})`
+  );
   if (dryRun) console.log('(dry run — no files will be written)\n');
 
   const context = { titleFilter, seenUrls, seenCompanyRoles, filterCompany, browser: null };

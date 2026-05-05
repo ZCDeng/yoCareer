@@ -286,10 +286,15 @@ func loadJobURLs(careerOpsPath string) map[string]string {
 
 // enrichFromScanHistory fills JobURL from scan-history.tsv by matching company name.
 func enrichFromScanHistory(careerOpsPath string, apps []model.CareerApplication) {
-	scanPath := filepath.Join(careerOpsPath, "scan-history.tsv")
+	scanPath := filepath.Join(careerOpsPath, "data", "scan-history.tsv")
 	scanData, err := os.ReadFile(scanPath)
 	if err != nil {
-		return
+		// Legacy fallback: older setups may store scan-history at repo root.
+		scanPath = filepath.Join(careerOpsPath, "scan-history.tsv")
+		scanData, err = os.ReadFile(scanPath)
+		if err != nil {
+			return
+		}
 	}
 
 	// Build company -> URL index from scan-history
@@ -562,7 +567,7 @@ func UpdateApplicationStatus(careerOpsPath string, app model.CareerApplication, 
 		}
 		// Match by report number
 		if app.ReportNumber != "" && strings.Contains(line, fmt.Sprintf("[%s]", app.ReportNumber)) {
-			// Replace the status field
+			// Replace only the status column to avoid mutating role/company text.
 			lines[i] = replaceStatusInLine(line, app.Status, newStatus)
 			found = true
 			break
@@ -578,8 +583,43 @@ func UpdateApplicationStatus(careerOpsPath string, app model.CareerApplication, 
 
 // replaceStatusInLine replaces the old status with new status in a table line.
 func replaceStatusInLine(line, oldStatus, newStatus string) string {
-	// Case-insensitive replacement of the status field
-	return strings.Replace(line, oldStatus, newStatus, 1)
+	_ = oldStatus // kept for backward compatibility with existing callers
+
+	trimmed := strings.TrimSpace(line)
+	if !strings.HasPrefix(trimmed, "|") {
+		return line
+	}
+
+	// Mixed/tab format support used by some legacy tracker exports.
+	if strings.Contains(line, "\t") {
+		prefix := ""
+		if strings.HasPrefix(trimmed, "|") {
+			prefix = "| "
+		}
+		body := strings.TrimSpace(strings.TrimPrefix(trimmed, "|"))
+		fields := strings.Split(body, "\t")
+		if len(fields) < 6 {
+			return line
+		}
+		fields[5] = newStatus
+		return prefix + strings.Join(fields, "\t")
+	}
+
+	// Pipe table format: | # | Date | Company | Role | Score | Status | ...
+	body := strings.TrimSpace(strings.TrimPrefix(trimmed, "|"))
+	hasTrailingPipe := strings.HasSuffix(body, "|")
+	if hasTrailingPipe {
+		body = strings.TrimSuffix(body, "|")
+	}
+	parts := strings.Split(body, "|")
+	if len(parts) < 6 {
+		return line
+	}
+	for i := range parts {
+		parts[i] = strings.TrimSpace(parts[i])
+	}
+	parts[5] = newStatus
+	return "| " + strings.Join(parts, " | ") + " |"
 }
 
 // cleanTableCell removes trailing pipes and whitespace from a table cell value.

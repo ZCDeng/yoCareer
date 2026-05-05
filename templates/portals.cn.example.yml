@@ -57,6 +57,8 @@ title_filter:
     - "Principal"
     - "Lead"
 
+# search_queries 会被映射为 reach_signal_search（默认 platform=web）。
+# 需要配置 YOCAREER_REACH_SIGNAL_SEARCH_CMD 才会实际执行。
 search_queries:
   - name: Company Careers — 大模型
     query: '"大模型" "招聘" "职位" "AI"'

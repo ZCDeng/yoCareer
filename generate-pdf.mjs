@@ -74,6 +74,28 @@ function normalizeTextForATS(html) {
   }
 }
 
+function canLoadRequest(requestUrl, allowedLocalDirs) {
+  if (requestUrl.startsWith('data:') || requestUrl.startsWith('about:')) {
+    return true;
+  }
+
+  let parsed;
+  try {
+    parsed = new URL(requestUrl);
+  } catch {
+    return false;
+  }
+
+  if (parsed.protocol !== 'file:') {
+    return false;
+  }
+
+  const localPath = resolve(decodeURIComponent(parsed.pathname));
+  return allowedLocalDirs.some(dir =>
+    localPath === dir || localPath.startsWith(`${dir}/`)
+  );
+}
+
 async function generatePDF() {
   const args = process.argv.slice(2);
 
@@ -134,8 +156,24 @@ async function generatePDF() {
   }
 
   const browser = await chromium.launch({ headless: true });
+  let context;
   try {
-    const page = await browser.newPage();
+    context = await browser.newContext({
+      javaScriptEnabled: false,
+    });
+    const page = await context.newPage();
+    const allowedLocalDirs = [
+      resolve(fontsDir),
+      resolve(dirname(inputPath)),
+    ];
+
+    await page.route('**/*', (route) => {
+      const requestUrl = route.request().url();
+      if (canLoadRequest(requestUrl, allowedLocalDirs)) {
+        return route.continue();
+      }
+      return route.abort();
+    });
 
     // Set content with file base URL for any relative resources
     await page.setContent(html, {
@@ -173,6 +211,9 @@ async function generatePDF() {
 
     return { outputPath, pageCount, size: pdfBuffer.length };
   } finally {
+    if (context) {
+      await context.close();
+    }
     await browser.close();
   }
 }
