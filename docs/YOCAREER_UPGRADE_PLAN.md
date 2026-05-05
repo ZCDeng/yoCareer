@@ -113,6 +113,7 @@ Status: partially complete.
 ### v0.2 — Official Job Sources
 
 Goal: make public company career pages useful.
+Status: in progress on `feat/provider-scanner`.
 
 - Refactor `scan.mjs` into a provider architecture.
 - Keep existing Greenhouse, Ashby, and Lever API support.

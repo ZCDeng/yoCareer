@@ -4,6 +4,11 @@
 # Default principle:
 # - Prefer public company career pages and user-provided imports.
 # - Do not automate login, CAPTCHA, bulk scraping, or mass messaging on BOSS/Zhaopin/Liepin/51job/Lagou/Maimai.
+#
+# Supported providers:
+# - ats_api: Greenhouse, Ashby, and Lever public APIs detected from api/careers_url.
+# - company_page: public career page link extraction with Playwright.
+# - manual_only: visible-page review or user-provided imports only.
 
 title_filter:
   positive:
@@ -73,36 +78,43 @@ search_queries:
 tracked_companies:
   - name: Alibaba
     enabled: true
+    provider: company_page
     careers_url: "https://talent.alibaba.com"
     notes: "Public career site. Verify role page manually before evaluation."
 
   - name: Tencent
     enabled: true
+    provider: company_page
     careers_url: "https://careers.tencent.com"
     notes: "Public career site. Campus and social recruiting are separate."
 
   - name: ByteDance
     enabled: true
+    provider: company_page
     careers_url: "https://jobs.bytedance.com"
     notes: "Public career site. Check city and business line carefully."
 
   - name: Huawei
     enabled: true
+    provider: company_page
     careers_url: "https://career.huawei.com"
     notes: "Public career site. Separate campus and experienced-hire flows."
 
   - name: Meituan
     enabled: true
+    provider: company_page
     careers_url: "https://zhaopin.meituan.com"
     notes: "Public career site. Verify location and business group."
 
   - name: JD
     enabled: true
+    provider: company_page
     careers_url: "https://zhaopin.jd.com"
     notes: "Public career site."
 
   - name: Xiaomi
     enabled: true
+    provider: company_page
     careers_url: "https://hr.xiaomi.com"
     notes: "Public career site."
 
