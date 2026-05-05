@@ -4,7 +4,7 @@
 
 yoCareer is a local CLI job-search operations system for the Chinese hiring market. It is not an auto-apply bot.
 
-The core product shift from upstream `career-ops` is that China-market hiring data is not concentrated in standardized ATS systems. Useful openings and hiring intent are fragmented across official career sites, social media, community posts, newsletters, public account articles, referrals, and private group forwards.
+The core product shift from upstream `yoCareer` is that China-market hiring data is not concentrated in standardized ATS systems. Useful openings and hiring intent are fragmented across official career sites, social media, community posts, newsletters, public account articles, referrals, and private group forwards.
 
 This means yoCareer should not only scan job postings. It should collect and normalize **recruitment signals**.
 

@@ -1,9 +1,9 @@
-# Career-Ops
+# yoCareer
 
 [English](README.md) | [Español](README.es.md) | [Português (Brasil)](README.pt-BR.md) | [한국어](README.ko-KR.md) | [日本語](README.ja.md) | [Русский](README.ru.md) | [简体中文](README.cn.md) | [繁體中文](README.zh-TW.md)
 
 <p align="center">
-  <a href="https://x.com/santifer"><img src="docs/hero-banner.jpg" alt="Career-Ops — 多代理求職系統" width="800"></a>
+  <a href="https://x.com/ZCDeng"><img src="docs/hero-banner.jpg" alt="yoCareer — 多代理求職系統" width="800"></a>
 </p>
 
 <p align="center">
@@ -35,7 +35,7 @@
 ---
 
 <p align="center">
-  <img src="docs/demo.gif" alt="Career-Ops 示範" width="800">
+  <img src="docs/demo.gif" alt="yoCareer 示範" width="800">
 </p>
 
 <p align="center"><strong>評估超過 740 份職缺 · 生成超過 100 份個人化履歷 · 成功獲得理想職位</strong></p>
@@ -44,7 +44,7 @@
 
 ## 這是什麼
 
-Career-Ops 能將任何 AI 程式碼 CLI 轉化為完整的求職指揮中心。不再需要手動用試算表追蹤應徵紀錄，而是獲得一個 AI 驅動的管道，能夠：
+yoCareer 能將任何 AI 程式碼 CLI 轉化為完整的求職指揮中心。不再需要手動用試算表追蹤應徵紀錄，而是獲得一個 AI 驅動的管道，能夠：
 
 - **評估職缺** — 結構化的 A-F 評分系統（10 個加權評估維度）
 - **生成客製化 PDF** — 針對每份職缺描述進行 ATS 最佳化的履歷
@@ -52,13 +52,13 @@ Career-Ops 能將任何 AI 程式碼 CLI 轉化為完整的求職指揮中心。
 - **批次處理** — 透過子代理並行評估 10 份以上的職缺
 - **集中管理一切** — 單一資料來源，附完整性檢查
 
-> **重要：這不是廣撒網的工具。** career-ops 是一個篩選器 — 它幫助你從數百份職缺中找出真正值得投入的少數機會。本系統強烈建議不要應徵評分低於 4.0/5 的職缺。你的時間很寶貴，招募人員的時間也是。送出前務必仔細審閱。
+> **重要：這不是廣撒網的工具。** yoCareer 是一個篩選器 — 它幫助你從數百份職缺中找出真正值得投入的少數機會。本系統強烈建議不要應徵評分低於 4.0/5 的職缺。你的時間很寶貴，招募人員的時間也是。送出前務必仔細審閱。
 
-career-ops 具有代理能力：Claude Code 透過 Playwright 瀏覽求職頁面，藉由推理你的履歷與職缺描述的契合度（而非關鍵字比對）進行評估，並針對每份職缺調整你的履歷。
+yoCareer 具有代理能力：Claude Code 透過 Playwright 瀏覽求職頁面，藉由推理你的履歷與職缺描述的契合度（而非關鍵字比對）進行評估，並針對每份職缺調整你的履歷。
 
 > **注意：最初幾次評估的品質可能不盡理想。** 因為系統還不了解你。請提供更多背景資訊 — 你的履歷、職涯故事、成就佐證、個人偏好、你的專長以及希望避免的事情。你餵給它的資訊越多，它就越準確。把它當作招募新人的招募顧問：第一週需要學習認識你，之後就會成為不可或缺的夥伴。
 
-這個系統由一位親身使用它評估超過 740 份職缺、生成超過 100 份客製化履歷、並成功獲得 Head of Applied AI 職位的人所打造。[閱讀完整案例研究](https://santifer.io/career-ops-system)。
+這個系統由一位親身使用它評估超過 740 份職缺、生成超過 100 份客製化履歷、並成功獲得 Head of Applied AI 職位的人所打造。[閱讀完整案例研究](https://github.com/ZCDeng/yoCareer)。
 
 ## 功能特色
 
@@ -79,8 +79,8 @@ career-ops 具有代理能力：Claude Code 透過 Playwright 瀏覽求職頁面
 
 ```bash
 # 1. 複製並安裝
-git clone https://github.com/santifer/career-ops.git
-cd career-ops && npm install
+git clone https://github.com/ZCDeng/yoCareer.git
+cd yoCareer && npm install
 npx playwright install chromium   # PDF 生成所需
 
 # 2. 檢查設定
@@ -103,7 +103,7 @@ claude   # 在此目錄開啟 Claude Code
 # 「用我貼的這份履歷更新我的個人檔案」
 
 # 6. 開始使用
-# 貼上職缺 URL 或執行 /career-ops
+# 貼上職缺 URL 或執行 /yoCareer
 ```
 
 > **這個系統設計上就是讓 Claude 來客製化的。** 模式、職位類型、評分權重、談判腳本 — 直接告訴 Claude 要修改什麼，它就會動手。Claude 讀取的是它自己使用的相同檔案，所以它確切知道要編輯哪裡。
@@ -112,24 +112,24 @@ claude   # 在此目錄開啟 Claude Code
 
 ## 使用方式
 
-career-ops 是一個具有多種模式的單一斜線指令：
+yoCareer 是一個具有多種模式的單一斜線指令：
 
 ```
-/career-ops                → 顯示所有可用指令
-/career-ops {貼上職缺描述}  → 完整自動管道（評估 + PDF + 追蹤）
-/career-ops scan           → 掃描平台尋找新職缺
-/career-ops pdf            → 生成 ATS 最佳化履歷
-/career-ops batch          → 批次評估多份職缺
-/career-ops tracker        → 查看應徵狀態
-/career-ops apply          → AI 協助填寫應徵表單
-/career-ops pipeline       → 處理待辦 URL
-/career-ops contacto       → LinkedIn 外寄訊息
-/career-ops deep           → 深度公司研究
-/career-ops training       → 評估課程/證照
-/career-ops project        → 評估作品集專案
+/yoCareer                → 顯示所有可用指令
+/yoCareer {貼上職缺描述}  → 完整自動管道（評估 + PDF + 追蹤）
+/yoCareer scan           → 掃描平台尋找新職缺
+/yoCareer pdf            → 生成 ATS 最佳化履歷
+/yoCareer batch          → 批次評估多份職缺
+/yoCareer tracker        → 查看應徵狀態
+/yoCareer apply          → AI 協助填寫應徵表單
+/yoCareer pipeline       → 處理待辦 URL
+/yoCareer contacto       → LinkedIn 外寄訊息
+/yoCareer deep           → 深度公司研究
+/yoCareer training       → 評估課程/證照
+/yoCareer project        → 評估作品集專案
 ```
 
-或者直接貼上職缺 URL 或描述 — career-ops 會自動偵測並執行完整管道。
+或者直接貼上職缺 URL 或描述 — yoCareer 會自動偵測並執行完整管道。
 
 ## 運作原理
 
@@ -183,7 +183,7 @@ go build -o career-dashboard .
 ## 專案結構
 
 ```
-career-ops/
+yoCareer/
 ├── CLAUDE.md                    # 代理指令
 ├── cv.md                        # 你的履歷（需自行建立）
 ├── article-digest.md            # 你的成就佐證（選填）
@@ -228,27 +228,27 @@ career-ops/
 
 ## 同樣開源
 
-- **[cv-santiago](https://github.com/santifer/cv-santiago)** — 作者的作品集網站（santifer.io），包含 AI 聊天機器人、LLMOps 儀表板與案例研究。如果你需要一個在求職過程中展示的作品集，可以 fork 它並改造成你自己的。
+- **[cv-santiago](https://github.com/ZCDeng/yoCareer/tree/main/examples)** — 作者的作品集網站（github.com/ZCDeng/yoCareer），包含 AI 聊天機器人、LLMOps 儀表板與案例研究。如果你需要一個在求職過程中展示的作品集，可以 fork 它並改造成你自己的。
 
 ## 關於作者
 
-我是 Santiago — Head of Applied AI，前創業者（創建並出售了一家至今仍以我名字營運的公司）。我打造 career-ops 是為了管理自己的求職過程，並成功用它找到了現在這份工作。
+我是 Santiago — Head of Applied AI，前創業者（創建並出售了一家至今仍以我名字營運的公司）。我打造 yoCareer 是為了管理自己的求職過程，並成功用它找到了現在這份工作。
 
-個人作品集與其他開源專案 → [santifer.io](https://santifer.io)
+個人作品集與其他開源專案 → [github.com/ZCDeng/yoCareer](https://github.com/ZCDeng/yoCareer)
 
 ## Star 歷史
 
-<a href="https://www.star-history.com/?repos=santifer%2Fcareer-ops&type=timeline&legend=top-left">
+<a href="https://www.star-history.com/?repos=ZCDeng%2FyoCareer&type=timeline&legend=top-left">
  <picture>
-   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/chart?repos=santifer/career-ops&type=timeline&theme=dark&legend=top-left" />
-   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/chart?repos=santifer/career-ops&type=timeline&legend=top-left" />
-   <img alt="Star History Chart" src="https://api.star-history.com/chart?repos=santifer/career-ops&type=timeline&legend=top-left" />
+   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/chart?repos=ZCDeng/yoCareer&type=timeline&theme=dark&legend=top-left" />
+   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/chart?repos=ZCDeng/yoCareer&type=timeline&legend=top-left" />
+   <img alt="Star History Chart" src="https://api.star-history.com/chart?repos=ZCDeng/yoCareer&type=timeline&legend=top-left" />
  </picture>
 </a>
 
 ## 免責聲明
 
-**career-ops 是一個本地端開源工具 — 並非託管服務。** 使用本軟體即表示你確認：
+**yoCareer 是一個本地端開源工具 — 並非託管服務。** 使用本軟體即表示你確認：
 
 1. **你掌控自己的資料。** 你的履歷、聯絡資訊和個人資料僅儲存於你的裝置上，並直接傳送至你所選擇的 AI 服務供應商（Anthropic、OpenAI 等）。我們不會收集、儲存或存取你的任何資料。
 2. **你掌控 AI。** 預設提示詞已指示 AI 不要自動送出應徵，但 AI 模型的行為可能無法預測。如果你修改提示詞或使用不同的模型，風險由你自行承擔。**送出前務必確認 AI 生成內容的正確性。**
@@ -259,11 +259,11 @@ career-ops/
 
 ## 貢獻者
 
-<a href="https://github.com/santifer/career-ops/graphs/contributors">
-  <img src="https://contrib.rocks/image?repo=santifer/career-ops" />
+<a href="https://github.com/ZCDeng/yoCareer/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=ZCDeng/yoCareer" />
 </a>
 
-使用 career-ops 找到工作了嗎？[分享你的故事！](https://github.com/santifer/career-ops/issues/new?template=i-got-hired.yml)
+使用 yoCareer 找到工作了嗎？[分享你的故事！](https://github.com/ZCDeng/yoCareer/issues/new?template=i-got-hired.yml)
 
 ## 授權條款
 
@@ -271,8 +271,8 @@ MIT
 
 ## 聯絡我
 
-[![Website](https://img.shields.io/badge/santifer.io-000?style=for-the-badge&logo=safari&logoColor=white)](https://santifer.io)
-[![LinkedIn](https://img.shields.io/badge/LinkedIn-0A66C2?style=for-the-badge&logo=linkedin&logoColor=white)](https://linkedin.com/in/santifer)
-[![X](https://img.shields.io/badge/X-000?style=for-the-badge&logo=x&logoColor=white)](https://x.com/santifer)
+[![Website](https://img.shields.io/badge/github.com/ZCDeng/yoCareer-000?style=for-the-badge&logo=safari&logoColor=white)](https://github.com/ZCDeng/yoCareer)
+[![LinkedIn](https://img.shields.io/badge/LinkedIn-0A66C2?style=for-the-badge&logo=linkedin&logoColor=white)](https://linkedin.com/in/ZCDeng)
+[![X](https://img.shields.io/badge/X-000?style=for-the-badge&logo=x&logoColor=white)](https://x.com/ZCDeng)
 [![Discord](https://img.shields.io/badge/Discord-5865F2?style=for-the-badge&logo=discord&logoColor=white)](https://discord.gg/8pRpHETxa4)
-[![Email](https://img.shields.io/badge/Email-EA4335?style=for-the-badge&logo=gmail&logoColor=white)](mailto:hi@santifer.io)
+[![Email](https://img.shields.io/badge/Email-EA4335?style=for-the-badge&logo=gmail&logoColor=white)](mailto:opensource@zcdeng.com)

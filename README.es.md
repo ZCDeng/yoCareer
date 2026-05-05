@@ -1,9 +1,9 @@
-# Career-Ops
+# yoCareer
 
 [English](README.md) | [Español](README.es.md) | [Português (Brasil)](README.pt-BR.md) | [한국어](README.ko-KR.md) | [日本語](README.ja.md) | [Русский](README.ru.md) | [简体中文](README.cn.md) | [繁體中文](README.zh-TW.md)
 
 <p align="center">
-  <a href="https://x.com/santifer"><img src="docs/hero-banner.jpg" alt="Career-Ops — Sistema Multi-Agente de Busqueda de Empleo" width="800"></a>
+  <a href="https://x.com/ZCDeng"><img src="docs/hero-banner.jpg" alt="yoCareer — Sistema Multi-Agente de Busqueda de Empleo" width="800"></a>
 </p>
 
 <p align="center">
@@ -33,7 +33,7 @@
 ---
 
 <p align="center">
-  <img src="docs/demo.gif" alt="Career-Ops Demo" width="800">
+  <img src="docs/demo.gif" alt="yoCareer Demo" width="800">
 </p>
 
 <p align="center"><strong>740+ ofertas evaluadas · 100+ CVs personalizados · 1 trabajo soñado conseguido</strong></p>
@@ -42,7 +42,7 @@
 
 ## Que es esto
 
-Career-Ops convierte cualquier CLI de IA en un centro de mando de busqueda de empleo. En vez de trackear aplicaciones en un spreadsheet, tienes un pipeline AI que:
+yoCareer convierte cualquier CLI de IA en un centro de mando de busqueda de empleo. En vez de trackear aplicaciones en un spreadsheet, tienes un pipeline AI que:
 
 - **Evalua ofertas** con scoring estructurado A-F (10 dimensiones ponderadas)
 - **Genera PDFs personalizados** -- CVs ATS-optimizados por oferta
@@ -50,11 +50,11 @@ Career-Ops convierte cualquier CLI de IA en un centro de mando de busqueda de em
 - **Procesa en batch** -- evalua 10+ ofertas en paralelo con sub-agentes
 - **Trackea todo** en una fuente de verdad unica con checks de integridad
 
-> **Importante: Esto NO es para spamear empresas.** Career-ops es un filtro -- te ayuda a encontrar las pocas ofertas que merecen tu tiempo entre cientos. El sistema recomienda encarecidamente no aplicar a nada por debajo de 4.0/5. Tu tiempo es valioso, y el del recruiter tambien. Siempre revisa antes de enviar.
+> **Importante: Esto NO es para spamear empresas.** yoCareer es un filtro -- te ayuda a encontrar las pocas ofertas que merecen tu tiempo entre cientos. El sistema recomienda encarecidamente no aplicar a nada por debajo de 4.0/5. Tu tiempo es valioso, y el del recruiter tambien. Siempre revisa antes de enviar.
 
 > **Aviso: las primeras evaluaciones no seran buenas.** El sistema no te conoce todavia. Dale contexto -- tu CV, tu historia profesional, tus proof points, tus preferencias, en que eres bueno, que quieres evitar. Cuanto mas lo nutras, mejor filtra. Piensa en ello como hacer onboarding a un recruiter nuevo: la primera semana necesita conocerte, luego se vuelve invaluable.
 
-Construido por alguien que lo uso para evaluar 740+ ofertas, generar 100+ CVs personalizados, y conseguir un rol de Head of Applied AI. [Lee el case study completo](https://santifer.io/career-ops).
+Construido por alguien que lo uso para evaluar 740+ ofertas, generar 100+ CVs personalizados, y conseguir un rol de Head of Applied AI. [Lee el case study completo](https://github.com/ZCDeng/yoCareer/yoCareer).
 
 ## Features
 
@@ -75,8 +75,8 @@ Construido por alguien que lo uso para evaluar 740+ ofertas, generar 100+ CVs pe
 
 ```bash
 # 1. Clonar e instalar
-git clone https://github.com/santifer/career-ops.git
-cd career-ops && npm install
+git clone https://github.com/ZCDeng/yoCareer.git
+cd yoCareer && npm install
 npx playwright install chromium   # Necesario para generar PDFs
 
 # 2. Verificar setup
@@ -99,7 +99,7 @@ claude   # Abrir Claude Code en este directorio
 # "Actualiza mi perfil con este CV que te pego"
 
 # 6. Usar
-# Pega una URL de oferta o ejecuta /career-ops
+# Pega una URL de oferta o ejecuta /yoCareer
 ```
 
 > **El sistema esta diseñado para que Claude lo personalice.** Modes, arquetipos, scoring, scripts de negociacion -- solo pidelo. Claude lee los mismos archivos que usa, asi que sabe exactamente que editar.
@@ -108,22 +108,22 @@ Guia completa en [docs/SETUP.md](docs/SETUP.md).
 
 ## Uso
 
-Career-ops es un unico slash command con multiples modos:
+yoCareer es un unico slash command con multiples modos:
 
 ```
-/career-ops                → Mostrar todos los comandos
-/career-ops {pega un JD}   → Pipeline completo (evaluar + PDF + tracker)
-/career-ops scan           → Escanear portales
-/career-ops pdf            → Generar CV ATS-optimizado
-/career-ops batch          → Evaluar ofertas en batch
-/career-ops tracker        → Ver estado de aplicaciones
-/career-ops apply          → Rellenar formularios con IA
-/career-ops pipeline       → Procesar URLs pendientes
-/career-ops contacto       → Mensaje LinkedIn outreach
-/career-ops deep           → Research profundo de empresa
+/yoCareer                → Mostrar todos los comandos
+/yoCareer {pega un JD}   → Pipeline completo (evaluar + PDF + tracker)
+/yoCareer scan           → Escanear portales
+/yoCareer pdf            → Generar CV ATS-optimizado
+/yoCareer batch          → Evaluar ofertas en batch
+/yoCareer tracker        → Ver estado de aplicaciones
+/yoCareer apply          → Rellenar formularios con IA
+/yoCareer pipeline       → Procesar URLs pendientes
+/yoCareer contacto       → Mensaje LinkedIn outreach
+/yoCareer deep           → Research profundo de empresa
 ```
 
-O simplemente pega una URL o descripcion de oferta -- career-ops la detecta y ejecuta el pipeline completo.
+O simplemente pega una URL o descripcion de oferta -- yoCareer la detecta y ejecuta el pipeline completo.
 
 ## Como funciona
 
@@ -177,7 +177,7 @@ Features: 6 pestañas de filtro, 4 modos de ordenacion, vista agrupada/plana, pr
 ## Estructura del proyecto
 
 ```
-career-ops/
+yoCareer/
 ├── CLAUDE.md                    # Instrucciones del agente
 ├── cv.md                        # Tu CV (crealo tu)
 ├── article-digest.md            # Tus proof points (opcional)
@@ -222,9 +222,9 @@ career-ops/
 
 ## Sobre el autor
 
-Soy Santiago -- Head of Applied AI, ex-fundador (monte y vendi un negocio que sigue funcionando con mi nombre). Construi career-ops para gestionar mi propia busqueda de empleo. Funciono: lo use para conseguir mi puesto actual.
+Soy Santiago -- Head of Applied AI, ex-fundador (monte y vendi un negocio que sigue funcionando con mi nombre). Construi yoCareer para gestionar mi propia busqueda de empleo. Funciono: lo use para conseguir mi puesto actual.
 
-Mi portfolio y otros proyectos open source → [santifer.io](https://santifer.io)
+Mi portfolio y otros proyectos open source → [github.com/ZCDeng/yoCareer](https://github.com/ZCDeng/yoCareer)
 
 ## Documentacion
 
@@ -234,21 +234,21 @@ Mi portfolio y otros proyectos open source → [santifer.io](https://santifer.io
 
 ## Tambien Open Source
 
-- **[cv-santiago](https://github.com/santifer/cv-santiago)** -- El portfolio (santifer.io) con chatbot IA, dashboard LLMOps y case studies. Si necesitas un portfolio para acompañar tu busqueda de empleo, echale un vistazo.
+- **[cv-santiago](https://github.com/ZCDeng/yoCareer/tree/main/examples)** -- El portfolio (github.com/ZCDeng/yoCareer) con chatbot IA, dashboard LLMOps y case studies. Si necesitas un portfolio para acompañar tu busqueda de empleo, echale un vistazo.
 
 ## Star History
 
-<a href="https://www.star-history.com/?repos=santifer%2Fcareer-ops&type=timeline&legend=top-left">
+<a href="https://www.star-history.com/?repos=ZCDeng%2FyoCareer&type=timeline&legend=top-left">
  <picture>
-   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/chart?repos=santifer/career-ops&type=timeline&theme=dark&legend=top-left" />
-   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/chart?repos=santifer/career-ops&type=timeline&legend=top-left" />
-   <img alt="Star History Chart" src="https://api.star-history.com/chart?repos=santifer/career-ops&type=timeline&legend=top-left" />
+   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/chart?repos=ZCDeng/yoCareer&type=timeline&theme=dark&legend=top-left" />
+   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/chart?repos=ZCDeng/yoCareer&type=timeline&legend=top-left" />
+   <img alt="Star History Chart" src="https://api.star-history.com/chart?repos=ZCDeng/yoCareer&type=timeline&legend=top-left" />
  </picture>
 </a>
 
 ## Aviso legal
 
-**career-ops es una herramienta local y open source — NO un servicio alojado.** Al usar este software, aceptas que:
+**yoCareer es una herramienta local y open source — NO un servicio alojado.** Al usar este software, aceptas que:
 
 1. **Tu controlas tus datos.** Tu CV, datos de contacto e informacion personal se quedan en tu maquina y se envian directamente al proveedor de IA que elijas (Anthropic, OpenAI, etc.). No recopilamos, almacenamos ni tenemos acceso a tus datos.
 2. **Tu controlas la IA.** Los prompts por defecto instruyen a la IA a no enviar aplicaciones automaticamente, pero los modelos pueden comportarse de forma impredecible. Si modificas los prompts o usas otros modelos, lo haces bajo tu responsabilidad. **Revisa siempre el contenido generado antes de enviarlo.**
@@ -263,8 +263,8 @@ MIT
 
 ## Conecta
 
-[![Website](https://img.shields.io/badge/santifer.io-000?style=for-the-badge&logo=safari&logoColor=white)](https://santifer.io)
-[![LinkedIn](https://img.shields.io/badge/LinkedIn-0A66C2?style=for-the-badge&logo=linkedin&logoColor=white)](https://linkedin.com/in/santifer)
-[![X](https://img.shields.io/badge/X-000?style=for-the-badge&logo=x&logoColor=white)](https://x.com/santifer)
+[![Website](https://img.shields.io/badge/github.com/ZCDeng/yoCareer-000?style=for-the-badge&logo=safari&logoColor=white)](https://github.com/ZCDeng/yoCareer)
+[![LinkedIn](https://img.shields.io/badge/LinkedIn-0A66C2?style=for-the-badge&logo=linkedin&logoColor=white)](https://linkedin.com/in/ZCDeng)
+[![X](https://img.shields.io/badge/X-000?style=for-the-badge&logo=x&logoColor=white)](https://x.com/ZCDeng)
 [![Discord](https://img.shields.io/badge/Discord-5865F2?style=for-the-badge&logo=discord&logoColor=white)](https://discord.gg/8pRpHETxa4)
-[![Email](https://img.shields.io/badge/Email-EA4335?style=for-the-badge&logo=gmail&logoColor=white)](mailto:hola@santifer.io)
+[![Email](https://img.shields.io/badge/Email-EA4335?style=for-the-badge&logo=gmail&logoColor=white)](mailto:hola@github.com/ZCDeng/yoCareer)
