@@ -3,7 +3,10 @@ package data
 import (
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
+
+	"github.com/ZCDeng/yoCareer/dashboard/internal/model"
 )
 
 func TestParseApplicationsUsesTrackerNumberColumn(t *testing.T) {
@@ -39,5 +42,43 @@ func TestParseApplicationsUsesTrackerNumberColumn(t *testing.T) {
 	}
 	if apps[0].ReportNumber != "140" || apps[1].ReportNumber != "143" {
 		t.Fatalf("expected report numbers to stay aligned with tracker IDs, got %q and %q", apps[0].ReportNumber, apps[1].ReportNumber)
+	}
+}
+
+func TestReplaceStatusInLineReplacesStatusColumnOnly(t *testing.T) {
+	line := "| 1 | 2026-05-06 | TestCo | Applied AI Engineer | 4.2/5 | Applied | ✅ | [001](reports/001.md) | note |"
+	got := replaceStatusInLine(line, "Applied", "Interview")
+
+	if !strings.Contains(got, "| Applied AI Engineer |") {
+		t.Fatalf("expected role text to remain unchanged, got %q", got)
+	}
+	if !strings.Contains(got, "| Interview |") {
+		t.Fatalf("expected status column to be updated, got %q", got)
+	}
+}
+
+func TestEnrichFromScanHistoryReadsDataDirectory(t *testing.T) {
+	tempDir := t.TempDir()
+	dataDir := filepath.Join(tempDir, "data")
+	if err := os.MkdirAll(dataDir, 0o755); err != nil {
+		t.Fatalf("failed to create data dir: %v", err)
+	}
+
+	history := "url\tfirst_seen\tportal\ttitle\tcompany\tstatus\n" +
+		"https://example.com/job/123\t2026-05-06\tcompany_page\tSenior Backend Engineer\tAcme AI\tadded\n"
+	if err := os.WriteFile(filepath.Join(dataDir, "scan-history.tsv"), []byte(history), 0o644); err != nil {
+		t.Fatalf("failed to write scan history: %v", err)
+	}
+
+	apps := []model.CareerApplication{
+		{
+			Company: "Acme AI",
+			Role:    "Senior Backend Engineer",
+		},
+	}
+
+	enrichFromScanHistory(tempDir, apps)
+	if apps[0].JobURL != "https://example.com/job/123" {
+		t.Fatalf("expected job URL from data/scan-history.tsv, got %q", apps[0].JobURL)
 	}
 }

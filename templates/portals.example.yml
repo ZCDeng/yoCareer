@@ -101,8 +101,9 @@ title_filter:
     - "Director"
 
 # -- Search queries --
-# Each query triggers a WebSearch. Use site: to filter by portal.
-# The scanner extracts title, URL, and company from results.
+# Each query is mapped to reach_signal_search (platform defaults to "web").
+# Requires YOCAREER_REACH_SIGNAL_SEARCH_CMD to be configured.
+# Use site: filters to target specific job portals.
 
 search_queries:
   # -- Ashby --

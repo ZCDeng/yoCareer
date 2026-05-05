@@ -14,12 +14,20 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v6
 
+      - name: Check dependency graph status
+        id: depgraph
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          status="$(gh api repos/${GITHUB_REPOSITORY} --jq '.security_and_analysis.dependency_graph.status // "disabled"')"
+          echo "status=${status}" >> "${GITHUB_OUTPUT}"
+          if [ "${status}" != "enabled" ]; then
+            echo "::warning::Dependency graph is not enabled for ${GITHUB_REPOSITORY}; skipping dependency review gate. Enable it in Settings > Security & analysis."
+          fi
+
       - name: Dependency Review
-        # TODO: remove continue-on-error once the Dependency graph is enabled in
-        # Settings > Security & Analysis (see #343). Until then, this is a temporary
-        # workaround to unblock PRs — note that fail-on-severity: high is still
-        # configured but will not block merges while continue-on-error is true.
-        continue-on-error: true
+        if: steps.depgraph.outputs.status == 'enabled'
         uses: actions/dependency-review-action@v4
         with:
           fail-on-severity: high

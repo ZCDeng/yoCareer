@@ -228,13 +228,11 @@ yoCareer/
 
 ## 也已开源
 
-- **[cv-santiago](https://github.com/ZCDeng/yoCareer/tree/main/examples)**：作者的作品集网站（github.com/ZCDeng/yoCareer），包含 AI 聊天机器人、LLMOps Dashboard 和案例研究。如果你也需要一个能在求职时展示的作品集，可以 fork 它然后改成自己的版本。
+- **[portfolio-example](https://github.com/ZCDeng/yoCareer/tree/main/examples)**：作品集示例（github.com/ZCDeng/yoCareer），包含 AI 聊天机器人、LLMOps Dashboard 和案例研究。如果你也需要一个能在求职时展示的作品集，可以 fork 它然后改成自己的版本。
 
 ## 关于作者
 
-我是 Santiago，现任 Head of Applied AI，也曾是一名创业者（创建并出售过一家公司，那家公司至今仍以我的名字运营）。我构建 yoCareer 是为了管理我自己的求职流程，而它确实奏效了：我用它拿到了现在这份工作。
-
-我的作品集和其他开源项目 → [github.com/ZCDeng/yoCareer](https://github.com/ZCDeng/yoCareer)
+我的作品集和其他开源项目 → https://github.com/ZCDeng/Boris-Token-Slim
 
 ## Star 历史
 
