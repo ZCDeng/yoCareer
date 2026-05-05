@@ -2,11 +2,11 @@
 description: Evaluate portfolio project idea
 ---
 
-Evaluate the following portfolio project using career-ops project mode:
+Evaluate the following portfolio project using yoCareer project mode:
 
 $ARGUMENTS
 
-Load the career-ops skill:
+Load the yoCareer skill:
 ```
-skill({ name: "career-ops" })
+skill({ name: "yoCareer" })
 ```

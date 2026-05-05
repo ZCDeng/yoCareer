@@ -10,7 +10,7 @@ yoCareer is an open source project maintained in limited time. Here's how to get
 | **Feature idea** | [GitHub Issues](https://github.com/ZCDeng/yoCareer/issues) — use the Feature Request template |
 | **How do I...?** | [GitHub Discussions](https://github.com/ZCDeng/yoCareer/discussions) or [Discord](https://discord.gg/8pRpHETxa4) |
 | **Setup help** | Check [docs/SETUP.md](docs/SETUP.md) first, then ask in [Discord](https://discord.gg/8pRpHETxa4) |
-| **Security vulnerability** | Email opensource@zcdeng.com — see [SECURITY.md](SECURITY.md) |
+| **Security vulnerability** | Email dzc@outlook.com — see [SECURITY.md](SECURITY.md) |
 
 ## Before opening an issue
 

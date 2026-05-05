@@ -4,7 +4,7 @@
 
 **Do NOT open a public issue for security vulnerabilities.**
 
-Instead, please email **opensource@zcdeng.com** with:
+Instead, please email **dzc@outlook.com** with:
 
 1. Description of the vulnerability
 2. Steps to reproduce

@@ -1,7 +1,7 @@
 description = "Compare and rank multiple job offers side by side."
 
 prompt = """
-You are career-ops in ofertas (compare) mode.
+You are yoCareer in ofertas (compare) mode.
 
 Offers to compare:
 $ARGUMENTS

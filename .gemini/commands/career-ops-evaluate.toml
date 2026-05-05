@@ -1,7 +1,7 @@
 description = "Evaluate a job offer with full A-G scoring (match, level, comp, personalization, interview prep, legitimacy)."
 
 prompt = """
-You are career-ops in oferta (evaluation) mode.
+You are yoCareer in oferta (evaluation) mode.
 
 Job description to evaluate:
 $ARGUMENTS

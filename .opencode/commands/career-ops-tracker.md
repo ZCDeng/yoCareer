@@ -2,9 +2,9 @@
 description: Application status overview
 ---
 
-Show application tracker status using career-ops tracker mode.
+Show application tracker status using yoCareer tracker mode.
 
-Load the career-ops skill:
+Load the yoCareer skill:
 ```
-skill({ name: "career-ops" })
+skill({ name: "yoCareer" })
 ```

@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 /**
- * test-all.mjs — Comprehensive test suite for career-ops
+ * test-all.mjs — Comprehensive test suite for yoCareer
  *
  * Run before merging any PR or pushing changes.
  * Tests: syntax, scripts, dashboard, data contract, personal data, paths.
@@ -42,7 +42,7 @@ function run(cmd, args = [], opts = {}) {
 function fileExists(path) { return existsSync(join(ROOT, path)); }
 function readFile(path) { return readFileSync(join(ROOT, path), 'utf-8'); }
 
-console.log('\n🧪 career-ops test suite\n');
+console.log('\n🧪 yoCareer test suite\n');
 
 // ── 1. SYNTAX CHECKS ────────────────────────────────────────────
 
@@ -161,7 +161,6 @@ const systemFiles = [
   'modes/_shared.md', 'modes/_profile.template.md',
   'modes/oferta.md', 'modes/pdf.md', 'modes/scan.md',
   'templates/states.yml', 'templates/cv-template.html',
-  '.claude/skills/career-ops/SKILL.md',
 ];
 
 for (const f of systemFiles) {
@@ -170,6 +169,12 @@ for (const f of systemFiles) {
   } else {
     fail(`Missing system file: ${f}`);
   }
+}
+
+if (fileExists('.claude/skills/yoCareer/SKILL.md')) {
+  pass('System file exists: .claude/skills/yoCareer/SKILL.md');
+} else {
+  fail('Missing system file: .claude/skills/yoCareer/SKILL.md');
 }
 
 // Check user files are NOT tracked (gitignored)
@@ -192,8 +197,8 @@ for (const f of userFiles) {
 console.log('\n6. Personal data leak check');
 
 const leakPatterns = [
-  'Santiago', 'santifer.io', 'Santifer iRepair', 'Zinkee', 'ALMAS',
-  'hi@santifer.io', '688921377', '/Users/santifer/',
+  'Santiago', 'LegacyCompanyName', 'PrivateClientName',
+  'private@example.com', '688921377', '/Users/legacy-user/',
 ];
 
 const scanExtensions = ['md', 'yml', 'html', 'mjs', 'sh', 'go', 'json'];

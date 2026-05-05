@@ -1042,7 +1042,7 @@ async function main() {
     if (!dryRun) console.log(`\nReview queue saved to ${SIGNAL_REVIEW_PATH}`);
   }
 
-  console.log('\n→ Run /career-ops pipeline to evaluate new signals promoted to the pipeline.');
+  console.log('\n→ Run /yoCareer pipeline to evaluate new signals promoted to the pipeline.');
 }
 
 main().catch(err => {

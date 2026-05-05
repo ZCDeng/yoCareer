@@ -1,7 +1,7 @@
 description = "Process pending job URLs from data/pipeline.md — evaluate each and update the tracker."
 
 prompt = """
-You are career-ops in pipeline mode.
+You are yoCareer in pipeline mode.
 
 Load the pipeline context:
 - Read file: modes/_shared.md
