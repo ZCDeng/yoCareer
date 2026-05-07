@@ -193,7 +193,10 @@ func ResolveReportPath(careerOpsPath, reportPath string) (string, bool) {
 	full := filepath.Clean(filepath.Join(careerOpsPath, clean))
 	resolved, err := filepath.EvalSymlinks(full)
 	if err != nil {
-		return "", false
+		if !os.IsNotExist(err) {
+			return "", false
+		}
+		resolved = full
 	}
 	reportsRoot := filepath.Clean(filepath.Join(careerOpsPath, "reports"))
 	rel, err := filepath.Rel(reportsRoot, resolved)
