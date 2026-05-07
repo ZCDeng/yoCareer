@@ -5,7 +5,11 @@
  */
 
 import { spawn } from 'child_process';
-import { existsSync } from 'fs';
+import { parseBool, tokenizeCommand, bridgeInvocation, resolveBridgeCommand } from './lib/bridge-runner.mjs';
+
+const ADITLY_BASE_URL = String(process.env.YOCAREER_ADITLY_BASE_URL || 'http://127.0.0.1:8643').trim().replace(/\/+$/, '');
+const ADITLY_TIMEOUT_MS = Math.max(1000, Number.parseInt(process.env.YOCAREER_ADITLY_TIMEOUT_MS || '10000', 10) || 10000);
+const ADITLY_PREFER = parseBool(process.env.YOCAREER_ADITLY_PREFER, false);
 
 const REACH_READ_URL_CMD = resolveBridgeCommand(
   process.env.YOCAREER_REACH_READ_URL_CMD || '',
@@ -16,22 +20,18 @@ const REACH_SIGNAL_SEARCH_CMD = resolveBridgeCommand(
   './bridges/reach-signal-search.mjs',
 );
 
-function resolveBridgeCommand(explicitCommand, defaultScriptPath) {
-  const command = String(explicitCommand || '').trim();
-  if (command) return command;
-  return existsSync(defaultScriptPath) ? defaultScriptPath : '';
-}
-
 function runBridge(command, args) {
   return new Promise((resolve, reject) => {
     if (!command) {
       resolve({ skipped: true, output: '', error: 'not configured' });
       return;
     }
-    const positional = args.map((_, idx) => `"$${idx + 1}"`).join(' ');
-    const child = spawn('sh', ['-lc', `${command} ${positional}`, 'bridge-smoke', ...args], {
+    const invocation = bridgeInvocation(command, args);
+    const child = spawn(invocation.bin, invocation.argv, {
       stdio: ['ignore', 'pipe', 'pipe'],
       env: process.env,
+      shell: false,
+      timeout: 30000,
     });
     let stdout = '';
     let stderr = '';
@@ -57,9 +57,39 @@ function parseSignals(output) {
   }
 }
 
+async function checkAditlyHealth() {
+  if (!ADITLY_PREFER) {
+    return { status: 'skipped', detail: 'disabled by YOCAREER_ADITLY_PREFER=false' };
+  }
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), ADITLY_TIMEOUT_MS);
+  try {
+    const res = await fetch(`${ADITLY_BASE_URL}/health`, { signal: controller.signal });
+    if (!res.ok) return { status: 'failed', detail: `HTTP ${res.status}` };
+    const data = await res.json();
+    if (String(data?.status || '').toLowerCase() !== 'ok') {
+      return { status: 'failed', detail: `status=${data?.status || 'unknown'}` };
+    }
+    return { status: 'ok', detail: `${data?.tools ?? 'unknown'} tools` };
+  } catch (err) {
+    return { status: 'failed', detail: err.message };
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
 async function main() {
   console.log('\nyoCareer bridge smoke');
   console.log('=====================\n');
+
+  const aditly = await checkAditlyHealth();
+  if (aditly.status === 'ok') {
+    console.log(`✓ aditly_mcp         ok          ${ADITLY_BASE_URL}/mcp/ (${aditly.detail})`);
+  } else if (aditly.status === 'skipped') {
+    console.log(`· aditly_mcp         skipped      ${aditly.detail}`);
+  } else {
+    console.log(`! aditly_mcp         failed       ${ADITLY_BASE_URL}/health ${aditly.detail}`);
+  }
 
   const urlSample = 'https://example.com/jobs/123';
   const searchSample = ['v2ex', 'AI 大模型 招聘'];

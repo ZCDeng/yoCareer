@@ -2,7 +2,6 @@ package screens
 
 import (
 	"fmt"
-	"path/filepath"
 	"sort"
 	"strings"
 
@@ -19,9 +18,9 @@ type PipelineClosedMsg struct{}
 
 // PipelineOpenReportMsg is emitted when a report should be opened in FileViewer.
 type PipelineOpenReportMsg struct {
-	Path   string
-	Title  string
-	JobURL string
+	ReportPath string
+	Title      string
+	JobURL     string
 }
 
 // PipelineOpenURLMsg is emitted when a job URL should be opened in browser.
@@ -93,7 +92,7 @@ var pipelineTabs = []pipelineTab{
 
 var sortCycle = []string{sortScore, sortDate, sortCompany, sortStatus}
 
-var statusOptions = []string{"Evaluated", "Applied", "Responded", "Interview", "Offer", "Rejected", "Discarded", "SKIP"}
+var statusOptions = data.CanonicalStatusLabels()
 
 // statusGroupOrder defines display order for grouped view.
 var statusGroupOrder = []string{"interview", "offer", "responded", "applied", "evaluated", "skip", "rejected", "discarded"}
@@ -304,11 +303,10 @@ func (m PipelineModel) handleKey(msg tea.KeyMsg) (PipelineModel, tea.Cmd) {
 
 	case "enter":
 		if app, ok := m.CurrentApp(); ok && app.ReportPath != "" {
-			fullPath := filepath.Join(m.careerOpsPath, app.ReportPath)
 			title := fmt.Sprintf("%s — %s", app.Company, app.Role)
 			jobURL := app.JobURL
 			return m, func() tea.Msg {
-				return PipelineOpenReportMsg{Path: fullPath, Title: title, JobURL: jobURL}
+				return PipelineOpenReportMsg{ReportPath: app.ReportPath, Title: title, JobURL: jobURL}
 			}
 		}
 

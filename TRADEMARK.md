@@ -17,8 +17,8 @@ the source code.
 The MIT license grants broad freedoms to use, copy, modify, and
 redistribute the source code. It does not grant rights to the name
 "yoCareer," its visual identity, or any associated brand assets.
-Those are reserved by the project's maintainer, Santiago Fernández de
-Valderrama, and any successor entity stewarding the project.
+Those are reserved by the project's maintainer (yoCareer Maintainers)
+and any successor entity stewarding the project.
 
 This is the model used by PostgreSQL, Apache, Mozilla, GitLab, and
 most mature open-source projects: the code is free, the brand is
@@ -102,8 +102,5 @@ will be announced in [CHANGELOG.md](CHANGELOG.md).
 
 ---
 
-© 2026 Santiago Fernández de Valderrama. "yoCareer"™ is a trademark of
-Santiago Fernández de Valderrama. A trademark application has been filed
-with the Spanish Patent and Trademark Office (OEPM) in classes 9
-(downloadable software) and 42 (Software-as-a-Service); registration
-pending. International extensions under the Madrid Protocol may follow.
+© 2026 yoCareer Maintainers. "yoCareer"™ is a trademark of the yoCareer
+maintainer group.

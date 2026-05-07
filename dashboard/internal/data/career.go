@@ -26,6 +26,17 @@ var (
 	reBatchID        = regexp.MustCompile(`(?m)^\*\*Batch ID:\*\*\s*(\d+)`)
 )
 
+var canonicalStatusLabels = []string{
+	"Evaluated",
+	"Applied",
+	"Responded",
+	"Interview",
+	"Offer",
+	"Rejected",
+	"Discarded",
+	"SKIP",
+}
+
 // ParseApplications reads applications.md and returns parsed applications.
 // It tries both {path}/applications.md and {path}/data/applications.md for compatibility.
 func ParseApplications(careerOpsPath string) []model.CareerApplication {
@@ -123,7 +134,10 @@ func ParseApplications(careerOpsPath string) []model.CareerApplication {
 		if apps[i].ReportPath == "" {
 			continue
 		}
-		fullReport := filepath.Join(careerOpsPath, apps[i].ReportPath)
+		fullReport, ok := ResolveReportPath(careerOpsPath, apps[i].ReportPath)
+		if !ok {
+			continue
+		}
 		reportContent, err := os.ReadFile(fullReport)
 		if err != nil {
 			continue
@@ -164,6 +178,29 @@ func ParseApplications(careerOpsPath string) []model.CareerApplication {
 	enrichAppURLsByCompany(careerOpsPath, apps)
 
 	return apps
+}
+
+// ResolveReportPath returns an absolute report path only when it resolves under reports/.
+func ResolveReportPath(careerOpsPath, reportPath string) (string, bool) {
+	clean := filepath.Clean(strings.TrimSpace(reportPath))
+	if clean == "" || clean == "." || filepath.IsAbs(clean) {
+		return "", false
+	}
+	normalized := filepath.ToSlash(clean)
+	if !strings.HasPrefix(normalized, "reports/") {
+		return "", false
+	}
+	full := filepath.Clean(filepath.Join(careerOpsPath, clean))
+	resolved, err := filepath.EvalSymlinks(full)
+	if err != nil {
+		return "", false
+	}
+	reportsRoot := filepath.Clean(filepath.Join(careerOpsPath, "reports"))
+	rel, err := filepath.Rel(reportsRoot, resolved)
+	if err != nil || rel == ".." || strings.HasPrefix(rel, "../") {
+		return "", false
+	}
+	return resolved, true
 }
 
 // loadBatchInputURLs reads batch-input.tsv and returns a map of batch ID -> job URL.
@@ -508,9 +545,19 @@ func NormalizeStatus(raw string) string {
 	}
 }
 
+// CanonicalStatusLabels returns status options that can be written to tracker rows.
+func CanonicalStatusLabels() []string {
+	out := make([]string, len(canonicalStatusLabels))
+	copy(out, canonicalStatusLabels)
+	return out
+}
+
 // LoadReportSummary extracts key fields from a report file.
 func LoadReportSummary(careerOpsPath, reportPath string) (archetype, tldr, remote, comp string) {
-	fullPath := filepath.Join(careerOpsPath, reportPath)
+	fullPath, ok := ResolveReportPath(careerOpsPath, reportPath)
+	if !ok {
+		return
+	}
 	content, err := os.ReadFile(fullPath)
 	if err != nil {
 		return

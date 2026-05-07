@@ -353,8 +353,8 @@ process_offer() {
   # Launch claude -p worker (uses default model from Claude Max subscription)
   local exit_code=0
   claude -p \
-    --dangerously-skip-permissions \
     --append-system-prompt-file "$resolved_prompt" \
+    --dangerously-skip-permissions \
     "$prompt" \
     > "$log_file" 2>&1 || exit_code=$?
 
@@ -378,7 +378,7 @@ process_offer() {
       if (( $(echo "$score < $MIN_SCORE" | bc -l) )); then
         update_state "$id" "$url" "skipped" "$started_at" "$completed_at" "$report_num" "$score" "below-min-score" "$retries"
         echo "    ⏭️  Skipped (score: $score < min-score: $MIN_SCORE)"
-        continue
+        return
       fi
     fi
 

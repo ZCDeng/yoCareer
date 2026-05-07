@@ -11,14 +11,22 @@
             ┌──────────────────┼──────────────────────┐
             │                  │                       │
      ┌──────▼──────┐   ┌──────▼──────┐   ┌───────────▼────────┐
-     │ Single Eval  │   │ Portal Scan │   │   Batch Process    │
+     │ Single Eval  │   │ Signal Scan │   │   Batch Process    │
      │ (auto-pipe)  │   │  (scan.md)  │   │   (batch-runner)   │
      └──────┬──────┘   └──────┬──────┘   └───────────┬────────┘
             │                  │                       │
-            │           ┌──────▼──────┐          ┌────▼─────┐
-            │           │ pipeline.md │          │ N workers│
-            │           │ (URL inbox) │          │ (claude -p)
-            │           └─────────────┘          └────┬─────┘
+            │      ┌───────────▼──────────┐      ┌────▼─────┐
+            │      │ provider pipeline     │      │ N workers│
+            │      │ company_page          │      │ (claude -p)
+            │      │ manual_signal_import  │      └────┬─────┘
+            │      │ reach_signal_search   │           │
+            │      │ manual_only           │           │
+            │      └───────────┬──────────┘           │
+            │                  │                       │
+            │           ┌──────▼──────┐               │
+            │           │ pipeline.md │               │
+            │           │ (URL inbox) │               │
+            │           └─────────────┘               │
             │                                          │
      ┌──────▼──────────────────────────────────────────▼──────┐
      │                    Output Pipeline                      │
@@ -43,7 +51,7 @@
    - A: Role summary
    - B: CV match (gaps + mitigation)
    - C: Level strategy
-   - D: Comp research (WebSearch)
+   - D: Comp research (public research)
    - E: CV personalization plan
    - F: Interview prep (STAR stories)
 5. **Score**: Weighted average across 10 dimensions (1-5)
@@ -70,6 +78,20 @@ Each worker is a headless Claude instance (`claude -p`) that receives the full `
 
 The orchestrator manages parallelism, state, retries, and resume.
 
+## Scan Architecture (China-first)
+
+`scan.mjs` is provider-based. A single run can combine:
+
+- `company_page`: official company career pages via Playwright.
+- `manual_signal_import`: user-provided NDJSON signal inbox (`data/signals.ndjson`).
+- `reach_signal_search`: optional public-signal bridge searches.
+- `manual_only`: restricted/login-gated platforms (explicitly non-automated).
+
+Optional external enhancement:
+
+- Aditly MCP (`http://127.0.0.1:8643/mcp/`) can be used by bridge scripts.
+- Fallback is always local bridge logic when Aditly is unavailable.
+
 ## Data Flow
 
 ```
@@ -77,6 +99,8 @@ cv.md                    →  Evaluation context
 article-digest.md        →  Proof points for matching
 config/profile.yml       →  Candidate identity
 portals.yml              →  Scanner configuration
+data/signals.ndjson      →  Manual social/community signal inbox
+data/signal-review.md    →  Low-confidence/manual-review queue
 templates/states.yml     →  Canonical status values
 templates/cv-template.html → PDF generation template
 ```

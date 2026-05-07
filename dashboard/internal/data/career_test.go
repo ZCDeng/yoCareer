@@ -82,3 +82,31 @@ func TestEnrichFromScanHistoryReadsDataDirectory(t *testing.T) {
 		t.Fatalf("expected job URL from data/scan-history.tsv, got %q", apps[0].JobURL)
 	}
 }
+
+func TestResolveReportPathBlocksTraversal(t *testing.T) {
+	tempDir := t.TempDir()
+
+	valid, ok := ResolveReportPath(tempDir, "reports/001-demo.md")
+	if !ok {
+		t.Fatal("expected valid report path to pass")
+	}
+	expected := filepath.Join(tempDir, "reports", "001-demo.md")
+	if valid != expected {
+		t.Fatalf("expected resolved path %q, got %q", expected, valid)
+	}
+
+	cases := []string{
+		"../secrets.txt",
+		"reports/../../secrets.txt",
+		"/etc/passwd",
+		"output/001.pdf",
+		"",
+	}
+	for _, tc := range cases {
+		t.Run(tc, func(t *testing.T) {
+			if _, ok := ResolveReportPath(tempDir, tc); ok {
+				t.Fatalf("expected %q to be rejected", tc)
+			}
+		})
+	}
+}

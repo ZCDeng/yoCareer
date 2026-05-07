@@ -8,7 +8,8 @@ System-layer template files used by yoCareer scripts and modes. These files are 
 |------|---------|---------|
 | `cv-template.html` | `generate-pdf.mjs` | HTML/CSS template for ATS-optimized CV PDFs |
 | `cv-template.tex` | `generate-latex.mjs` | LaTeX/Overleaf template for ATS-optimized CV PDFs |
-| `portals.example.yml` | Onboarding | Example portal scanner configuration (copy to `portals.yml` to activate) |
+| `portals.example.yml` | Onboarding | China-first portal scanner configuration (copy to `portals.yml` to activate) |
+| `portals.cn.example.yml` | Onboarding | Chinese-labeled variant of the same China-first scanner configuration |
 | `states.yml` | `verify-pipeline.mjs`, `normalize-statuses.mjs`, `merge-tracker.mjs` | Canonical application states and their aliases |
 
 ### cv-template.html
@@ -40,9 +41,13 @@ node generate-latex.mjs output/cv-name-company-date.tex output/custom-name.pdf
 
 ### portals.example.yml
 
-Pre-configured portal scanner with 45+ tracked companies and search queries. Contains title filters, company career page URLs, Greenhouse API endpoints, and WebSearch queries.
+China-first scanner preset with:
+- Public careers pages from major China tech/AI companies
+- Product + operations + engineering title filters
+- Manual signal inbox (`data/signals.ndjson`) for social/community hiring fragments
+- Restricted domestic platforms defaulting to `manual_import_only`
 
-**To activate:** Copy to project root as `portals.yml` and customize `title_filter.positive` keywords for your target roles. Add or remove companies as needed.
+**To activate:** Copy to project root as `portals.yml` and customize role keywords, tracked companies, and signal sources for your job search.
 
 ### states.yml
 

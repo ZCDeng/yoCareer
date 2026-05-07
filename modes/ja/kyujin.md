@@ -151,18 +151,14 @@ JD の要件にマッピングした 6-10 の STAR+R ストーリー（STAR + **
 
 ### 2. tracker に記録
 
-**必ず** `data/applications.md` に記録：
-- 次の連番
-- 現在の日付
-- 企業名
-- 求人タイトル
-- スコア：マッチの平均（1-5）
-- ステータス：`Evaluated`
-- PDF：❌（または auto-pipeline が PDF を生成した場合は ✅）
-- Report：report .md への相対リンク（例：`[001](reports/001-company-2026-01-01.md)`）
+**新規エントリ**は `data/applications.md` を直接編集しない。
 
-**tracker のフォーマット：**
+1. `batch/tracker-additions/{num}-{company-slug}.tsv` に 1 行 TSV を書く：
 
-```markdown
-| # | 日付 | 企業 | 求人 | スコア | ステータス | PDF | Report |
+```text
+{num}\t{date}\t{company}\t{role}\t{status}\t{score}\t{pdf_emoji}\t[{num}](reports/{num}-{slug}-{date}.md)\t{note}
 ```
+
+2. `node merge-tracker.mjs` を実行して `data/applications.md` に反映する。
+
+**既存エントリ**の `status` / `pdf` / `report` 更新は直接編集でよい。

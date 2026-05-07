@@ -80,9 +80,13 @@ func (m appModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		return m, nil
 
 	case screens.PipelineOpenReportMsg:
+		reportPath, ok := data.ResolveReportPath(m.careerOpsPath, msg.ReportPath)
+		if !ok {
+			return m, nil
+		}
 		m.viewer = screens.NewViewerModel(
 			m.theme,
-			msg.Path, msg.Title,
+			reportPath, msg.Title,
 			m.pipeline.Width(), m.pipeline.Height(),
 		)
 		m.state = viewReport

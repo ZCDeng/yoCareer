@@ -64,4 +64,4 @@
 - 手动投递前先确认岗位是否仍开放。
 - 修改简历第 N 段。
 - 将某段打招呼文本复制到平台。
-- 记录到 `data/applications.md`。
+- 新增记录写入 `batch/tracker-additions/*.tsv`，再执行 `node merge-tracker.mjs` 合并到 `data/applications.md`。

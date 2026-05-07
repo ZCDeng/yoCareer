@@ -5,7 +5,7 @@ Two usage modes: **conductor --chrome** (navigates portals in real time) or **st
 ## Architecture
 
 ```text
-Claude Conductor (claude --chrome --dangerously-skip-permissions)
+Claude Conductor (claude --chrome)
   │
   │  Chrome: navigates portals (logged-in sessions)
   │  Reads DOM directly — the user sees everything in real time
@@ -45,7 +45,7 @@ batch/
    d. Execute via Bash:
 
       ```bash
-      claude -p --dangerously-skip-permissions \
+      claude -p \
         --append-system-prompt-file batch/batch-prompt.md \
         "Process this job. URL: {url}. JD: /tmp/batch-jd-{id}.txt. Report: {num}. ID: {id}"
       ```
