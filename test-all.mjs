@@ -141,11 +141,16 @@ try {
 
 if (!QUICK) {
   console.log('\n4. Dashboard build');
-  const goBuild = run('cd dashboard && go build -o /tmp/career-dashboard-test . 2>&1');
-  if (goBuild !== null) {
-    pass('Dashboard compiles');
+  const hasGo = run('command -v go 2>/dev/null');
+  if (!hasGo) {
+    console.log('   ⏭️  Skipping dashboard build (Go not installed)');
   } else {
-    fail('Dashboard build failed');
+    const goBuild = run('cd dashboard && go build -o /tmp/career-dashboard-test . 2>&1');
+    if (goBuild !== null) {
+      pass('Dashboard compiles');
+    } else {
+      fail('Dashboard build failed');
+    }
   }
 } else {
   console.log('\n4. Dashboard build (skipped --quick)');
@@ -285,11 +290,21 @@ if (shared.includes('_profile.md')) {
   fail('_shared.md does NOT reference _profile.md');
 }
 
-// ── 9. CLAUDE.md INTEGRITY ──────────────────────────────────────
+// ── 9. AGENTS.md / CLAUDE.md INTEGRITY ──────────────────────────
 
-console.log('\n9. CLAUDE.md integrity');
+console.log('\n9. AGENTS.md / CLAUDE.md integrity');
 
 const claude = readFile('CLAUDE.md');
+const agents = readFile('AGENTS.md');
+
+// CLAUDE.md must be a slim shim that imports AGENTS.md
+if (claude.includes('@AGENTS.md')) {
+  pass('CLAUDE.md imports AGENTS.md via @AGENTS.md');
+} else {
+  fail('CLAUDE.md must import AGENTS.md via @AGENTS.md');
+}
+
+// AGENTS.md must contain canonical sections (formerly in CLAUDE.md)
 const requiredSections = [
   'Data Contract', 'Update Check', 'Ethical Use',
   'Offer Verification', 'Canonical States', 'TSV Format',
@@ -297,11 +312,26 @@ const requiredSections = [
 ];
 
 for (const section of requiredSections) {
-  if (claude.includes(section)) {
-    pass(`CLAUDE.md has section: ${section}`);
+  if (agents.includes(section)) {
+    pass(`AGENTS.md has section: ${section}`);
   } else {
-    fail(`CLAUDE.md missing section: ${section}`);
+    fail(`AGENTS.md missing section: ${section}`);
   }
+}
+
+// New: .agents/skills/yoCareer/SKILL.md must exist (agentskills.io standard)
+if (fileExists('.agents/skills/yoCareer/SKILL.md')) {
+  pass('.agents/skills/yoCareer/SKILL.md exists');
+} else {
+  fail('.agents/skills/yoCareer/SKILL.md missing');
+}
+
+// New: GEMINI.md must also be a shim importing AGENTS.md
+const gemini = readFile('GEMINI.md');
+if (gemini.includes('@AGENTS.md')) {
+  pass('GEMINI.md imports AGENTS.md via @AGENTS.md');
+} else {
+  fail('GEMINI.md must import AGENTS.md via @AGENTS.md');
 }
 
 // ── 10. VERSION FILE ─────────────────────────────────────────────
