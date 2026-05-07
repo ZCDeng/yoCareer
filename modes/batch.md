@@ -5,21 +5,21 @@ Two usage modes: **conductor --chrome** (navigates portals in real time) or **st
 ## Architecture
 
 ```text
-Claude Conductor (claude --chrome)
+Conductor (browser automation + host CLI)
   │
-  │  Chrome: navigates portals (logged-in sessions)
+  │  Browser: navigates portals (logged-in sessions)
   │  Reads DOM directly — the user sees everything in real time
   │
   ├─ Job 1: reads JD from DOM + URL
-  │    └─► claude -p worker → report .md + PDF + tracker-line
+  │    └─► worker → report .md + PDF + tracker-line
   │
   ├─ Job 2: click next, read JD + URL
-  │    └─► claude -p worker → report .md + PDF + tracker-line
+  │    └─► worker → report .md + PDF + tracker-line
   │
   └─ End: merge tracker-additions → applications.md + summary
 ```
 
-Each worker is a child `claude -p` with a clean 200K token context. The conductor only orchestrates.
+Each worker is a child process with a clean context. The conductor only orchestrates.
 
 ## Files
 
@@ -33,7 +33,7 @@ batch/
   tracker-additions/            # Tracker lines (gitignored)
 ```
 
-## Mode A: Conductor --chrome
+## Mode A: Conductor with browser automation
 
 1. **Read state**: `batch/batch-state.tsv` → identify what has already been processed
 2. **Navigate portal**: Chrome → search URL
@@ -42,9 +42,10 @@ batch/
    a. Chrome: click on the job → read JD text from the DOM
    b. Save JD to `/tmp/batch-jd-{id}.txt`
    c. Calculate next sequential REPORT_NUM
-   d. Execute via Bash:
+   d. Execute worker via host CLI non-interactive mode (e.g., `claude -p`, `codex --non-interactive`, or shell out to a Node.js worker script):
 
       ```bash
+      # Example with Claude Code pipe mode
       claude -p \
         --append-system-prompt-file batch/batch-prompt.md \
         "Process this job. URL: {url}. JD: /tmp/batch-jd-{id}.txt. Report: {num}. ID: {id}"
@@ -84,7 +85,7 @@ id	url	status	started_at	completed_at	report_num	score	error	retries
 - Lock file (`batch-runner.pid`) prevents double execution
 - Each worker is independent: failure in job #47 does not affect the others
 
-## Workers (claude -p)
+## Workers (host CLI non-interactive mode)
 
 Each worker receives `batch-prompt.md` as a system prompt. It is self-contained.
 

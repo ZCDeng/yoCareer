@@ -11,7 +11,7 @@ Traite les URLs d'offres accumulees dans `data/pipeline.md`. Le candidat ajoute 
    c. Si l'URL n'est pas accessible -> marquer comme `- [!]` avec une note et continuer
    d. **Executer l'auto-pipeline complet** : Evaluation A-F -> Report .md -> PDF (si score >= 3.0) -> Tracker
    e. **Deplacer de "En attente" vers "Traitees"** : `- [x] #NNN | URL | Entreprise | Role | Score/5 | PDF oui/non`
-3. **Si 3+ URLs en attente**, lancer des agents en parallele (Agent tool avec `run_in_background`) pour maximiser la vitesse.
+3. **Si 3+ URLs en attente**, lancer des agents en parallele via le sous-agent du host CLI (e.g., `Agent`/`Task` dans Claude Code, `spawn_agent` dans Codex, taches en arriere-plan) pour maximiser la vitesse.
 4. **A la fin**, afficher un tableau recapitulatif :
 
 ```
