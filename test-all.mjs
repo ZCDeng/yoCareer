@@ -14,7 +14,7 @@
 import { execSync, execFileSync } from 'child_process';
 import { readFileSync, existsSync, readdirSync } from 'fs';
 import { join, dirname } from 'path';
-import { fileURLToPath, pathToFileURL } from 'url';
+import { fileURLToPath } from 'url';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = __dirname;
@@ -63,7 +63,7 @@ for (const f of mjsFiles) {
 console.log('\n2. Script execution (graceful on empty data)');
 
 const scripts = [
-  { name: 'cv-sync-check.mjs', expectExit: 1, allowFail: true }, // fails without cv.md (normal in repo)
+  { name: 'cv-sync-check.mjs', expectExit: fileExists('cv.md') ? 0 : 1, allowFail: true },
   { name: 'verify-pipeline.mjs', expectExit: 0 },
   { name: 'normalize-statuses.mjs', expectExit: 0 },
   { name: 'dedup-tracker.mjs', expectExit: 0 },
@@ -71,10 +71,21 @@ const scripts = [
   { name: 'update-system.mjs check', expectExit: 0 },
 ];
 
-for (const { name, allowFail } of scripts) {
-  const result = run('node', name.split(' '), { stdio: ['pipe', 'pipe', 'pipe'] });
-  if (result !== null) {
-    pass(`${name} runs OK`);
+for (const { name, expectExit, allowFail } of scripts) {
+  let result;
+  let exitCode = 0;
+  try {
+    result = execFileSync('node', name.split(' '), {
+      cwd: ROOT, encoding: 'utf-8', timeout: 30000, stdio: ['pipe', 'pipe', 'pipe'],
+    }).trim();
+  } catch (e) {
+    result = null;
+    exitCode = e.status ?? 1;
+  }
+  if (result !== null && exitCode === expectExit) {
+    pass(`${name} runs OK (exit ${expectExit})`);
+  } else if (result !== null) {
+    fail(`${name} exited ${exitCode}, expected ${expectExit}`);
   } else if (allowFail) {
     warn(`${name} exited with error (expected without user data)`);
   } else {
@@ -87,7 +98,7 @@ for (const { name, allowFail } of scripts) {
 console.log('\n3. Liveness classification');
 
 try {
-  const { classifyLiveness } = await import(pathToFileURL(join(ROOT, 'liveness-core.mjs')).href);
+  const { classifyLiveness } = await import(join(ROOT, 'liveness-core.mjs'));
 
   const expiredChromeApply = classifyLiveness({
     finalUrl: 'https://example.com/jobs/closed-role',
@@ -141,7 +152,7 @@ try {
 
 if (!QUICK) {
   console.log('\n4. Dashboard build');
-  const hasGo = run('command -v go 2>/dev/null');
+  const hasGo = run('go version 2>/dev/null');
   if (!hasGo) {
     console.log('   ⏭️  Skipping dashboard build (Go not installed)');
   } else {
@@ -160,12 +171,12 @@ if (!QUICK) {
 
 console.log('\n5. Data contract validation');
 
-// Check system files exist
+// Check system files exist (core smoke-test subset; mode files checked in section 8)
 const systemFiles = [
-  'CLAUDE.md', 'VERSION', 'DATA_CONTRACT.md',
+  'CLAUDE.md', 'VERSION', 'DATA_CONTRACT.md', 'AGENTS.md', 'GEMINI.md',
   'modes/_shared.md', 'modes/_profile.template.md',
-  'modes/oferta.md', 'modes/pdf.md', 'modes/scan.md',
   'templates/states.yml', 'templates/cv-template.html',
+  '.agents/skills/yoCareer/SKILL.md', '.claude/skills/yoCareer/SKILL.md',
 ];
 
 for (const f of systemFiles) {
@@ -176,10 +187,14 @@ for (const f of systemFiles) {
   }
 }
 
-if (fileExists('.claude/skills/yoCareer/SKILL.md')) {
-  pass('System file exists: .claude/skills/yoCareer/SKILL.md');
-} else {
-  fail('Missing system file: .claude/skills/yoCareer/SKILL.md');
+// Verify legacy per-platform command files are fully removed
+const legacyPaths = ['.gemini/commands', '.opencode/commands'];
+for (const p of legacyPaths) {
+  if (existsSync(join(ROOT, p))) {
+    fail(`Legacy path still exists: ${p} — should have been removed in agentskills.io migration`);
+  } else {
+    pass(`Legacy path removed: ${p}`);
+  }
 }
 
 // Check user files are NOT tracked (gitignored)
@@ -298,41 +313,111 @@ console.log('\n9. AGENTS.md / CLAUDE.md integrity');
 const claude = readFile('CLAUDE.md');
 const agents = readFile('AGENTS.md');
 
-// CLAUDE.md must be a slim shim that imports AGENTS.md
-if (claude.includes('@AGENTS.md')) {
-  pass('CLAUDE.md imports AGENTS.md via @AGENTS.md');
+// CLAUDE.md must be a slim shim: @AGENTS.md on first non-empty line, file under 30 lines
+const claudeLines = claude.split('\n').filter(l => l.trim() && !l.trim().startsWith('<!--'));
+if (claudeLines[0]?.trim() === '@AGENTS.md' && claudeLines.length <= 30) {
+  pass('CLAUDE.md is a slim shim importing AGENTS.md');
 } else {
-  fail('CLAUDE.md must import AGENTS.md via @AGENTS.md');
+  fail('CLAUDE.md must be a slim shim: @AGENTS.md on first non-empty line, <= 30 lines');
 }
 
-// AGENTS.md must contain canonical sections (formerly in CLAUDE.md)
+// AGENTS.md must contain canonical sections as real headings (## Section Name)
 const requiredSections = [
   'Data Contract', 'Update Check', 'Ethical Use',
   'Offer Verification', 'Canonical States', 'TSV Format',
   'First Run', 'Onboarding',
 ];
-
+const agentsHeadings = [...agents.matchAll(/^#{2,3}\s+(.+)$/gm)].map(m => m[1].trim());
 for (const section of requiredSections) {
-  if (agents.includes(section)) {
+  if (agentsHeadings.some(h => h.includes(section))) {
     pass(`AGENTS.md has section: ${section}`);
   } else {
     fail(`AGENTS.md missing section: ${section}`);
   }
 }
 
-// New: .agents/skills/yoCareer/SKILL.md must exist (agentskills.io standard)
-if (fileExists('.agents/skills/yoCareer/SKILL.md')) {
-  pass('.agents/skills/yoCareer/SKILL.md exists');
-} else {
-  fail('.agents/skills/yoCareer/SKILL.md missing');
+// SKILL.md content validation: parse YAML frontmatter and check required fields
+function validateSkillFile(path) {
+  const content = readFile(path);
+  const fmMatch = content.match(/^---\n([\s\S]*?)\n---\n/);
+  if (!fmMatch) return { ok: false, error: 'missing frontmatter' };
+  const lines = fmMatch[1].split('\n');
+  const keys = {};
+  for (const line of lines) {
+    const m = line.match(/^(\w[\w-]*):\s*(.*)$/);
+    if (m) keys[m[1]] = m[2].trim().replace(/^["']|["']$/g, '');
+  }
+  const missing = [];
+  if (!keys.name) missing.push('name');
+  if (!keys.description) missing.push('description');
+  if (!keys['user-invocable'] && !keys['user_invocable']) missing.push('user-invocable/user_invocable');
+  if (!keys.arguments && !keys.args) missing.push('arguments/args');
+  if (missing.length) return { ok: false, error: `missing keys: ${missing.join(', ')}` };
+  if (keys.name !== 'yoCareer') return { ok: false, error: `name is "${keys.name}", expected "yoCareer"` };
+  return { ok: true };
 }
 
-// New: GEMINI.md must also be a shim importing AGENTS.md
-const gemini = readFile('GEMINI.md');
-if (gemini.includes('@AGENTS.md')) {
-  pass('GEMINI.md imports AGENTS.md via @AGENTS.md');
+const agentsSkill = validateSkillFile('.agents/skills/yoCareer/SKILL.md');
+if (agentsSkill.ok) {
+  pass('.agents/skills/yoCareer/SKILL.md frontmatter valid');
 } else {
-  fail('GEMINI.md must import AGENTS.md via @AGENTS.md');
+  fail(`.agents/skills/yoCareer/SKILL.md frontmatter invalid: ${agentsSkill.error}`);
+}
+
+const claudeSkill = validateSkillFile('.claude/skills/yoCareer/SKILL.md');
+if (claudeSkill.ok) {
+  pass('.claude/skills/yoCareer/SKILL.md frontmatter valid');
+} else {
+  fail(`.claude/skills/yoCareer/SKILL.md frontmatter invalid: ${claudeSkill.error}`);
+}
+
+// Cross-SKILL consistency: both files must reference the same set of modes
+function extractSkillModes(path) {
+  const content = readFile(path);
+  // Match mode names from the routing table rows: | `mode` | ... |
+  // Exclude table separators (all dashes) and header words like 'Input', 'Mode'
+  const modes = [...content.matchAll(/\|\s*`?([a-z-]+)`?\s*\|/g)]
+    .map(m => m[1])
+    .filter(m => /^[a-z][a-z-]*$/.test(m) && !['mode', 'input', 'jd'].includes(m.toLowerCase()));
+  // Also extract from argument-hint
+  const hintMatch = content.match(/argument-hint:\s*"\[([^\]]+)\]"/);
+  if (hintMatch) {
+    hintMatch[1].split(/\s*\|\s*/).forEach(m => {
+      const clean = m.trim().replace(/^`|`$/g, '');
+      if (clean && /^[a-z][a-z-]*$/.test(clean) && !modes.includes(clean)) modes.push(clean);
+    });
+  }
+  return [...new Set(modes)];
+}
+
+const agentsModes = extractSkillModes('.agents/skills/yoCareer/SKILL.md');
+const claudeModes = extractSkillModes('.claude/skills/yoCareer/SKILL.md');
+const missingFromAgents = claudeModes.filter(m => !agentsModes.includes(m));
+const missingFromClaude = agentsModes.filter(m => !claudeModes.includes(m));
+if (missingFromAgents.length === 0 && missingFromClaude.length === 0) {
+  pass('SKILL.md files have consistent mode routing');
+} else {
+  if (missingFromAgents.length) fail(`.agents/skills/yoCareer/SKILL.md missing modes: ${missingFromAgents.join(', ')}`);
+  if (missingFromClaude.length) fail(`.claude/skills/yoCareer/SKILL.md missing modes: ${missingFromClaude.join(', ')}`);
+}
+
+// Every mode routed in SKILL.md must have a corresponding modes/{mode}.md file
+const allRoutedModes = [...new Set([...agentsModes, ...claudeModes])].filter(m => m !== 'update');
+for (const mode of allRoutedModes) {
+  if (fileExists(`modes/${mode}.md`)) {
+    pass(`Routed mode has file: ${mode}.md`);
+  } else {
+    fail(`Routed mode missing file: modes/${mode}.md`);
+  }
+}
+
+// GEMINI.md must also be a slim shim
+const gemini = readFile('GEMINI.md');
+const geminiLines = gemini.split('\n').filter(l => l.trim() && !l.trim().startsWith('<!--'));
+if (geminiLines[0]?.trim() === '@AGENTS.md' && geminiLines.length <= 30) {
+  pass('GEMINI.md is a slim shim importing AGENTS.md');
+} else {
+  fail('GEMINI.md must be a slim shim: @AGENTS.md on first non-empty line, <= 30 lines');
 }
 
 // ── 10. VERSION FILE ─────────────────────────────────────────────

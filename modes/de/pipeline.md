@@ -11,7 +11,7 @@ Verarbeitet URLs von Stellenanzeigen, die in `data/pipeline.md` gesammelt wurden
    c. Wenn die URL nicht erreichbar ist → als `- [!]` mit Notiz markieren und weitermachen
    d. **Vollständige Auto-Pipeline ausführen**: A-F-Bewertung → Report .md → PDF (wenn Score >= 3.0) → Tracker
    e. **Von "Offen" nach "Verarbeitet" verschieben**: `- [x] #NNN | URL | Firma | Rolle | Score/5 | PDF ✅/❌`
-3. **Bei 3+ offenen URLs** Agenten parallel starten (Agent-Tool mit `run_in_background`), um Tempo zu machen.
+3. **Bei 3+ offenen URLs** Agenten parallel starten über das Sub-Agent-Primitive des Host-CLI (z.B. `Agent`/`Task` in Claude Code, `spawn_agent` in Codex, Hintergrundprozesse), um Tempo zu machen.
 4. **Am Ende** eine Zusammenfassungstabelle ausgeben:
 
 ```
