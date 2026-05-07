@@ -5,6 +5,9 @@
  * Input:  <platform> <query>
  * Output: JSON { signals: [...] }
  *
+ * Preferred bridge (optional):
+ * - Aditly MCP (http://127.0.0.1:8643/mcp/)
+ *
  * Default local bridge:
  * - x/twitter: xreach search
  * - v2ex: public V2EX API
@@ -13,9 +16,16 @@
  */
 
 import { spawnSync } from 'child_process';
+import { parseBool } from '../lib/bridge-runner.mjs';
+import { fetchWithTimeout, parseMcpPayload, mcpRequest, extractToolText, companyFromUrl } from '../lib/mcp-client.mjs';
 
 const platform = String(process.argv[2] || 'web').trim().toLowerCase();
 const query = String(process.argv.slice(3).join(' ') || '').trim();
+const ADITLY_BASE_URL = String(process.env.YOCAREER_ADITLY_BASE_URL || 'http://127.0.0.1:8643').trim().replace(/\/+$/, '');
+const ADITLY_MCP_ENDPOINT = `${ADITLY_BASE_URL}/mcp/`;
+const ADITLY_PROTOCOL_VERSION = String(process.env.YOCAREER_ADITLY_MCP_PROTOCOL_VERSION || '2025-03-26').trim();
+const ADITLY_TIMEOUT_MS = Math.max(1000, Number.parseInt(process.env.YOCAREER_ADITLY_TIMEOUT_MS || '10000', 10) || 10000);
+const ADITLY_PREFER = parseBool(process.env.YOCAREER_ADITLY_PREFER, false);
 
 const JOB_HINTS = [
   '招聘',
@@ -55,6 +65,136 @@ function run(command, args) {
     throw new Error(result.stderr.trim() || `${command} exited with ${result.status}`);
   }
   return result.stdout;
+}
+
+function extractUrl(text) {
+  const match = String(text || '').match(/https?:\/\/[^\s)>"']+/);
+  return match ? safeUrl(match[0]) : '';
+}
+
+function titleFromChunk(chunk, fallback) {
+  const bold = String(chunk || '').match(/\*\*([^*]+)\*\*/);
+  if (bold && bold[1]) return normalizeText(bold[1], 90);
+  const line = String(chunk || '')
+    .split('\n')
+    .map(s => s.trim())
+    .find(Boolean);
+  return normalizeText(line || fallback || '招聘线索', 90);
+}
+
+function parseAditlySearchText(rawText, sourcePlatform) {
+  const chunks = String(rawText || '')
+    .split(/\n\s*---+\s*\n/g)
+    .map(s => s.trim())
+    .filter(Boolean)
+    .slice(0, 12);
+  const signals = [];
+  for (const chunk of chunks) {
+    const url = extractUrl(chunk);
+    if (!url) continue;
+    if (!includesJobHint(`${chunk} ${url}`)) continue;
+    const title = titleFromChunk(chunk, '招聘线索');
+    const kind = ['x', 'twitter', 'weibo', 'xiaohongshu', 'xhs'].includes(sourcePlatform)
+      ? 'recruiter_post'
+      : 'community_post';
+    const confidence = kind === 'recruiter_post' ? 0.82 : 0.7;
+    const recommendedAction = kind === 'recruiter_post' ? 'message_recruiter' : 'save_for_manual_review';
+    signals.push({
+      kind,
+      company: companyFromUrl(url),
+      title,
+      role: title,
+      url,
+      confidence,
+      source_platform: sourcePlatform,
+      evidence_text: normalizeText(chunk, 260),
+      recommended_action: recommendedAction,
+    });
+  }
+  return signals.filter(row => row.title && row.evidence_text);
+}
+
+function mapAditlyTool(sourcePlatform) {
+  if (sourcePlatform === 'x' || sourcePlatform === 'twitter') {
+    return { name: 'reach_twitter_search', arguments: { query, limit: 12 } };
+  }
+  if (sourcePlatform === 'weibo') {
+    return { name: 'reach_weibo_search', arguments: { query, limit: 12 } };
+  }
+  if (sourcePlatform === 'xiaohongshu' || sourcePlatform === 'xhs') {
+    return { name: 'reach_xiaohongshu_search', arguments: { query, limit: 12 } };
+  }
+  if (sourcePlatform === 'github') {
+    return { name: 'reach_github_search', arguments: { query, search_type: 'issues', limit: 12 } };
+  }
+  if (sourcePlatform === 'v2ex') {
+    return { name: 'reach_v2ex_hot', arguments: { limit: 20 } };
+  }
+  if (sourcePlatform === 'bilibili') {
+    return { name: 'reach_bilibili_search', arguments: { query, limit: 12 } };
+  }
+  return null;
+}
+
+async function maybeFromAditly() {
+  if (!ADITLY_PREFER) return null;
+  const tool = mapAditlyTool(platform);
+  if (!tool) return null;
+
+  const init = await mcpRequest(ADITLY_MCP_ENDPOINT, {
+    jsonrpc: '2.0',
+    id: 1,
+    method: 'initialize',
+    params: {
+      protocolVersion: ADITLY_PROTOCOL_VERSION,
+      capabilities: {},
+      clientInfo: {
+        name: 'yocareer-reach-signal-search',
+        version: '1.0.0',
+      },
+    },
+  }, '', ADITLY_TIMEOUT_MS);
+
+  const sessionId = init.sessionId;
+  if (!sessionId) throw new Error('MCP initialize succeeded but missing mcp-session-id');
+
+  await mcpRequest(ADITLY_MCP_ENDPOINT,
+    {
+      jsonrpc: '2.0',
+      method: 'notifications/initialized',
+    },
+    sessionId,
+    ADITLY_TIMEOUT_MS,
+  );
+
+  const call = await mcpRequest(ADITLY_MCP_ENDPOINT,
+    {
+      jsonrpc: '2.0',
+      id: 2,
+      method: 'tools/call',
+      params: tool,
+    },
+    sessionId,
+    ADITLY_TIMEOUT_MS,
+  );
+
+  try {
+    await fetchWithTimeout(ADITLY_MCP_ENDPOINT, {
+      method: 'DELETE',
+      headers: { 'Mcp-Session-Id': sessionId },
+    }, ADITLY_TIMEOUT_MS);
+  } catch {
+    // best-effort cleanup
+  }
+
+  const text = extractToolText(call.data?.result);
+  if (!text) return [];
+
+  const rows = parseAditlySearchText(text, platform);
+  if (platform === 'v2ex') {
+    return rows.filter(row => includesJobHint(`${row.title} ${row.evidence_text}`)).slice(0, 12);
+  }
+  return rows.slice(0, 12);
 }
 
 function safeUrl(url) {
@@ -195,6 +335,16 @@ async function main() {
   }
 
   try {
+    try {
+      const fromAditly = await maybeFromAditly();
+      if (Array.isArray(fromAditly) && fromAditly.length > 0) {
+        print(fromAditly);
+        return;
+      }
+    } catch (err) {
+      console.warn(`[yoCareer] Aditly bridge unavailable, falling back to local providers: ${err.message}`);
+    }
+
     if (platform === 'x' || platform === 'twitter') {
       print(maybeFromXreach());
       return;

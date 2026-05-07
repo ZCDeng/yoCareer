@@ -23,6 +23,8 @@ import {
 } from 'fs';
 import { spawn } from 'child_process';
 import yaml from 'js-yaml';
+import { tokenizeCommand, bridgeInvocation, resolveBridgeCommand } from './lib/bridge-runner.mjs';
+import { sanitizeLineField, sanitizeTsvField } from './lib/sanitize.mjs';
 
 const parseYaml = yaml.load;
 
@@ -80,12 +82,6 @@ const JOB_LINK_HINTS = [
   '加入我们',
   '人才',
 ];
-
-function resolveBridgeCommand(explicitCommand, defaultScriptPath) {
-  const command = String(explicitCommand || '').trim();
-  if (command) return command;
-  return existsSync(defaultScriptPath) ? defaultScriptPath : '';
-}
 
 // ── Provider resolution ─────────────────────────────────────────────
 
@@ -194,10 +190,12 @@ function sleep(ms) {
 
 function runBridgeCommand(command, args) {
   return new Promise((resolve, reject) => {
-    const positional = args.map((_, idx) => `"$${idx + 1}"`).join(' ');
-    const child = spawn('sh', ['-lc', `${command} ${positional}`, 'yocareer-bridge', ...args], {
+    const invocation = bridgeInvocation(command, args);
+    const child = spawn(invocation.bin, invocation.argv, {
       stdio: ['ignore', 'pipe', 'pipe'],
       env: process.env,
+      shell: false,
+      timeout: 30000,
     });
     let stdout = '';
     let stderr = '';
@@ -798,7 +796,12 @@ function appendToPipeline(signals) {
   let text = ensurePipelineText();
   const marker = '## Pendientes';
   const idx = text.indexOf(marker);
-  const lines = signals.map(s => `- [ ] ${s.url} | ${s.company} | ${s.title}`);
+  const lines = signals.map(s => {
+    const url = sanitizeLineField(s.url, 1000);
+    const company = sanitizeLineField(s.company);
+    const title = sanitizeLineField(s.title);
+    return `- [ ] ${url} | ${company} | ${title}`;
+  });
 
   if (idx === -1) {
     const procIdx = text.indexOf('## Procesadas');
@@ -822,14 +825,14 @@ function appendToScanHistory(signals, date) {
   }
 
   const lines = signals.map(s =>
-    `${s.url}\t${date}\t${s.source_platform}\t${s.title}\t${s.company}\tadded`
+    `${sanitizeTsvField(s.url, 1000)}\t${sanitizeTsvField(date, 20)}\t${sanitizeTsvField(s.source_platform, 80)}\t${sanitizeTsvField(s.title)}\t${sanitizeTsvField(s.company, 200)}\tadded`
   ).join('\n') + '\n';
 
   appendFileSync(SCAN_HISTORY_PATH, lines, 'utf-8');
 }
 
 function escapeReviewText(value) {
-  return String(value || '').replace(/\s+/g, ' ').trim().slice(0, 500);
+  return String(value || '').replace(/[|\t\r\n]+/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 500);
 }
 
 function appendToSignalReview(signals, date) {

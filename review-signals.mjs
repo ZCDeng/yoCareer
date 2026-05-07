@@ -25,6 +25,22 @@ const SCAN_HISTORY_PATH = 'data/scan-history.tsv';
 
 mkdirSync('data', { recursive: true });
 
+function sanitizePipelineField(value, maxLen = 240) {
+  return String(value || '')
+    .replace(/[|\t\r\n]+/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim()
+    .slice(0, maxLen);
+}
+
+function sanitizeTsvField(value, maxLen = 800) {
+  return String(value || '')
+    .replace(/[\t\r\n]+/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim()
+    .slice(0, maxLen);
+}
+
 function parseArgs(argv) {
   const args = { command: argv[0] || 'list', dryRun: argv.includes('--dry-run') };
   for (let i = 1; i < argv.length; i++) {
@@ -94,7 +110,7 @@ function ensurePipelineText() {
 
 function appendToPipeline(block) {
   const url = block.url || `signal-review:${block.company}:${block.title}`;
-  const line = `- [ ] ${url} | ${block.company} | ${block.title}`;
+  const line = `- [ ] ${sanitizePipelineField(url, 1000)} | ${sanitizePipelineField(block.company)} | ${sanitizePipelineField(block.title)}`;
   let text = ensurePipelineText();
   const marker = '## Pendientes';
   const idx = text.indexOf(marker);
@@ -116,7 +132,11 @@ function appendToScanHistory(block, date, status) {
     writeFileSync(SCAN_HISTORY_PATH, 'url\tfirst_seen\tportal\ttitle\tcompany\tstatus\n', 'utf-8');
   }
   const url = block.url || `signal-review:${block.company}:${block.title}`;
-  appendFileSync(SCAN_HISTORY_PATH, `${url}\t${date}\t${block.source}\t${block.title}\t${block.company}\t${status}\n`, 'utf-8');
+  appendFileSync(
+    SCAN_HISTORY_PATH,
+    `${sanitizeTsvField(url, 1000)}\t${sanitizeTsvField(date, 20)}\t${sanitizeTsvField(block.source, 120)}\t${sanitizeTsvField(block.title)}\t${sanitizeTsvField(block.company, 200)}\t${sanitizeTsvField(status, 80)}\n`,
+    'utf-8'
+  );
 }
 
 function archiveBlock(block, action, date) {

@@ -148,18 +148,14 @@ Die vollständige Bewertung in `reports/{###}-{company-slug}-{YYYY-MM-DD}.md` ab
 
 ### 2. Im Tracker eintragen
 
-**IMMER** in `data/applications.md` eintragen:
-- Nächste fortlaufende Nummer
-- Aktuelles Datum
-- Firma
-- Rolle
-- Score: Match-Durchschnitt (1-5)
-- Status: `Evaluated`
-- PDF: ❌ (oder ✅, wenn Auto-Pipeline ein PDF erzeugt hat)
-- Report: relativer Link zur Report-Datei (z. B. `[001](reports/001-company-2026-01-01.md)`)
+Für **neue** Einträge `data/applications.md` nicht direkt bearbeiten.
 
-**Tracker-Format:**
+1. Eine TSV-Zeile in `batch/tracker-additions/{num}-{company-slug}.tsv` schreiben:
 
-```markdown
-| # | Datum | Firma | Rolle | Score | Status | PDF | Report |
+```text
+{num}\t{date}\t{company}\t{role}\t{status}\t{score}\t{pdf_emoji}\t[{num}](reports/{num}-{slug}-{date}.md)\t{note}
 ```
+
+2. `node merge-tracker.mjs` ausführen, um in `data/applications.md` zu mergen.
+
+Für **bestehende** Zeilen sind direkte Updates von `status`, `pdf` und `report` erlaubt.

@@ -18,6 +18,12 @@ import { readFileSync, writeFileSync, readdirSync, mkdirSync, renameSync, exists
 import { join, basename, dirname } from 'path';
 import { fileURLToPath } from 'url';
 import { execFileSync } from 'child_process';
+import {
+  canonicalStatusIds,
+  loadStatusSchema,
+  normalizeStatusToId,
+  normalizeStatusToLabel,
+} from './lib/status-schema.mjs';
 
 const CAREER_OPS = dirname(fileURLToPath(import.meta.url));
 // Support both layouts: data/applications.md (boilerplate) and applications.md (original)
@@ -28,43 +34,35 @@ const ADDITIONS_DIR = join(CAREER_OPS, 'batch/tracker-additions');
 const MERGED_DIR = join(ADDITIONS_DIR, 'merged');
 const DRY_RUN = process.argv.includes('--dry-run');
 const VERIFY = process.argv.includes('--verify');
+const STATES_FILE = existsSync(join(CAREER_OPS, 'templates/states.yml'))
+  ? join(CAREER_OPS, 'templates/states.yml')
+  : join(CAREER_OPS, 'states.yml');
+const STATUS_SCHEMA = loadStatusSchema(STATES_FILE);
+const CANONICAL_STATUS_SET = new Set(canonicalStatusIds(STATUS_SCHEMA));
 
 // Ensure required directories exist (fresh setup)
 mkdirSync(join(CAREER_OPS, 'data'), { recursive: true });
 mkdirSync(ADDITIONS_DIR, { recursive: true });
 
-// Canonical states and aliases
-const CANONICAL_STATES = ['Evaluated', 'Applied', 'Responded', 'Interview', 'Offer', 'Rejected', 'Discarded', 'SKIP'];
-
 function validateStatus(status) {
-  const clean = status.replace(/\*\*/g, '').replace(/\s+\d{4}-\d{2}-\d{2}.*$/, '').trim();
-  const lower = clean.toLowerCase();
-
-  for (const valid of CANONICAL_STATES) {
-    if (valid.toLowerCase() === lower) return valid;
+  const normalizedId = normalizeStatusToId(STATUS_SCHEMA, status);
+  if (normalizedId && CANONICAL_STATUS_SET.has(normalizedId)) {
+    return normalizeStatusToLabel(STATUS_SCHEMA, status);
   }
 
-  // Aliases
-  const aliases = {
-    // Spanish → English
-    'evaluada': 'Evaluated', 'condicional': 'Evaluated', 'hold': 'Evaluated', 'evaluar': 'Evaluated', 'verificar': 'Evaluated',
-    'aplicado': 'Applied', 'enviada': 'Applied', 'aplicada': 'Applied', 'applied': 'Applied', 'sent': 'Applied',
-    'respondido': 'Responded',
-    'entrevista': 'Interview',
-    'oferta': 'Offer',
-    'rechazado': 'Rejected', 'rechazada': 'Rejected',
-    'descartado': 'Discarded', 'descartada': 'Discarded', 'cerrada': 'Discarded', 'cancelada': 'Discarded',
-    'no aplicar': 'SKIP', 'no_aplicar': 'SKIP', 'skip': 'SKIP', 'monitor': 'SKIP',
-    'geo blocker': 'SKIP',
-  };
-
-  if (aliases[lower]) return aliases[lower];
-
-  // DUPLICADO/Repost → Discarded
-  if (/^(duplicado|dup|repost)/i.test(lower)) return 'Discarded';
+  // Backward-compatible fallback for prefixed legacy values.
+  const clean = String(status || '').replace(/\*\*/g, '').trim().toLowerCase();
+  if (/^(duplicado|dup|repost)/i.test(clean)) return normalizeStatusToLabel(STATUS_SCHEMA, 'discarded');
 
   console.warn(`⚠️  Non-canonical status "${status}" → defaulting to "Evaluated"`);
-  return 'Evaluated';
+  return normalizeStatusToLabel(STATUS_SCHEMA, 'evaluated');
+}
+
+function sanitizeCell(value) {
+  return String(value || '')
+    .replace(/[|\t\r\n]+/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
 }
 
 function normalizeCompany(name) {
@@ -316,7 +314,8 @@ for (const file of tsvFiles) {
       console.log(`🔄 Update: #${duplicate.num} ${addition.company} — ${addition.role} (${oldScore}→${newScore})`);
       const lineIdx = appLines.indexOf(duplicate.raw);
       if (lineIdx >= 0) {
-        const updatedLine = `| ${duplicate.num} | ${addition.date} | ${addition.company} | ${addition.role} | ${addition.score} | ${duplicate.status} | ${duplicate.pdf} | ${addition.report} | Re-eval ${addition.date} (${oldScore}→${newScore}). ${addition.notes} |`;
+        const reevaluationNote = sanitizeCell(`Re-eval ${addition.date} (${oldScore}→${newScore}). ${addition.notes}`);
+        const updatedLine = `| ${duplicate.num} | ${sanitizeCell(addition.date)} | ${sanitizeCell(addition.company)} | ${sanitizeCell(addition.role)} | ${sanitizeCell(addition.score)} | ${sanitizeCell(duplicate.status)} | ${sanitizeCell(duplicate.pdf)} | ${sanitizeCell(addition.report)} | ${reevaluationNote} |`;
         appLines[lineIdx] = updatedLine;
         updated++;
       }
@@ -329,7 +328,7 @@ for (const file of tsvFiles) {
     const entryNum = addition.num > maxNum ? addition.num : ++maxNum;
     if (addition.num > maxNum) maxNum = addition.num;
 
-    const newLine = `| ${entryNum} | ${addition.date} | ${addition.company} | ${addition.role} | ${addition.score} | ${addition.status} | ${addition.pdf} | ${addition.report} | ${addition.notes} |`;
+    const newLine = `| ${entryNum} | ${sanitizeCell(addition.date)} | ${sanitizeCell(addition.company)} | ${sanitizeCell(addition.role)} | ${sanitizeCell(addition.score)} | ${sanitizeCell(addition.status)} | ${sanitizeCell(addition.pdf)} | ${sanitizeCell(addition.report)} | ${sanitizeCell(addition.notes)} |`;
     newLines.push(newLine);
     added++;
     console.log(`➕ Add #${entryNum}: ${addition.company} — ${addition.role} (${addition.score})`);

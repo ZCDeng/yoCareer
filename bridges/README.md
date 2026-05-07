@@ -9,6 +9,32 @@ Built-in default bridges:
 
 If these files exist, scanner scripts use them automatically even when env vars are not set.
 
+## Recommended: Aditly as external enhancer (not embedded)
+
+The default bridge scripts can call an external Aditly MCP server first, then fall back to local logic.
+
+Environment variables:
+
+```bash
+YOCAREER_ADITLY_BASE_URL=http://127.0.0.1:8643
+YOCAREER_ADITLY_PREFER=true
+YOCAREER_ADITLY_TIMEOUT_MS=10000
+```
+
+Aditly endpoint expected by the bridge:
+- Health: `${YOCAREER_ADITLY_BASE_URL}/health`
+- MCP: `${YOCAREER_ADITLY_BASE_URL}/mcp/`
+
+Quick run:
+
+```bash
+git clone https://github.com/ZCDeng/Aditly.git
+cd Aditly
+cp .env.example .env
+docker compose -f compose.prebuilt.yaml up -d
+curl http://127.0.0.1:8643/health
+```
+
 ## 1) URL Bridge
 
 Environment variable:

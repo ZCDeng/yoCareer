@@ -1,23 +1,22 @@
-# yoCareer China Portal Configuration
-# Copy to portals.yml and customize for your target roles.
+# yoCareer 国内招聘扫描配置（中国默认版）
+# 复制到项目根目录为 portals.yml 使用。
 #
-# Default principle:
-# - Prefer public company career pages and user-provided imports.
-# - Do not automate login, CAPTCHA, bulk scraping, or mass messaging on BOSS/Zhaopin/Liepin/51job/Lagou/Maimai.
+# 默认策略：
+# 1) company_page：公司公开招聘页（主渠道）
+# 2) manual_signal_import：用户导入社媒/社区信号
+# 3) reach_signal_search：可选公开信号检索（需配置 bridge）
 #
-# Supported providers:
-# - ats_api: Greenhouse, Ashby, and Lever public APIs detected from api/careers_url.
-# - company_page: public career page link extraction with Playwright.
-# - manual_signal_import: local NDJSON signal import from user-provided/exported posts.
-# - reach_read_url: optional external Reach bridge for public URLs when configured.
-# - reach_signal_search: optional external Reach bridge for social/community searches.
-# - manual_only: visible-page review or user-provided imports only.
+# 合规基线：
+# - 不做登录自动化、验证码绕过、账号态抓取、批量私信或批量投递
+# - 只处理公开页面与用户手动导入内容
 
 title_filter:
   positive:
+    # AI / engineering
     - "AI"
     - "AIGC"
     - "大模型"
+    - "生成式AI"
     - "生成式 AI"
     - "智能体"
     - "Agent"
@@ -32,9 +31,16 @@ title_filter:
     - "平台"
     - "架构师"
     - "解决方案"
+    - "数据"
+    # product / operations / growth
     - "产品经理"
     - "技术产品"
-    - "数据"
+    - "产品运营"
+    - "用户运营"
+    - "增长"
+    - "商业化"
+    - "策略运营"
+    - "内容运营"
   negative:
     - "实习"
     - "兼职"
@@ -42,8 +48,9 @@ title_filter:
     - "驻场"
     - "电话销售"
     - "课程顾问"
-    - "招商"
     - "保险"
+    - "主播"
+    - "带货"
     - "区块链"
     - "Web3"
   seniority_boost:
@@ -57,27 +64,47 @@ title_filter:
     - "Principal"
     - "Lead"
 
-# search_queries 会被映射为 reach_signal_search（默认 platform=web）。
+# search_queries 会被映射到 reach_signal_search provider。
 # 需要配置 YOCAREER_REACH_SIGNAL_SEARCH_CMD 才会实际执行。
 search_queries:
-  - name: Company Careers — 大模型
-    query: '"大模型" "招聘" "职位" "AI"'
+  - name: Company Careers — AI/大模型
+    platform: web
+    query: '"大模型" "招聘" "职位" "AI 工程师"'
+    kind: official_job
+    default_confidence: 0.74
+    default_action: apply_on_official_site
     enabled: true
 
-  - name: Campus — AI 校招
-    query: '"校招" "大模型" "算法" "机器学习"'
+  - name: Company Careers — 产品/运营
+    platform: web
+    query: '"AI 产品经理" OR "产品运营" OR "增长运营" 招聘'
+    kind: official_job
+    default_confidence: 0.72
+    default_action: apply_on_official_site
     enabled: true
 
-  - name: Niuke — AI 社招
-    query: 'site:nowcoder.com "大模型" "社招" "算法"'
+  - name: Nowcoder — 社招/校招 AI
+    platform: web
+    query: 'site:nowcoder.com 大模型 算法 后端 产品运营 招聘'
+    kind: community_post
+    default_confidence: 0.66
+    default_action: save_for_manual_review
     enabled: true
 
-  - name: V2EX — 酷工作 AI
-    query: 'site:v2ex.com/go/jobs "AI" OR "大模型" OR "后端"'
-    enabled: true
+  - name: V2EX — 酷工作
+    platform: v2ex
+    query: 'AI 大模型 后端 平台 产品 招聘'
+    kind: community_post
+    default_confidence: 0.68
+    default_action: save_for_manual_review
+    enabled: false
 
-  - name: Guopin — 国企 AI
-    query: 'site:iguopin.com "人工智能" OR "大模型" OR "数据"'
+  - name: GitHub hiring mentions
+    platform: github
+    query: '"AI Engineer" OR "LLM" OR "产品运营 招聘" China hiring'
+    kind: community_post
+    default_confidence: 0.65
+    default_action: save_for_manual_review
     enabled: false
 
 signal_imports:
@@ -85,9 +112,25 @@ signal_imports:
     enabled: true
     provider: manual_signal_import
     path: data/signals.ndjson
-    notes: "One JSON object per line. Use for pasted/exported Weibo, Xiaohongshu, WeChat public article, group-forward, or recruiter-post signals."
+    notes: "每行一个 JSON。可导入微博、小红书、公众号、社区帖子、招聘者消息等公开信号。"
 
 signal_searches:
+  - name: V2EX AI hiring signals
+    enabled: true
+    provider: reach_signal_search
+    platform: v2ex
+    query: 'AI 大模型 后端 算法 产品 招聘'
+    default_confidence: 0.68
+    default_action: save_for_manual_review
+
+  - name: GitHub hiring signals
+    enabled: true
+    provider: reach_signal_search
+    platform: github
+    query: '"AI hiring" OR "LLM engineer" OR "产品运营 招聘"'
+    default_confidence: 0.65
+    default_action: save_for_manual_review
+
   - name: Weibo AI hiring signals
     enabled: false
     provider: reach_signal_search
@@ -95,84 +138,117 @@ signal_searches:
     query: '"大模型" "招聘" "算法"'
     default_confidence: 0.66
     default_action: save_for_manual_review
-    notes: "Requires YOCAREER_REACH_SIGNAL_SEARCH_CMD. Do not use login-gated or private-account content."
+    notes: "仅在有合规的微博公开信号 bridge 时启用。"
 
-  - name: V2EX AI jobs
-    enabled: true
-    provider: reach_signal_search
-    platform: v2ex
-    query: 'AI 大模型 后端 算法 招聘'
-    default_confidence: 0.68
-    default_action: save_for_manual_review
-
-  - name: GitHub hiring mentions
+  - name: Xiaohongshu AI hiring signals
     enabled: false
     provider: reach_signal_search
-    platform: github
-    query: '"大模型" "招聘" "AI Engineer"'
-    default_confidence: 0.65
+    platform: xiaohongshu
+    query: '"AI 招聘" "大模型 岗位"'
+    default_confidence: 0.64
     default_action: save_for_manual_review
+    notes: "仅在有合规的小红书公开信号 bridge 时启用。"
 
 tracked_companies:
   - name: Alibaba
     enabled: true
     provider: company_page
     careers_url: "https://talent.alibaba.com"
-    notes: "Public career site. Verify role page manually before evaluation."
+    notes: "公开招聘页。"
 
   - name: Tencent
     enabled: true
     provider: company_page
     careers_url: "https://careers.tencent.com"
-    notes: "Public career site. Campus and social recruiting are separate."
+    notes: "公开招聘页。"
 
   - name: ByteDance
     enabled: true
     provider: company_page
     careers_url: "https://jobs.bytedance.com"
-    notes: "Public career site. Check city and business line carefully."
+    notes: "公开招聘页。"
 
   - name: Huawei
     enabled: true
     provider: company_page
     careers_url: "https://career.huawei.com"
-    notes: "Public career site. Separate campus and experienced-hire flows."
+    notes: "公开招聘页。"
+
+  - name: Baidu
+    enabled: true
+    provider: company_page
+    careers_url: "https://talent.baidu.com/jobs"
+    notes: "公开招聘页。"
+
+  - name: Ant Group
+    enabled: true
+    provider: company_page
+    careers_url: "https://www.ant-group.net/career"
+    notes: "公开招聘页。"
 
   - name: Meituan
     enabled: true
     provider: company_page
     careers_url: "https://zhaopin.meituan.com"
-    notes: "Public career site. Verify location and business group."
+    notes: "公开招聘页。"
 
   - name: JD
     enabled: true
     provider: company_page
     careers_url: "https://zhaopin.jd.com"
-    notes: "Public career site."
+    notes: "公开招聘页。"
 
   - name: Xiaomi
     enabled: true
     provider: company_page
     careers_url: "https://hr.xiaomi.com"
-    notes: "Public career site."
+    notes: "公开招聘页。"
+
+  - name: Kuaishou
+    enabled: true
+    provider: company_page
+    careers_url: "https://campus.kuaishou.cn"
+    notes: "校招为主，可用于岗位趋势信号。"
+
+  - name: Moonshot AI
+    enabled: true
+    provider: company_page
+    careers_url: "https://www.moonshot-ai.com/careers/"
+    notes: "公开招聘页。"
 
 restricted_platforms:
   - name: BOSS直聘
     default_mode: "manual_import_only"
-    reason: "Avoid automated login, scraping, simulated user behavior, and mass messaging."
+    reason: "不做登录自动化、抓取模拟或批量私信。"
 
   - name: 智联招聘
     default_mode: "manual_import_only"
-    reason: "Use pasted JD, screenshots, or user-exported records."
+    reason: "使用用户粘贴 JD、截图 OCR 或导出记录。"
 
   - name: 猎聘
     default_mode: "manual_import_only"
-    reason: "Use visible-page assistance only after user review."
+    reason: "仅处理用户复核后的可见内容与手动导入。"
 
   - name: 前程无忧
     default_mode: "manual_import_only"
-    reason: "Avoid bulk crawling and account automation."
+    reason: "避免账号自动化和批量爬取。"
+
+  - name: 拉勾
+    default_mode: "manual_import_only"
+    reason: "仅使用用户提供记录或公开链接。"
 
   - name: 脉脉
     default_mode: "manual_import_only"
-    reason: "Private social/contact data should be user-provided and minimized."
+    reason: "私域社交数据应由用户最小化提供。"
+
+  - name: 小红书
+    default_mode: "manual_import_only"
+    reason: "仅使用公开信号导出，不做账号交互自动化。"
+
+  - name: 微信公众号
+    default_mode: "manual_import_only"
+    reason: "仅使用公开文章链接或手动导入。"
+
+  - name: 微博
+    default_mode: "manual_import_only"
+    reason: "仅处理公开链接与公开信号，不做账号自动化。"

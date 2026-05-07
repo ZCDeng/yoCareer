@@ -30,8 +30,11 @@ Copy from `templates/portals.example.yml` and customize:
 
 1. **title_filter.positive**: Keywords matching your target roles
 2. **title_filter.negative**: Tech stacks or domains to exclude
-3. **search_queries**: WebSearch queries for job boards (Ashby, Greenhouse, Lever)
-4. **tracked_companies**: Companies to check directly
+3. **search_queries / signal_searches**: Public discovery queries (China job communities + social signals)
+4. **tracked_companies**: Companies to check directly from public careers pages
+5. **signal_imports**: `data/signals.ndjson` inbox for user-exported Weibo/Xiaohongshu/WeChat/community signals
+6. **restricted_platforms**: Domestic login-gated platforms kept as `manual_import_only` by default
+7. **Aditly bridge (recommended external)**: set `YOCAREER_ADITLY_BASE_URL`, `YOCAREER_ADITLY_PREFER=true` in `.env` for stronger public-signal extraction via MCP
 
 ## CV Template (templates/cv-template.html)
 

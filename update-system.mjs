@@ -62,6 +62,10 @@ const SYSTEM_PATHS = [
   'cv-sync-check.mjs',
   'update-system.mjs',
   'scan.mjs',
+  'provider-health.mjs',
+  'bridge-smoke.mjs',
+  'review-signals.mjs',
+  'model-health.mjs',
   'doctor.mjs',
   'check-liveness.mjs',
   'liveness-core.mjs',
@@ -71,8 +75,11 @@ const SYSTEM_PATHS = [
   'test-all.mjs',
   'batch/batch-prompt.md',
   'batch/batch-runner.sh',
+  'bridges/',
   'dashboard/',
+  'lib/',
   'templates/',
+  'config/models.example.yml',
   'fonts/',
   '.claude/skills/',
   '.gemini/commands/',
@@ -85,6 +92,7 @@ const SYSTEM_PATHS = [
   'CITATION.cff',
   '.github/',
   'package.json',
+  'package-lock.json',
 ];
 
 // User layer paths — NEVER touch these (safety check)

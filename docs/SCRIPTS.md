@@ -39,12 +39,13 @@ npm run doctor
 
 ## providers
 
-Reports scanner provider availability for the local runtime: ATS APIs, Playwright company pages, manual signal imports, restricted manual-only platforms, and optional Reach bridge configuration.
+Reports scanner provider availability for the local runtime: ATS APIs, Playwright company pages, manual signal imports, restricted manual-only platforms, optional Reach bridge configuration, and optional Aditly MCP health.
 
 ```bash
 npm run providers
 YOCAREER_REACH_READ_URL_CMD="reach read-url" npm run providers
 YOCAREER_REACH_SIGNAL_SEARCH_CMD="reach signal-search" npm run providers
+YOCAREER_ADITLY_BASE_URL="http://127.0.0.1:8643" npm run providers
 ```
 
 Reach is optional. If no env command is configured, yoCareer auto-detects built-in local bridge scripts:
@@ -68,12 +69,13 @@ Reference bridge templates:
 
 ## bridge:smoke
 
-Executes configured bridge commands with sample arguments and checks whether output is valid JSON with a `signals` array.
+Checks Aditly MCP health (if enabled), then executes configured bridge commands with sample arguments and checks whether output is valid JSON with a `signals` array.
 
 ```bash
 npm run bridge:smoke
 YOCAREER_REACH_READ_URL_CMD="./bridges/reach-read-url.mjs" \
 YOCAREER_REACH_SIGNAL_SEARCH_CMD="./bridges/reach-signal-search.mjs" \
+YOCAREER_ADITLY_PREFER=true \
 npm run bridge:smoke
 ```
 
@@ -270,7 +272,7 @@ Each URL gets a verdict: `active`, `expired`, or `uncertain` with a reason.
 
 ## scan
 
-Provider-based recruitment signal scanner. Hits ATS APIs (Greenhouse, Ashby, Lever), public career pages, and local user-provided signal imports without LLM tokens. Reads `portals.yml`, outputs matching signals to stdout, appends high-confidence signals to `data/pipeline.md`, and holds low-confidence/manual-review signals in `data/signal-review.md`.
+Provider-based recruitment signal scanner. Combines ATS APIs (Greenhouse/Ashby/Lever), public career pages, local user-provided signal imports, and optional `reach_signal_search` bridge capability (Aditly-first when enabled, local fallback otherwise). Reads `portals.yml`, outputs matching signals to stdout, appends high-confidence signals to `data/pipeline.md`, and holds low-confidence/manual-review signals in `data/signal-review.md`.
 
 ```bash
 npm run scan

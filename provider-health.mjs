@@ -11,8 +11,12 @@
 import { existsSync, readFileSync } from 'fs';
 import { spawnSync } from 'child_process';
 import yaml from 'js-yaml';
+import { parseBool } from './lib/bridge-runner.mjs';
 
 const PORTALS_PATH = 'portals.yml';
+const ADITLY_BASE_URL = String(process.env.YOCAREER_ADITLY_BASE_URL || 'http://127.0.0.1:8643').trim().replace(/\/+$/, '');
+const ADITLY_TIMEOUT_MS = Math.max(1000, Number.parseInt(process.env.YOCAREER_ADITLY_TIMEOUT_MS || '10000', 10) || 10000);
+const ADITLY_PREFER = parseBool(process.env.YOCAREER_ADITLY_PREFER, false);
 
 function ok(label, detail = '') {
   return { status: 'available', label, detail };
@@ -74,6 +78,28 @@ async function checkPlaywright() {
       : warn('company_page', 'Run: npx playwright install chromium');
   } catch {
     return warn('company_page', 'Run: npm install && npx playwright install chromium');
+  }
+}
+
+async function checkAditlyMcp() {
+  if (!ADITLY_PREFER) {
+    return info('aditly_mcp', 'Disabled by YOCAREER_ADITLY_PREFER=false');
+  }
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), ADITLY_TIMEOUT_MS);
+  try {
+    const res = await fetch(`${ADITLY_BASE_URL}/health`, { signal: controller.signal });
+    if (!res.ok) return warn('aditly_mcp', `Health endpoint HTTP ${res.status}: ${ADITLY_BASE_URL}/health`);
+    const data = await res.json();
+    const tools = typeof data?.tools === 'number' ? `${data.tools} tools` : 'tools unknown';
+    if (String(data?.status || '').toLowerCase() !== 'ok') {
+      return warn('aditly_mcp', `Health returned non-ok status (${data?.status || 'unknown'})`);
+    }
+    return ok('aditly_mcp', `${ADITLY_BASE_URL}/mcp/ reachable (${tools})`);
+  } catch (err) {
+    return warn('aditly_mcp', `${ADITLY_BASE_URL}/health unreachable: ${err.message}`);
+  } finally {
+    clearTimeout(timer);
   }
 }
 
@@ -146,6 +172,7 @@ async function main() {
   const capabilities = [
     ok('ats_api', 'Greenhouse, Ashby, and Lever public APIs'),
     await checkPlaywright(),
+    await checkAditlyMcp(),
     checkManualImports(config),
     ok('manual_only', 'Restricted/login-gated platforms remain manual'),
     checkReachReadUrlBridge(),
@@ -159,7 +186,7 @@ async function main() {
     console.log(`  - ${provider}: ${count}`);
   }
 
-  console.log('\nReach note: Node scripts cannot call Codex/MCP tools directly. Configure local bridge commands only when Reach is exposed as CLI/wrappers. URL bridges receive: <url>. Signal-search bridges receive: <platform> <query>.');
+  console.log('\nBridge note: scanner bridges accept shell commands only. URL bridges receive: <url>. Signal-search bridges receive: <platform> <query>. Aditly is supported via streamable HTTP MCP on YOCAREER_ADITLY_BASE_URL.');
 }
 
 main().catch(err => {

@@ -149,18 +149,14 @@ Salvar avaliação completa em `reports/{###}-{company-slug}-{YYYY-MM-DD}.md`.
 
 ### 2. Registrar no tracker
 
-**SEMPRE** registrar em `data/applications.md`:
-- Próximo número sequencial
-- Data atual
-- Empresa
-- Vaga
-- Score: média do match (1-5)
-- Status: `Evaluated`
-- PDF: ❌ (ou ✅ se a auto-pipeline gerou PDF)
-- Report: link relativo ao report .md (ex: `[001](reports/001-company-2026-01-01.md)`)
+Para **novas** entradas, não editar `data/applications.md` diretamente.
 
-**Formato do tracker:**
+1. Escrever uma linha TSV em `batch/tracker-additions/{num}-{company-slug}.tsv`:
 
-```markdown
-| # | Data | Empresa | Vaga | Score | Status | PDF | Report |
+```text
+{num}\t{date}\t{company}\t{role}\t{status}\t{score}\t{pdf_emoji}\t[{num}](reports/{num}-{slug}-{date}.md)\t{note}
 ```
+
+2. Executar `node merge-tracker.mjs` para fazer o merge em `data/applications.md`.
+
+Para **entradas existentes**, atualizações diretas de `status`, `pdf` e `report` são permitidas.
