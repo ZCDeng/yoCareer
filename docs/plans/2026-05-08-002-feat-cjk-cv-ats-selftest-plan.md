@@ -1,7 +1,7 @@
 ---
 title: CJK-first CV 渲染 + ATS 自检
 type: feat
-status: active
+status: completed
 date: 2026-05-08
 origin: docs/brainstorms/2026-05-08-cjk-cv-ats-selftest-requirements.md
 ---
