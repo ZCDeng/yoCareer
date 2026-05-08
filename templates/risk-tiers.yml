@@ -1,0 +1,164 @@
+---
+# yoCareer 中国市场招聘风险信号库
+# 用于结构化查表评估 JD 中的 red flags
+# 系统层文件，可独立更新
+
+version: 1
+
+signals:
+  # ── contract_risk: 合同风险 ──
+  - id: contract-outsourcing
+    tier: high
+    category: contract_risk
+    patterns:
+      - /外包|派遣|供应商|第三方雇佣|劳务外包/i
+      - /outsourc|contractor|third-party/i
+    weight: 8
+    description: 岗位为外包/派遣/供应商性质，非正式员工编制
+
+  - id: contract-probation-long
+    tier: medium
+    category: contract_risk
+    patterns:
+      - /试用期.{0,5}6个月|试用期.{0,5}六个月|试用期.{0,5}超过3个月/i
+      - /试用期无转正|试用期不保证转正/i
+    weight: 5
+    description: 试用期过长（6个月）或无明确转正条件
+
+  - id: contract-no-social-insurance
+    tier: high
+    category: contract_risk
+    patterns:
+      - /不缴五险一金|无五险一金|五险一金.{0,3}自费|社保.{0,3}自理/i
+      - /no social insurance|no五险一金/i
+    weight: 9
+    description: 不缴纳五险一金或社保公积金
+
+  - id: contract-no-labor-contract
+    tier: critical
+    category: contract_risk
+    patterns:
+      - /不签劳动合同|无劳动合同|第三方合同|劳务合同/i
+      - /no employment contract/i
+    weight: 10
+    description: 不签订正式劳动合同
+
+  # ── compensation_risk: 薪酬风险 ──
+  - id: comp-negotiable-only
+    tier: medium
+    category: compensation_risk
+    patterns:
+      - /薪资面议|薪酬面议|待遇面议|工资面议/i
+      - /salary negotiable|compensation negotiable/i
+    weight: 5
+    description: 薪资完全面议，无区间或基准
+
+  - id: comp-no-range
+    tier: medium
+    category: compensation_risk
+    patterns:
+      - /未提及薪资|未说明薪资|无薪资信息|薪酬结构.{0,3}不明确/i
+      - /no salary information|salary not disclosed/i
+    weight: 4
+    description: JD 中完全未提及薪资或薪酬结构
+
+  - id: comp-low-bonus
+    tier: low
+    category: compensation_risk
+    patterns:
+      - /12薪|十三薪以下|无年终奖|无绩效奖金/i
+    weight: 2
+    description: 13薪以下且无其他补偿说明
+
+  # ── workload_risk: 工作负荷风险 ──
+  - id: workload-996
+    tier: high
+    category: workload_risk
+    patterns:
+      - /996|大小周|单休|做六休一|每周六天|月休四天/i
+      - /high intensity|long working hours/i
+    weight: 8
+    description: 996、大小周或单休等高强度工作制度
+
+  - id: workload-oncall-uncompensated
+    tier: medium
+    category: workload_risk
+    patterns:
+      - /强制on-call|轮班.{0,3}无补贴|夜间值班.{0,3}无补偿/i
+      - /mandatory on-call|uncompensated shift/i
+    weight: 5
+    description: 强制 on-call 或轮班且无补偿
+
+  - id: workload-frequent-travel
+    tier: medium
+    category: workload_risk
+    patterns:
+      - /高频出差|长期驻场|长期外派|出差.{0,3}频繁/i
+      - /frequent travel|long-term onsite/i
+    weight: 4
+    description: 高频出差或长期驻场/外派
+
+  # ── platform_risk: 平台/渠道风险 ──
+  - id: platform-unofficial-hr
+    tier: medium
+    category: platform_risk
+    patterns:
+      - /个人招聘|非企业微信|私人账号|个人微信招聘/i
+      - /personal recruitment|unofficial HR/i
+    weight: 5
+    description: 使用非官方 HR 渠道（个人账号、非企微等）
+
+  - id: platform-bulk-referral
+    tier: medium
+    category: platform_risk
+    patterns:
+      - /批量内推码|内推码.{0,3}出售|闲鱼.{0,3}内推/i
+      - /bulk referral|referral code for sale/i
+    weight: 5
+    description: 批量贩卖内推码，内推已 commoditized
+
+  - id: platform-upfront-fee
+    tier: critical
+    category: platform_risk
+    patterns:
+      - /先付费|押金|培训费|入职费|报名费/i
+      - /upfront fee|deposit required|pay before/i
+    weight: 10
+    description: 要求求职者先付费或交押金
+
+  - id: platform-unofficial-channel
+    tier: high
+    category: platform_risk
+    patterns:
+      - /微信转账|支付宝转账|私人收款|非对公账户/i
+      - /personal payment|unofficial payment channel/i
+    weight: 8
+    description: 使用非官方支付渠道（私人转账等）
+
+  # ── legitimacy_risk: 合法性/真实性风险 ──
+  - id: legit-vague-jd
+    tier: medium
+    category: legitimacy_risk
+    patterns:
+      - /职责.{0,5}模糊|JD.{0,5}过于简单|无具体工作内容|职责.{0,5}不详/i
+      - /vague job description|unclear responsibilities/i
+    weight: 4
+    description: JD 描述过于模糊，无具体职责
+
+  - id: legit-frequent-repost
+    tier: medium
+    category: legitimacy_risk
+    patterns:
+      - /长期招聘|常年招聘|急聘|大量招聘|长期有效/i
+      - /always hiring|continuous recruitment|rolling basis/i
+    weight: 4
+    description: 长期招聘或频繁重发，可能是虚假/ evergreen 岗位
+
+  - id: legit-no-company-info
+    tier: high
+    category: legitimacy_risk
+    patterns:
+      - /无公司信息|公司.{0,3}未说明|公司名.{0,3}缺失|查不到公司/i
+      - /no company information|company not specified/i
+    weight: 7
+    description: JD 中无公司信息或公司无法查证

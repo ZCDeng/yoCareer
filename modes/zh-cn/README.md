@@ -59,6 +59,7 @@ language:
 | 文件 | 用途 |
 |------|------|
 | `signal-review.md` | 私域信号复核（微信群/朋友圈/公众号/脉脉/牛客等渠道的招聘信号质量评估） |
+| `../../templates/risk-tiers.yml` | 国内招聘 red flag 信号库（外包/996/面议/无社保等结构化查表）。`evaluate.md` 在评分前先查表，再让 LLM 补充边界 case，详见 evaluate.md "结构化风险查表" 步骤 |
 
 其余模式（`scan`、`batch`、`pdf`、`tracker`、`auto-pipeline`、`deep`、`contacto`、`ofertas`、`project`、`training`）有意不在本轮翻译。它们的内容主要由工具指令、路径和配置命令构成，保持语言无关性。如社区有需求，可在后续 PR 中补充。
 

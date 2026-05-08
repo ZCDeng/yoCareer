@@ -507,6 +507,26 @@ if (!hasPlaywright || !hasPdftotext) {
   }
 }
 
+// ── 12. RISK TIERS INTEGRITY ────────────────────────────────────
+
+console.log('\n12. Risk tiers integrity');
+
+const riskTiersResult = run('node', ['tests/risk-tiers-selftest.mjs']);
+if (riskTiersResult) {
+  try {
+    const report = JSON.parse(riskTiersResult);
+    if (report.passed) {
+      pass(`Risk tiers valid (${report.signal_count} signals)`);
+    } else {
+      fail(`Risk tiers validation failed: ${report.errors.join('; ')}`);
+    }
+  } catch {
+    fail('Risk tiers self-test returned invalid JSON');
+  }
+} else {
+  fail('Risk tiers self-test crashed');
+}
+
 // ── SUMMARY ─────────────────────────────────────────────────────
 
 console.log('\n' + '='.repeat(50));
