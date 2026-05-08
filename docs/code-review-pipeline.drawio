@@ -1,0 +1,212 @@
+<mxGraphModel>
+  <root>
+    <mxCell id="0"/>
+    <mxCell id="1" parent="0"/>
+    
+    <!-- Title -->
+    <mxCell id="title" value="yoCareer Full-Stack Code Review Pipeline" style="text;fontSize=18;fontStyle=1;align=center;fillColor=none;strokeColor=none;" vertex="1" parent="1">
+      <mxGeometry x="200" y="10" width="400" height="30" as="geometry"/>
+    </mxCell>
+    <mxCell id="subtitle" value="10 Reviewers → 37 Raw Findings → 16 Merged → 10 Fixes → PR #13 Merged" style="text;fontSize=11;align=center;fillColor=none;strokeColor=none;fontColor=#666;" vertex="1" parent="1">
+      <mxGeometry x="150" y="38" width="500" height="20" as="geometry"/>
+    </mxCell>
+
+    <!-- ====== STAGE 1: SCOPE ====== -->
+    <mxCell id="s1-label" value="STAGE 1: Scope" style="text;fontSize=10;fontStyle=1;fillColor=#E8EAF6;strokeColor=#7986CB;rounded=1;" vertex="1" parent="1">
+      <mxGeometry x="40" y="70" width="90" height="22" as="geometry"/>
+    </mxCell>
+    <mxCell id="s1" value="Detect diff base&lt;br&gt;(merge-base HEAD→origin)&lt;br&gt;39 files / +1520 -1432" style="rounded=1;fillColor=#E8EAF6;strokeColor=#3949AB;fontSize=9;align=center;" vertex="1" parent="1">
+      <mxGeometry x="40" y="95" width="150" height="50" as="geometry"/>
+    </mxCell>
+
+    <mxCell id="s1a" value="git diff HEAD..BASE&lt;br&gt;+ untracked check" style="rounded=0;fillColor=#F5F5F5;strokeColor=#BDBDBD;fontSize=8;align=center;" vertex="1" parent="1">
+      <mxGeometry x="210" y="100" width="110" height="40" as="geometry"/>
+    </mxCell>
+    <mxCell id="e1" style="endArrow=classic;exitX=1;exitY=0.5;entryX=0;entryY=0.5;" edge="1" parent="1">
+      <mxGeometry relative="1" as="geometry"><mxPoint x="190" y="120" as="sourcePoint"/><mxPoint x="210" y="120" as="targetPoint"/></mxGeometry>
+    </mxCell>
+
+    <!-- ====== STAGE 2: INTENT ====== -->
+    <mxCell id="s2-label" value="STAGE 2: Intent" style="text;fontSize=10;fontStyle=1;fillColor=#FFF3E0;strokeColor=#FFB74D;rounded=1;" vertex="1" parent="1">
+      <mxGeometry x="40" y="160" width="90" height="22" as="geometry"/>
+    </mxCell>
+    <mxCell id="s2" value="Intent Discovery&lt;br&gt;Branch: main (uncommitted)&lt;br&gt;Security hardening +&lt;br&gt;Bridge refactor +&lt;br&gt;Status centralization" style="rounded=1;fillColor=#FFF3E0;strokeColor=#F57C00;fontSize=9;align=center;" vertex="1" parent="1">
+      <mxGeometry x="40" y="185" width="150" height="70" as="geometry"/>
+    </mxCell>
+    <mxCell id="e2" style="endArrow=classic;exitX=0.5;exitY=1;entryX=0.5;entryY=0;" edge="1" parent="1">
+      <mxGeometry relative="1" as="geometry"><mxPoint x="115" y="145" as="sourcePoint"/><mxPoint x="115" y="185" as="targetPoint"/></mxGeometry>
+    </mxCell>
+
+    <!-- ====== STAGE 3: REVIEWER SELECTION ====== -->
+    <mxCell id="s3-label" value="STAGE 3: Team" style="text;fontSize=10;fontStyle=1;fillColor=#E8F5E9;strokeColor=#81C784;rounded=1;" vertex="1" parent="1">
+      <mxGeometry x="40" y="270" width="90" height="22" as="geometry"/>
+    </mxCell>
+    <mxCell id="s3" value="Select Reviewers&lt;br&gt;10 agents (4 always-on&lt;br&gt;+ 3 cross-cutting&lt;br&gt;+ 1 stack + 2 CE)" style="rounded=1;fillColor=#E8F5E9;strokeColor=#388E3C;fontSize=9;align=center;" vertex="1" parent="1">
+      <mxGeometry x="40" y="295" width="150" height="60" as="geometry"/>
+    </mxCell>
+    <mxCell id="e3" style="endArrow=classic;exitX=0.5;exitY=1;entryX=0.5;entryY=0;" edge="1" parent="1">
+      <mxGeometry relative="1" as="geometry"><mxPoint x="115" y="255" as="sourcePoint"/><mxPoint x="115" y="295" as="targetPoint"/></mxGeometry>
+    </mxCell>
+
+    <!-- Reviewer list -->
+    <mxCell id="r-always" value="Always-On (6)&lt;br&gt;━━━━━━━━━&lt;br&gt;correctness (Opus)&lt;br&gt;testing (Sonnet)&lt;br&gt;maintainability (Sonnet)&lt;br&gt;project-standards (Sonnet)&lt;br&gt;ce-agent-native (Sonnet)&lt;br&gt;ce-learnings (Sonnet)" style="rounded=1;fillColor=#C8E6C9;strokeColor=#66BB6A;fontSize=8;align=left;spacingLeft=6;" vertex="1" parent="1">
+      <mxGeometry x="220" y="280" width="155" height="85" as="geometry"/>
+    </mxCell>
+    <mxCell id="r-cond" value="Cross-Cutting (3)&lt;br&gt;━━━━━━━━━&lt;br&gt;security (Opus)&lt;br&gt;reliability (Sonnet)&lt;br&gt;adversarial (Opus)" style="rounded=1;fillColor=#FFF9C4;strokeColor=#FDD835;fontSize=8;align=left;spacingLeft=6;" vertex="1" parent="1">
+      <mxGeometry x="395" y="280" width="140" height="85" as="geometry"/>
+    </mxCell>
+    <mxCell id="r-stack" value="Stack (1)&lt;br&gt;━━━━━━&lt;br&gt;kieran-ts (Sonnet)" style="rounded=1;fillColor=#BBDEFB;strokeColor=#42A5F5;fontSize=8;align=left;spacingLeft=6;" vertex="1" parent="1">
+      <mxGeometry x="555" y="280" width="120" height="85" as="geometry"/>
+    </mxCell>
+    <mxCell id="e3a" style="endArrow=classic;exitX=1;exitY=0.3;entryX=0;entryY=0.3;" edge="1" parent="1">
+      <mxGeometry relative="1" as="geometry"><mxPoint x="190" y="310" as="sourcePoint"/><mxPoint x="220" y="310" as="targetPoint"/></mxGeometry>
+    </mxCell>
+    <mxCell id="e3b" style="endArrow=classic;exitX=1;exitY=0.5;entryX=0;entryY=0.5;" edge="1" parent="1">
+      <mxGeometry relative="1" as="geometry"><mxPoint x="190" y="325" as="sourcePoint"/><mxPoint x="395" y="325" as="targetPoint"/></mxGeometry>
+    </mxCell>
+    <mxCell id="e3c" style="endArrow=classic;exitX=1;exitY=0.7;entryX=0;entryY=0.5;" edge="1" parent="1">
+      <mxGeometry relative="1" as="geometry"><mxPoint x="190" y="335" as="sourcePoint"/><mxPoint x="555" y="325" as="targetPoint"/></mxGeometry>
+    </mxCell>
+
+    <!-- ====== STAGE 4: DISPATCH ====== -->
+    <mxCell id="s4-label" value="STAGE 4: Dispatch" style="text;fontSize=10;fontStyle=1;fillColor=#FCE4EC;strokeColor=#F48FB1;rounded=1;" vertex="1" parent="1">
+      <mxGeometry x="40" y="385" width="100" height="22" as="geometry"/>
+    </mxCell>
+    <mxCell id="s4" value="Parallel Dispatch&lt;br&gt;10 sub-agent spawns&lt;br&gt;Bounded parallelism&lt;br&gt;(model tiering: Opus/Sonnet)" style="rounded=1;fillColor=#FCE4EC;strokeColor=#D81B60;fontSize=9;align=center;" vertex="1" parent="1">
+      <mxGeometry x="40" y="410" width="150" height="60" as="geometry"/>
+    </mxCell>
+    <mxCell id="e4" style="endArrow=classic;exitX=0.5;exitY=1;entryX=0.5;entryY=0;" edge="1" parent="1">
+      <mxGeometry relative="1" as="geometry"><mxPoint x="115" y="355" as="sourcePoint"/><mxPoint x="115" y="410" as="targetPoint"/></mxGeometry>
+    </mxCell>
+
+    <!-- Review lanes -->
+    <mxCell id="lane1" value="correctness → 5 P3 findings (logic OK)" style="rounded=1;fillColor=#E3F2FD;strokeColor=#1E88E5;fontSize=8;align=center;" vertex="1" parent="1">
+      <mxGeometry x="210" y="405" width="200" height="25" as="geometry"/>
+    </mxCell>
+    <mxCell id="lane2" value="security → 2 P0 (symlink + TeX patterns)" style="rounded=1;fillColor=#FFEBEE;strokeColor=#E53935;fontSize=8;align=center;" vertex="1" parent="1">
+      <mxGeometry x="210" y="435" width="200" height="25" as="geometry"/>
+    </mxCell>
+    <mxCell id="lane3" value="adversarial → 8 findings (session cascade +)" style="rounded=1;fillColor=#FFF3E0;strokeColor=#FB8C00;fontSize=8;align=center;" vertex="1" parent="1">
+      <mxGeometry x="210" y="465" width="200" height="25" as="geometry"/>
+    </mxCell>
+    <mxCell id="lane4" value="testing → 2 P0 + 3 P1 + 1 P2" style="rounded=1;fillColor=#F3E5F5;strokeColor=#8E24AA;fontSize=8;align=center;" vertex="1" parent="1">
+      <mxGeometry x="210" y="495" width="200" height="25" as="geometry"/>
+    </mxCell>
+    <mxCell id="lane5" value="reliability → 4 findings (timeout + swallow)" style="rounded=1;fillColor=#E0F2F1;strokeColor=#00897B;fontSize=8;align=center;" vertex="1" parent="1">
+      <mxGeometry x="210" y="525" width="200" height="25" as="geometry"/>
+    </mxCell>
+    <mxCell id="lane6" value="maintainability → 5 findings (250L dup)" style="rounded=1;fillColor=#C8E6C9;strokeColor=#43A047;fontSize=8;align=center;" vertex="1" parent="1">
+      <mxGeometry x="420" y="405" width="200" height="25" as="geometry"/>
+    </mxCell>
+    <mxCell id="lane7" value="kieran-typescript → 6 findings (batch risk)" style="rounded=1;fillColor=#BBDEFB;strokeColor=#1E88E5;fontSize=8;align=center;" vertex="1" parent="1">
+      <mxGeometry x="420" y="435" width="200" height="25" as="geometry"/>
+    </mxCell>
+    <mxCell id="lane8" value="project-standards → 0 violations (CLAUD)" style="rounded=1;fillColor=#F5F5F5;strokeColor=#9E9E9E;fontSize=8;align=center;" vertex="1" parent="1">
+      <mxGeometry x="420" y="465" width="200" height="25" as="geometry"/>
+    </mxCell>
+    <mxCell id="lane9" value="agent-native → 3 gaps (status drift)" style="rounded=1;fillColor=#FFF9C4;strokeColor=#F9A825;fontSize=8;align=center;" vertex="1" parent="1">
+      <mxGeometry x="420" y="495" width="200" height="25" as="geometry"/>
+    </mxCell>
+    <mxCell id="lane10" value="learnings → monitor alias bug found" style="rounded=1;fillColor=#E8EAF6;strokeColor=#5C6BC0;fontSize=8;align=center;" vertex="1" parent="1">
+      <mxGeometry x="420" y="525" width="200" height="25" as="geometry"/>
+    </mxCell>
+
+    <mxCell id="e4a" style="endArrow=none;exitX=1;exitY=0.3;entryX=0;entryY=0.5;dashed=1;strokeColor=#BDBDBD;" edge="1" parent="1">
+      <mxGeometry relative="1" as="geometry"><mxPoint x="190" y="415" as="sourcePoint"/><mxPoint x="210" y="415" as="targetPoint"/></mxGeometry>
+    </mxCell>
+    <mxCell id="e4b" style="endArrow=none;exitX=1;exitY=0.5;entryX=0;entryY=0.5;dashed=1;strokeColor=#BDBDBD;" edge="1" parent="1">
+      <mxGeometry relative="1" as="geometry"><mxPoint x="190" y="435" as="sourcePoint"/><mxPoint x="420" y="415" as="targetPoint"/></mxGeometry>
+    </mxCell>
+
+    <!-- ====== STAGE 5: MERGE ====== -->
+    <mxCell id="s5-label" value="STAGE 5: Merge" style="text;fontSize=10;fontStyle=1;fillColor=#EDE7F6;strokeColor=#9575CD;rounded=1;" vertex="1" parent="1">
+      <mxGeometry x="40" y="575" width="90" height="22" as="geometry"/>
+    </mxCell>
+    <mxCell id="s5" value="Merge &amp; Dedup Pipeline&lt;br&gt;━━━━━━━━━━━&lt;br&gt;Normalize severity (37→16)&lt;br&gt;Fingerprint + line_bucket±3&lt;br&gt;Cross-reviewer promotion&lt;br&gt;Confidence gate (≥75)" style="rounded=1;fillColor=#EDE7F6;strokeColor=#7E57C2;fontSize=9;align=center;" vertex="1" parent="1">
+      <mxGeometry x="40" y="600" width="190" height="80" as="geometry"/>
+    </mxCell>
+    <mxCell id="e5" style="endArrow=classic;exitX=0.5;exitY=1;entryX=0.5;entryY=0;" edge="1" parent="1">
+      <mxGeometry relative="1" as="geometry"><mxPoint x="115" y="470" as="sourcePoint"/><mxPoint x="135" y="600" as="targetPoint"/></mxGeometry>
+    </mxCell>
+
+    <!-- Dedup examples -->
+    <mxCell id="dedup1" value="11 dedup groups merged&lt;br&gt;e.g. symlink: testing P0/90&lt;br&gt;+ security P0/50 + correctness P3&lt;br&gt;→ merged P0/75 (3 reviewers)" style="rounded=1;fillColor=#FFEBEE;strokeColor=#E53935;fontSize=8;align=left;spacingLeft=6;" vertex="1" parent="1">
+      <mxGeometry x="250" y="595" width="200" height="43" as="geometry"/>
+    </mxCell>
+    <mxCell id="dedup2" value="e.g. code dup: maintainability&lt;br&gt;+ kieran-ts + adversarial&lt;br&gt;→ merged P1/100 (3 reviewers)" style="rounded=1;fillColor=#FFF3E0;strokeColor=#FB8C00;fontSize=8;align=left;spacingLeft=6;" vertex="1" parent="1">
+      <mxGeometry x="250" y="643" width="200" height="43" as="geometry"/>
+    </mxCell>
+    <mxCell id="dedup3" value="Confidence gate: 2 dropped&lt;br&gt;(MCP deadline P2/50,&lt;br&gt;sanitizeCell P3/50)" style="rounded=1;fillColor=#F5F5F5;strokeColor=#9E9E9E;fontSize=8;align=left;spacingLeft=6;" vertex="1" parent="1">
+      <mxGeometry x="460" y="615" width="155" height="43" as="geometry"/>
+    </mxCell>
+
+    <!-- ====== STAGE 6: REPORT ====== -->
+    <mxCell id="s6-label" value="STAGE 6: Report" style="text;fontSize=10;fontStyle=1;fillColor=#E1F5FE;strokeColor=#4FC3F7;rounded=1;" vertex="1" parent="1">
+      <mxGeometry x="40" y="700" width="100" height="22" as="geometry"/>
+    </mxCell>
+    <mxCell id="s6" value="Findings Table&lt;br&gt;━━━━━━━━&lt;br&gt;3 P0 / 8 P1 / 5 P2&lt;br&gt;Pipe-delimited tables&lt;br&gt;Verdict: Not Ready" style="rounded=1;fillColor=#E1F5FE;strokeColor=#0288D1;fontSize=9;align=center;" vertex="1" parent="1">
+      <mxGeometry x="40" y="725" width="150" height="70" as="geometry"/>
+    </mxCell>
+    <mxCell id="e6" style="endArrow=classic;exitX=0.5;exitY=1;entryX=0.5;entryY=0;" edge="1" parent="1">
+      <mxGeometry relative="1" as="geometry"><mxPoint x="135" y="680" as="sourcePoint"/><mxPoint x="115" y="725" as="targetPoint"/></mxGeometry>
+    </mxCell>
+
+    <!-- Routing question -->
+    <mxCell id="route" value="User selects&lt;br&gt;&lt;b&gt;Option B: Best-Judgment&lt;/b&gt;&lt;br&gt;Auto-resolve with&lt;br&gt;per-finding fixer" style="rounded=1;fillColor=#FFF9C4;strokeColor=#FBC02D;fontSize=9;align=center;" vertex="1" parent="1">
+      <mxGeometry x="210" y="715" width="160" height="70" as="geometry"/>
+    </mxCell>
+    <mxCell id="e6a" style="endArrow=classic;exitX=1;exitY=0.5;entryX=0;entryY=0.5;" edge="1" parent="1">
+      <mxGeometry relative="1" as="geometry"><mxPoint x="190" y="750" as="sourcePoint"/><mxPoint x="210" y="750" as="targetPoint"/></mxGeometry>
+    </mxCell>
+
+    <!-- ====== FIX PHASE ====== -->
+    <mxCell id="fix-label" value="FIX PHASE" style="text;fontSize=10;fontStyle=1;fillColor=#C8E6C9;strokeColor=#66BB6A;rounded=1;" vertex="1" parent="1">
+      <mxGeometry x="40" y="810" width="80" height="22" as="geometry"/>
+    </mxCell>
+    <mxCell id="fixer" value="Fixer Agent Dispatched&lt;br&gt;━━━━━━━━━━━&lt;br&gt;11 findings with concrete fix&lt;br&gt;(5 safe_auto + 4 gated_auto + 2 manual)&lt;br&gt;Evidence-match check → apply" style="rounded=1;fillColor=#C8E6C9;strokeColor=#388E3C;fontSize=9;align=center;" vertex="1" parent="1">
+      <mxGeometry x="40" y="835" width="210" height="65" as="geometry"/>
+    </mxCell>
+    <mxCell id="e7" style="endArrow=classic;exitX=0.5;exitY=1;entryX=0.5;entryY=0;" edge="1" parent="1">
+      <mxGeometry relative="1" as="geometry"><mxPoint x="115" y="795" as="sourcePoint"/><mxPoint x="145" y="835" as="targetPoint"/></mxGeometry>
+    </mxCell>
+
+    <!-- Fix results -->
+    <mxCell id="fix-results" value="Applied&lt;br&gt;━━━&lt;br&gt;#1 EvalSymlinks&lt;br&gt;#2 TeX patterns&lt;br&gt;#4 3 new lib/ modules&lt;br&gt;#5 restore --dangerously&lt;br&gt;#6 spawn() timeout&lt;br&gt;#7 console.warn&lt;br&gt;#12 trailing backslash&lt;br&gt;#13 t.Run sub-tests&lt;br&gt;#15 mkdtemp try/catch&lt;br&gt;#16 ADITLY default=false" style="rounded=1;fillColor=#A5D6A7;strokeColor=#2E7D32;fontSize=8;align=left;spacingLeft=6;" vertex="1" parent="1">
+      <mxGeometry x="270" y="825" width="155" height="110" as="geometry"/>
+    </mxCell>
+    <mxCell id="fix-failed" value="Failed: 0" style="rounded=1;fillColor=#C8E6C9;strokeColor=#66BB6A;fontSize=9;align=center;fontStyle=1;" vertex="1" parent="1">
+      <mxGeometry x="270" y="940" width="60" height="24" as="geometry"/>
+    </mxCell>
+    <mxCell id="fix-report" value="Report-only&lt;br&gt;(6 findings w/o fix)&lt;br&gt;e.g. test coverage gaps&lt;br&gt;MCP session TTL&lt;br&gt;concurrent scan safety" style="rounded=1;fillColor=#E0E0E0;strokeColor=#9E9E9E;fontSize=8;align=left;spacingLeft=6;" vertex="1" parent="1">
+      <mxGeometry x="445" y="830" width="155" height="60" as="geometry"/>
+    </mxCell>
+
+    <!-- ====== CI FIX ====== -->
+    <mxCell id="ci-label" value="CI LOOP" style="text;fontSize=10;fontStyle=1;fillColor=#FFEBEE;strokeColor=#E57373;rounded=1;" vertex="1" parent="1">
+      <mxGeometry x="40" y="920" width="55" height="22" as="geometry"/>
+    </mxCell>
+    <mxCell id="ci" value="Go test FAIL&lt;br&gt;EvalSymlinks on&lt;br&gt;non-existent file&lt;br&gt;→ os.IsNotExist check" style="rounded=1;fillColor=#FFEBEE;strokeColor=#C62828;fontSize=8;align=center;" vertex="1" parent="1">
+      <mxGeometry x="40" y="945" width="140" height="55" as="geometry"/>
+    </mxCell>
+    <mxCell id="e8" style="endArrow=classic;exitX=1;exitY=0.3;entryX=0;entryY=0.3;" edge="1" parent="1">
+      <mxGeometry relative="1" as="geometry"><mxPoint x="180" y="960" as="sourcePoint"/><mxPoint x="270" y="930" as="targetPoint"/></mxGeometry>
+    </mxCell>
+
+    <!-- ====== FINAL ====== -->
+    <mxCell id="final-label" value="DEPLOY" style="text;fontSize=10;fontStyle=1;fillColor=#E8F5E9;strokeColor=#66BB6A;rounded=1;" vertex="1" parent="1">
+      <mxGeometry x="40" y="1020" width="55" height="22" as="geometry"/>
+    </mxCell>
+    <mxCell id="final" value="CI PASS → Squash Merge&lt;br&gt;━━━━━━━━━━━&lt;br&gt;PR #13 merged (6adeef7)&lt;br&gt;Branch: security-hardening-and-dedup&lt;br&gt;43 files / 4 new lib/ modules" style="rounded=1;fillColor=#2E7D32;strokeColor=#1B5E20;fontSize=9;align=center;fontColor=#FFFFFF;fontStyle=1;" vertex="1" parent="1">
+      <mxGeometry x="40" y="1045" width="230" height="65" as="geometry"/>
+    </mxCell>
+    <mxCell id="e9" style="endArrow=classic;exitX=0.5;exitY=1;entryX=0.5;entryY=0;" edge="1" parent="1">
+      <mxGeometry relative="1" as="geometry"><mxPoint x="110" y="1000" as="sourcePoint"/><mxPoint x="155" y="1045" as="targetPoint"/></mxGeometry>
+    </mxCell>
+
+    <!-- Key metrics sidebar -->
+    <mxCell id="metrics" value="&lt;b&gt;Metrics&lt;/b&gt;&lt;br&gt;━━━━━━&lt;br&gt;Reviewers: 10&lt;br&gt;Raw findings: 37&lt;br&gt;Dedup groups: 11&lt;br&gt;Final findings: 16&lt;br&gt;Fixes applied: 10/11&lt;br&gt;Libraries created: 3&lt;br&gt;Dup lines removed: ~200&lt;br&gt;Total time: ~18 min" style="rounded=1;fillColor=#37474F;strokeColor=#263238;fontSize=9;align=left;spacingLeft=8;fontColor=#ECEFF1;" vertex="1" parent="1">
+      <mxGeometry x="460" y="920" width="155" height="150" as="geometry"/>
+    </mxCell>
+
+  </root>
+</mxGraphModel>

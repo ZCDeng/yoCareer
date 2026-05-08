@@ -1,0 +1,245 @@
+<mxGraphModel>
+  <root>
+    <mxCell id="0"/>
+    <mxCell id="1" parent="0"/>
+    
+    <!-- Title -->
+    <mxCell id="title" value="yoCareer — AI Job Search Pipeline Architecture" style="text;fontSize=18;fontStyle=1;align=center;fillColor=none;strokeColor=none;" vertex="1" parent="1">
+      <mxGeometry x="120" y="10" width="560" height="30" as="geometry"/>
+    </mxCell>
+
+    <!-- ====== INPUT LAYER ====== -->
+    <mxCell id="in-label" value="Input Layer" style="text;fontSize=11;fontStyle=1;fillColor=#BBDEFB;strokeColor=#42A5F5;rounded=1;" vertex="1" parent="1">
+      <mxGeometry x="40" y="55" width="720" height="22" as="geometry"/>
+    </mxCell>
+
+    <mxCell id="in1" value="Job URL&lt;br&gt;(pasted by user)" style="rounded=1;fillColor=#E3F2FD;strokeColor=#1E88E5;fontSize=9;align=center;" vertex="1" parent="1">
+      <mxGeometry x="60" y="85" width="100" height="40" as="geometry"/>
+    </mxCell>
+    <mxCell id="in2" value="Portals Scan&lt;br&gt;(portals.yml)&lt;br&gt;45+ companies&lt;br&gt;Greenhouse/Ashby/Lever" style="rounded=1;fillColor=#E3F2FD;strokeColor=#1E88E5;fontSize=8;align=center;" vertex="1" parent="1">
+      <mxGeometry x="185" y="80" width="120" height="50" as="geometry"/>
+    </mxCell>
+    <mxCell id="in3" value="Manual Signals&lt;br&gt;(data/signals.ndjson)&lt;br&gt;Weibo / V2EX / GitHub&lt;br&gt;Xiaohongshu / Bilibili" style="rounded=1;fillColor=#E3F2FD;strokeColor=#1E88E5;fontSize=8;align=center;" vertex="1" parent="1">
+      <mxGeometry x="330" y="80" width="140" height="50" as="geometry"/>
+    </mxCell>
+    <mxCell id="in4" value="Local JD&lt;br&gt;(jds/*.md)&lt;br&gt;Referenced as&lt;br&gt;local:jds/{file}" style="rounded=1;fillColor=#E3F2FD;strokeColor=#1E88E5;fontSize=8;align=center;" vertex="1" parent="1">
+      <mxGeometry x="495" y="80" width="120" height="50" as="geometry"/>
+    </mxCell>
+    <mxCell id="in5" value="Profile&lt;br&gt;cv.md / profile.yml&lt;br&gt;modes/_profile.md&lt;br&gt;article-digest.md" style="rounded=1;fillColor=#E3F2FD;strokeColor=#1E88E5;fontSize=8;align=center;" vertex="1" parent="1">
+      <mxGeometry x="640" y="80" width="120" height="50" as="geometry"/>
+    </mxCell>
+
+    <!-- ====== SCAN LAYER ====== -->
+    <mxCell id="scan-label" value="Scan Layer" style="text;fontSize=11;fontStyle=1;fillColor=#C8E6C9;strokeColor=#66BB6A;rounded=1;" vertex="1" parent="1">
+      <mxGeometry x="40" y="155" width="720" height="22" as="geometry"/>
+    </mxCell>
+
+    <mxCell id="scan-core" value="&lt;b&gt;scan.mjs&lt;/b&gt;&lt;br&gt;Zero-token portal scanner&lt;br&gt;Company API → signal extraction&lt;br&gt;Dedup via scan-history.tsv&lt;br&gt;Output: pipeline.md + scan-history.tsv" style="rounded=1;fillColor=#A5D6A7;strokeColor=#2E7D32;fontSize=8;align=center;" vertex="1" parent="1">
+      <mxGeometry x="60" y="185" width="180" height="75" as="geometry"/>
+    </mxCell>
+    
+    <!-- Bridges -->
+    <mxCell id="bridge-read" value="&lt;b&gt;Bridge: reach-read-url&lt;/b&gt;&lt;br&gt;URL → signal extraction&lt;br&gt;Try Aditly MCP first&lt;br&gt;Fallback: Jina/xreach" style="rounded=1;fillColor=#FFF9C4;strokeColor=#FDD835;fontSize=8;align=center;" vertex="1" parent="1">
+      <mxGeometry x="270" y="180" width="165" height="55" as="geometry"/>
+    </mxCell>
+    <mxCell id="bridge-search" value="&lt;b&gt;Bridge: reach-signal-search&lt;/b&gt;&lt;br&gt;Platform × query → signals&lt;br&gt;Aditly MCP (preferred)&lt;br&gt;Fallback: platform APIs" style="rounded=1;fillColor=#FFF9C4;strokeColor=#FDD835;fontSize=8;align=center;" vertex="1" parent="1">
+      <mxGeometry x="270" y="245" width="165" height="55" as="geometry"/>
+    </mxCell>
+    <mxCell id="bridge-aditly" value="&lt;b&gt;Aditly MCP&lt;/b&gt;&lt;br&gt;HTTP streamable&lt;br&gt;initialize→call→DELETE&lt;br&gt;YOCAREER_ADITLY_PREFER" style="rounded=1;fillColor=#FFE082;strokeColor=#F9A825;fontSize=8;align=center;dashed=1;" vertex="1" parent="1">
+      <mxGeometry x="460" y="195" width="145" height="50" as="geometry"/>
+    </mxCell>
+
+    <mxCell id="bridge-smoke" value="&lt;b&gt;bridge-smoke.mjs&lt;/b&gt;&lt;br&gt;Bridge health check&lt;br&gt;Aditly + Reach + Playwright" style="rounded=1;fillColor=#E0E0E0;strokeColor=#9E9E9E;fontSize=8;align=center;" vertex="1" parent="1">
+      <mxGeometry x="460" y="255" width="145" height="40" as="geometry"/>
+    </mxCell>
+    <mxCell id="bridge-health" value="&lt;b&gt;provider-health.mjs&lt;/b&gt;&lt;br&gt;Portal + bridge availability&lt;br&gt;Aditly / Playwright / ATS" style="rounded=1;fillColor=#E0E0E0;strokeColor=#9E9E9E;fontSize=8;align=center;" vertex="1" parent="1">
+      <mxGeometry x="630" y="195" width="130" height="45" as="geometry"/>
+    </mxCell>
+
+    <!-- Connectors: input → scan -->
+    <mxCell id="e-in2s" style="endArrow=classic;exitX=0.5;exitY=1;entryX=0.3;entryY=0;strokeColor=#90A4AE;dashed=1;" edge="1" parent="1">
+      <mxGeometry relative="1" as="geometry"><mxPoint x="245" y="130" as="sourcePoint"/><mxPoint x="114" y="185" as="targetPoint"/></mxGeometry>
+    </mxCell>
+    <mxCell id="e-in3s" style="endArrow=classic;exitX=0.5;exitY=1;entryX=0.6;entryY=0;strokeColor=#90A4AE;dashed=1;" edge="1" parent="1">
+      <mxGeometry relative="1" as="geometry"><mxPoint x="400" y="130" as="sourcePoint"/><mxPoint x="168" y="185" as="targetPoint"/></mxGeometry>
+    </mxCell>
+    <!-- scan → bridges -->
+    <mxCell id="e-s2rb" style="endArrow=classic;exitX=1;exitY=0.3;entryX=0;entryY=0.3;" edge="1" parent="1">
+      <mxGeometry relative="1" as="geometry"><mxPoint x="240" y="200" as="sourcePoint"/><mxPoint x="270" y="197" as="targetPoint"/></mxGeometry>
+    </mxCell>
+    <mxCell id="e-s2rb2" style="endArrow=classic;exitX=1;exitY=0.6;entryX=0;entryY=0.6;" edge="1" parent="1">
+      <mxGeometry relative="1" as="geometry"><mxPoint x="240" y="245" as="sourcePoint"/><mxPoint x="270" y="280" as="targetPoint"/></mxGeometry>
+    </mxCell>
+    <!-- bridges → aditly -->
+    <mxCell id="e-b2a" style="endArrow=classic;exitX=1;exitY=0.35;entryX=0;entryY=0.3;dashed=1;strokeColor=#F9A825;" edge="1" parent="1">
+      <mxGeometry relative="1" as="geometry"><mxPoint x="435" y="200" as="sourcePoint"/><mxPoint x="460" y="210" as="targetPoint"/></mxGeometry>
+    </mxCell>
+    <mxCell id="e-b2a2" style="endArrow=classic;exitX=1;exitY=0.65;entryX=0;entryY=0.7;dashed=1;strokeColor=#F9A825;" edge="1" parent="1">
+      <mxGeometry relative="1" as="geometry"><mxPoint x="435" y="280" as="sourcePoint"/><mxPoint x="460" y="280" as="targetPoint"/></mxGeometry>
+    </mxCell>
+
+    <!-- ====== EVALUATION LAYER ====== -->
+    <mxCell id="eval-label" value="Evaluation Layer (AI Agent)" style="text;fontSize=11;fontStyle=1;fillColor=#FFE0B2;strokeColor=#FFB74D;rounded=1;" vertex="1" parent="1">
+      <mxGeometry x="40" y="325" width="720" height="22" as="geometry"/>
+    </mxCell>
+
+    <mxCell id="skill" value="&lt;b&gt;/yoCareer [mode]&lt;/b&gt;&lt;br&gt;Skill router (CLAUDE.md)&lt;br&gt;Loads modes/{mode}.md" style="rounded=1;fillColor=#FFCC80;strokeColor=#FB8C00;fontSize=8;align=center;" vertex="1" parent="1">
+      <mxGeometry x="60" y="355" width="150" height="40" as="geometry"/>
+    </mxCell>
+
+    <!-- Mode list -->
+    <mxCell id="mode-auto" value="auto-pipeline&lt;br&gt;JD→eval→report→PDF→tracker" style="rounded=1;fillColor=#FFF8E1;strokeColor=#FFA000;fontSize=8;align=center;" vertex="1" parent="1">
+      <mxGeometry x="235" y="350" width="145" height="35" as="geometry"/>
+    </mxCell>
+    <mxCell id="mode-oferta" value="oferta / ofertas&lt;br&gt;Offer evaluation (A-F)&lt;br&gt;Compare + negotiate" style="rounded=1;fillColor=#FFF8E1;strokeColor=#FFA000;fontSize=8;align=center;" vertex="1" parent="1">
+      <mxGeometry x="395" y="350" width="130" height="35" as="geometry"/>
+    </mxCell>
+    <mxCell id="mode-other" value="scan / batch / pipeline&lt;br&gt;apply / contacto / deep&lt;br&gt;pdf / latex / tracker&lt;br&gt;patterns / followup / training" style="rounded=1;fillColor=#FFF8E1;strokeColor=#FFA000;fontSize=8;align=center;" vertex="1" parent="1">
+      <mxGeometry x="540" y="350" width="145" height="50" as="geometry"/>
+    </mxCell>
+
+    <!-- LLM backend -->
+    <mxCell id="llm-c" value="&lt;b&gt;Claude&lt;/b&gt;&lt;br&gt;opus/sonnet&lt;br&gt;+ Playwright&lt;br&gt;+ Canvas (MCP)" style="rounded=1;fillColor=#D1C4E9;strokeColor=#7E57C2;fontSize=8;align=center;" vertex="1" parent="1">
+      <mxGeometry x="60" y="410" width="100" height="52" as="geometry"/>
+    </mxCell>
+    <mxCell id="llm-g" value="&lt;b&gt;Gemini&lt;/b&gt;&lt;br&gt;2.0-flash (free)&lt;br&gt;1.5-pro (alt)&lt;br&gt;GEMINI_API_KEY" style="rounded=1;fillColor=#D1C4E9;strokeColor=#7E57C2;fontSize=8;align=center;" vertex="1" parent="1">
+      <mxGeometry x="180" y="410" width="105" height="52" as="geometry"/>
+    </mxCell>
+    <mxCell id="llm-batch" value="&lt;b&gt;Batch Workers&lt;/b&gt;&lt;br&gt;claude -p (headless)&lt;br&gt;Parallel sub-procs&lt;br&gt;batch/batch-runner.sh" style="rounded=1;fillColor=#D1C4E9;strokeColor=#7E57C2;fontSize=8;align=center;" vertex="1" parent="1">
+      <mxGeometry x="305" y="410" width="130" height="52" as="geometry"/>
+    </mxCell>
+
+    <!-- Eval outputs -->
+    <mxCell id="eval-out1" value="&lt;b&gt;Evaluation Report&lt;/b&gt;&lt;br&gt;reports/{###}-{slug}-{date}.md&lt;br&gt;Blocks A-G: Summary→Legitimacy" style="rounded=1;fillColor=#FFECB3;strokeColor=#FF8F00;fontSize=8;align=center;" vertex="1" parent="1">
+      <mxGeometry x="470" y="410" width="165" height="45" as="geometry"/>
+    </mxCell>
+    <mxCell id="eval-out2" value="&lt;b&gt;ATS PDF CV&lt;/b&gt;&lt;br&gt;generate-pdf.mjs&lt;br&gt;Playwright → HTML→PDF&lt;br&gt;Keyword-injected" style="rounded=1;fillColor=#FFECB3;strokeColor=#FF8F00;fontSize=8;align=center;" vertex="1" parent="1">
+      <mxGeometry x="655" y="410" width="105" height="45" as="geometry"/>
+    </mxCell>
+
+    <!-- Connectors: skill → modes -->
+    <mxCell id="e-sk2m" style="endArrow=classic;exitX=1;exitY=0.5;entryX=0;entryY=0.5;" edge="1" parent="1">
+      <mxGeometry relative="1" as="geometry"><mxPoint x="210" y="375" as="sourcePoint"/><mxPoint x="235" y="368" as="targetPoint"/></mxGeometry>
+    </mxCell>
+    <mxCell id="e-m2l" style="endArrow=classic;exitX=0.5;exitY=1;entryX=0.5;entryY=0;strokeColor=#B39DDB;dashed=1;" edge="1" parent="1">
+      <mxGeometry relative="1" as="geometry"><mxPoint x="115" y="395" as="sourcePoint"/><mxPoint x="110" y="410" as="targetPoint"/></mxGeometry>
+    </mxCell>
+
+    <!-- ====== DATA LAYER ====== -->
+    <mxCell id="data-label" value="Data Layer (Markdown / TSV / YAML)" style="text;fontSize=11;fontStyle=1;fillColor=#F8BBD0;strokeColor=#F06292;rounded=1;" vertex="1" parent="1">
+      <mxGeometry x="40" y="490" width="720" height="22" as="geometry"/>
+    </mxCell>
+
+    <mxCell id="data-tracker" value="&lt;b&gt;applications.md&lt;/b&gt;&lt;br&gt;Application tracker&lt;br&gt;Table: #|Date|Company|Role|Score|Status|PDF|Report|Notes" style="rounded=1;fillColor=#FCE4EC;strokeColor=#D81B60;fontSize=8;align=center;" vertex="1" parent="1">
+      <mxGeometry x="60" y="520" width="175" height="48" as="geometry"/>
+    </mxCell>
+    <mxCell id="data-pipeline" value="&lt;b&gt;pipeline.md&lt;/b&gt;&lt;br&gt;Pending signal inbox&lt;br&gt;§ Pending / § Processed" style="rounded=1;fillColor=#FCE4EC;strokeColor=#D81B60;fontSize=8;align=center;" vertex="1" parent="1">
+      <mxGeometry x="255" y="520" width="145" height="48" as="geometry"/>
+    </mxCell>
+    <mxCell id="data-scanh" value="&lt;b&gt;scan-history.tsv&lt;/b&gt;&lt;br&gt;Dedup history&lt;br&gt;url | first_seen | portal | title | company | status" style="rounded=1;fillColor=#FCE4EC;strokeColor=#D81B60;fontSize=8;align=center;" vertex="1" parent="1">
+      <mxGeometry x="420" y="520" width="190" height="48" as="geometry"/>
+    </mxCell>
+    <mxCell id="data-reports" value="&lt;b&gt;reports/&lt;/b&gt;&lt;br&gt;Evaluation reports&lt;br&gt;{###}-{slug}-{date}.md&lt;br&gt;[ResolveReportPath sandboxed]" style="rounded=1;fillColor=#FCE4EC;strokeColor=#D81B60;fontSize=8;align=center;" vertex="1" parent="1">
+      <mxGeometry x="630" y="520" width="130" height="48" as="geometry"/>
+    </mxCell>
+
+    <!-- ====== TOOLING LAYER ====== -->
+    <mxCell id="tool-label" value="Tooling Layer (CLI Scripts)" style="text;fontSize=11;fontStyle=1;fillColor=#E0E0E0;strokeColor=#9E9E9E;rounded=1;" vertex="1" parent="1">
+      <mxGeometry x="40" y="593" width="720" height="22" as="geometry"/>
+    </mxCell>
+
+    <mxCell id="tool-merge" value="&lt;b&gt;merge-tracker.mjs&lt;/b&gt;&lt;br&gt;TSV→applications.md&lt;br&gt;sanitizeCell + validateStatus&lt;br&gt;Duplication check" style="rounded=1;fillColor=#EEEEEE;strokeColor=#757575;fontSize=8;align=center;" vertex="1" parent="1">
+      <mxGeometry x="60" y="623" width="130" height="48" as="geometry"/>
+    </mxCell>
+    <mxCell id="tool-verify" value="&lt;b&gt;verify-pipeline.mjs&lt;/b&gt;&lt;br&gt;Integrity checks&lt;br&gt;Canonical statuses&lt;br&gt;Duplicates / Reports" style="rounded=1;fillColor=#EEEEEE;strokeColor=#757575;fontSize=8;align=center;" vertex="1" parent="1">
+      <mxGeometry x="210" y="623" width="130" height="48" as="geometry"/>
+    </mxCell>
+    <mxCell id="tool-normalize" value="&lt;b&gt;normalize-statuses.mjs&lt;/b&gt;&lt;br&gt;Non-canonical→canonical&lt;br&gt;Consumes states.yml" style="rounded=1;fillColor=#EEEEEE;strokeColor=#757575;fontSize=8;align=center;" vertex="1" parent="1">
+      <mxGeometry x="360" y="623" width="135" height="48" as="geometry"/>
+    </mxCell>
+    <mxCell id="tool-dedup" value="&lt;b&gt;dedup-tracker.mjs&lt;/b&gt;&lt;br&gt;Remove duplicate entries&lt;br&gt;Company+role matching" style="rounded=1;fillColor=#EEEEEE;strokeColor=#757575;fontSize=8;align=center;" vertex="1" parent="1">
+      <mxGeometry x="515" y="623" width="130" height="48" as="geometry"/>
+    </mxCell>
+    <mxCell id="tool-update" value="&lt;b&gt;update-system.mjs&lt;/b&gt;&lt;br&gt;Version check&lt;br&gt;System-layer update&lt;br&gt;(never touches user data)" style="rounded=1;fillColor=#EEEEEE;strokeColor=#757575;fontSize=8;align=center;" vertex="1" parent="1">
+      <mxGeometry x="665" y="623" width="95" height="48" as="geometry"/>
+    </mxCell>
+
+    <!-- ====== LIB LAYER ====== -->
+    <mxCell id="lib-label" value="Shared Libraries (lib/)" style="text;fontSize=11;fontStyle=1;fillColor=#CE93D8;strokeColor=#AB47BC;rounded=1;" vertex="1" parent="1">
+      <mxGeometry x="40" y="696" width="720" height="22" as="geometry"/>
+    </mxCell>
+
+    <mxCell id="lib-status" value="&lt;b&gt;status-schema.mjs&lt;/b&gt;&lt;br&gt;loadStatusSchema&lt;br&gt;normalizeStatusToId&lt;br&gt;canonicalStatusIds&lt;br&gt;Source: states.yml" style="rounded=1;fillColor=#F3E5F5;strokeColor=#8E24AA;fontSize=8;align=center;" vertex="1" parent="1">
+      <mxGeometry x="60" y="726" width="130" height="55" as="geometry"/>
+    </mxCell>
+    <mxCell id="lib-bridge" value="&lt;b&gt;bridge-runner.mjs&lt;/b&gt;&lt;br&gt;tokenizeCommand&lt;br&gt;bridgeInvocation&lt;br&gt;parseBool" style="rounded=1;fillColor=#F3E5F5;strokeColor=#8E24AA;fontSize=8;align=center;" vertex="1" parent="1">
+      <mxGeometry x="210" y="726" width="120" height="55" as="geometry"/>
+    </mxCell>
+    <mxCell id="lib-mcp" value="&lt;b&gt;mcp-client.mjs&lt;/b&gt;&lt;br&gt;fetchWithTimeout&lt;br&gt;mcpRequest / parseMcpPayload&lt;br&gt;extractToolText" style="rounded=1;fillColor=#F3E5F5;strokeColor=#8E24AA;fontSize=8;align=center;" vertex="1" parent="1">
+      <mxGeometry x="350" y="726" width="130" height="55" as="geometry"/>
+    </mxCell>
+    <mxCell id="lib-sanitize" value="&lt;b&gt;sanitize.mjs&lt;/b&gt;&lt;br&gt;sanitizeField&lt;br&gt;sanitizeLineField&lt;br&gt;sanitizeTsvField" style="rounded=1;fillColor=#F3E5F5;strokeColor=#8E24AA;fontSize=8;align=center;" vertex="1" parent="1">
+      <mxGeometry x="500" y="726" width="120" height="55" as="geometry"/>
+    </mxCell>
+    <mxCell id="lib-other" value="&lt;b&gt;Other Scripts&lt;/b&gt;&lt;br&gt;analyze-patterns.mjs&lt;br&gt;followup-cadence.mjs&lt;br&gt;review-signals.mjs&lt;br&gt;check-liveness.mjs" style="rounded=1;fillColor=#F3E5F5;strokeColor=#8E24AA;fontSize=8;align=center;" vertex="1" parent="1">
+      <mxGeometry x="640" y="726" width="120" height="55" as="geometry"/>
+    </mxCell>
+
+    <!-- ====== OUTPUT LAYER ====== -->
+    <mxCell id="out-label" value="Output Layer" style="text;fontSize=11;fontStyle=1;fillColor=#FFCC80;strokeColor=#FF9800;rounded=1;" vertex="1" parent="1">
+      <mxGeometry x="40" y="805" width="720" height="22" as="geometry"/>
+    </mxCell>
+
+    <mxCell id="out1" value="&lt;b&gt;CV PDF&lt;/b&gt;&lt;br&gt;ATS-optimized&lt;br&gt;generate-pdf.mjs&lt;br&gt;Playwright HTML→PDF" style="rounded=1;fillColor=#FFE0B2;strokeColor=#E65100;fontSize=8;align=center;" vertex="1" parent="1">
+      <mxGeometry x="60" y="835" width="115" height="50" as="geometry"/>
+    </mxCell>
+    <mxCell id="out2" value="&lt;b&gt;LaTeX CV&lt;/b&gt;&lt;br&gt;Overleaf-ready .tex&lt;br&gt;generate-latex.mjs&lt;br&gt;[Sandboxed compile]" style="rounded=1;fillColor=#FFE0B2;strokeColor=#E65100;fontSize=8;align=center;" vertex="1" parent="1">
+      <mxGeometry x="195" y="835" width="120" height="50" as="geometry"/>
+    </mxCell>
+    <mxCell id="out3" value="&lt;b&gt;Dashboard TUI&lt;/b&gt;&lt;br&gt;Go + Bubble Tea&lt;br&gt;Browse / filter / sort&lt;br&gt;dashboard/main.go" style="rounded=1;fillColor=#FFE0B2;strokeColor=#E65100;fontSize=8;align=center;" vertex="1" parent="1">
+      <mxGeometry x="335" y="835" width="130" height="50" as="geometry"/>
+    </mxCell>
+    <mxCell id="out4" value="&lt;b&gt;Batch Results&lt;/b&gt;&lt;br&gt;batch/output/&lt;br&gt;Parallel worker logs&lt;br&gt;batch/tracker-additions/" style="rounded=1;fillColor=#FFE0B2;strokeColor=#E65100;fontSize=8;align=center;" vertex="1" parent="1">
+      <mxGeometry x="485" y="835" width="135" height="50" as="geometry"/>
+    </mxCell>
+    <mxCell id="out5" value="&lt;b&gt;Interview Prep&lt;/b&gt;&lt;br&gt;interview-prep/&lt;br&gt;story-bank.md&lt;br&gt;{company}-{role}.md" style="rounded=1;fillColor=#FFE0B2;strokeColor=#E65100;fontSize=8;align=center;" vertex="1" parent="1">
+      <mxGeometry x="640" y="835" width="120" height="50" as="geometry"/>
+    </mxCell>
+
+    <!-- ====== DATA FLOW EDGES (shot arrows) ====== -->
+    <!-- scan → pipeline / scan-history -->
+    <mxCell id="ef1" style="endArrow=classic;exitX=0.5;exitY=1;entryX=0.5;entryY=0;strokeColor=#66BB6A;strokeWidth=1.5;" edge="1" parent="1">
+      <mxGeometry relative="1" as="geometry"><mxPoint x="150" y="260" as="sourcePoint"/><mxPoint x="327" y="520" as="targetPoint"/></mxGeometry>
+    </mxCell>
+    <mxCell id="ef1-label" value="pipeline.md" style="text;fontSize=7;fillColor=none;strokeColor=none;fontColor=#66BB6A;" vertex="1" parent="1">
+      <mxGeometry x="330" y="430" width="55" height="14" as="geometry"/>
+    </mxCell>
+
+    <!-- eval → tracker / reports / CV -->
+    <mxCell id="ef2" style="endArrow=classic;exitX=0.5;exitY=1;entryX=0.5;entryY=0;strokeColor=#FF9800;strokeWidth=1.5;" edge="1" parent="1">
+      <mxGeometry relative="1" as="geometry"><mxPoint x="330" y="462" as="sourcePoint"/><mxPoint x="147" y="520" as="targetPoint"/></mxGeometry>
+    </mxCell>
+    <mxCell id="ef2-label" value="tracker.tsv" style="text;fontSize=7;fillColor=none;strokeColor=none;fontColor=#FF9800;" vertex="1" parent="1">
+      <mxGeometry x="142" y="485" width="48" height="14" as="geometry"/>
+    </mxCell>
+
+    <!-- merge → applications.md -->
+    <mxCell id="ef3" style="endArrow=classic;exitX=0.5;exitY=0;entryX=0.5;entryY=1;strokeColor=#757575;strokeWidth=1.2;" edge="1" parent="1">
+      <mxGeometry relative="1" as="geometry"><mxPoint x="125" y="623" as="sourcePoint"/><mxPoint x="147" y="568" as="targetPoint"/></mxGeometry>
+    </mxCell>
+
+    <!-- lib → tools -->
+    <mxCell id="ef4" style="endArrow=classic;exitX=0.5;exitY=0;entryX=0.5;entryY=1;strokeColor=#AB47BC;strokeWidth=1;dashed=1;" edge="1" parent="1">
+      <mxGeometry relative="1" as="geometry"><mxPoint x="125" y="726" as="sourcePoint"/><mxPoint x="125" y="671" as="targetPoint"/></mxGeometry>
+    </mxCell>
+    <mxCell id="ef5" style="endArrow=classic;exitX=0.5;exitY=0;entryX=0.5;entryY=1;strokeColor=#AB47BC;strokeWidth=1;dashed=1;" edge="1" parent="1">
+      <mxGeometry relative="1" as="geometry"><mxPoint x="275" y="726" as="sourcePoint"/><mxPoint x="275" y="671" as="targetPoint"/></mxGeometry>
+    </mxCell>
+
+    <!-- Security boundary annotation -->
+    <mxCell id="sec-note" value="Security Boundaries:  ResolveReportPath (path traversal)  |  shell:false (command injection)  |  sanitizeCell (TSV injection)  |  TeX sandbox (untrusted input)" style="text;fontSize=8;fillColor=#FFEBEE;strokeColor=#EF5350;rounded=1;align=center;fontStyle=1;fontColor=#B71C1C;" vertex="1" parent="1">
+      <mxGeometry x="40" y="905" width="720" height="18" as="geometry"/>
+    </mxCell>
+
+  </root>
+</mxGraphModel>

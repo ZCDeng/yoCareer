@@ -3,68 +3,101 @@
 # This is the single source of truth for your personal data across all modes.
 
 candidate:
-  full_name: "Jane Smith"
-  email: "jane@example.com"
-  phone: "+1-555-0123"
-  location: "San Francisco, CA"
-  linkedin: "linkedin.com/in/janesmith"
-  portfolio_url: "https://janesmith.dev"
-  github: "github.com/janesmith"
-  twitter: "https://x.com/janesmith"
+  full_name: "张伟"
+  email: "zhangwei@example.com"
+  phone: "+86-138-0013-8000"
+  location: "上海, 中国"
+  linkedin: "linkedin.com/in/zhangwei"
+  portfolio_url: "https://zhangwei.dev"
+  github: "github.com/zhangwei"
+  twitter: "https://x.com/zhangwei"
 
 target_roles:
   # Your North Star roles — what you're optimizing for
   primary:
-    - "Senior AI Engineer"
-    - "Staff ML Engineer"
+    - "大模型应用工程师"
+    - "算法工程师"
+    - "AI 产品经理"
   # Archetypes help the evaluation system score fit
   archetypes:
-    - name: "AI/ML Engineer"
-      level: "Senior/Staff"
+    - name: "大模型应用工程师"
+      level: "P6/P7"
       fit: "primary"        # primary = dream role, secondary = good fit, adjacent = stretch
-    - name: "AI Product Manager"
-      level: "Senior"
+    - name: "算法工程师"
+      level: "P6"
       fit: "secondary"
-    - name: "Solutions Architect"
-      level: "Mid-Senior"
+    - name: "AI 产品经理"
+      level: "高级/专家"
       fit: "adjacent"
 
 narrative:
   # Your professional headline (1 line)
-  headline: "ML Engineer turned AI product builder"
+  headline: "从算法工程师转型 AI 应用落地的技术人"
   # Your exit story — what makes you unique
-  exit_story: "Built and sold my SaaS after 5 years. Now focused on applied AI at scale."
+  exit_story: "5 年 SaaS 创业并退出。现在专注于大模型应用落地与工程化。"
   # Your top 3-5 superpowers
   superpowers:
-    - "End-to-end ML pipelines"
-    - "Fast prototyping (idea to prod in 2 weeks)"
-    - "Cross-functional communication"
+    - "端到端大模型应用落地"
+    - "快速原型（2 周 idea 到产品）"
+    - "跨团队沟通与推动"
   # Proof points — projects, articles, case studies with measurable impact
   proof_points:
-    - name: "Project Alpha"
-      url: "https://janesmith.dev/project-alpha"
-      hero_metric: "Reduced inference latency 40%"
-    - name: "Open Source Tool"
-      url: "https://github.com/janesmith/tool"
-      hero_metric: "2K+ GitHub stars"
+    - name: "Alpha 项目"
+      url: "https://zhangwei.dev/project-alpha"
+      hero_metric: "推理延迟降低 40%"
+    - name: "开源工具"
+      url: "https://github.com/zhangwei/tool"
+      hero_metric: "GitHub 2K+ stars"
   # Optional: dashboard/demo URL with credentials
   # dashboard:
-  #   url: "https://janesmith.dev/demo"
+  #   url: "https://zhangwei.dev/demo"
   #   password: "demo-2026"
 
 compensation:
-  target_range: "$150K-200K"     # Your target total comp
-  currency: "USD"
-  minimum: "$120K"               # Walk-away number
-  location_flexibility: "Remote preferred, 1 week/month on-site possible"
+  target_range: "25K-40K × 14薪"     # Your target total comp (month-K × months)
+  currency: "CNY"
+  minimum: "20K"                    # Walk-away number
+  location_flexibility: "接受远程，每月 1-2 天 onsite"
 
 location:
-  country: "United States"
-  city: "San Francisco"
-  timezone: "PST"
-  visa_status: "No sponsorship needed"
+  country: "中国"
+  city: "上海"
+  timezone: "Asia/Shanghai"
+  visa_status: "无需工作签证"
   # For remote roles outside your country:
-  # onsite_availability: "1 week/month in any city"
+  # onsite_availability: "1 周/月，任何城市"
+
+# Optional: LLM provider configuration for China-market users
+# Uncomment and fill in if you want to use a domestic LLM instead of the default.
+# llm:
+#   provider: deepseek            # 可选: deepseek, kimi, qwen, zhipu, doubao
+#   model: deepseek-chat
+#   base_url: https://api.deepseek.com/v1
+#   api_key: "your-api-key-here"  # 或从环境变量读取: process.env.DEEPSEEK_API_KEY
+#
+#   # Kimi (Moonshot) 示例:
+#   # provider: kimi
+#   # model: moonshot-v1-8k
+#   # base_url: https://api.moonshot.cn/v1
+#   # api_key: "your-api-key-here"
+#
+#   # Qwen (阿里云) 示例:
+#   # provider: qwen
+#   # model: qwen-turbo
+#   # base_url: https://dashscope.aliyuncs.com/compatible-mode/v1
+#   # api_key: "your-api-key-here"
+#
+#   # 智谱 (GLM) 示例:
+#   # provider: zhipu
+#   # model: glm-4-flash
+#   # base_url: https://open.bigmodel.cn/api/paas/v4
+#   # api_key: "your-api-key-here"
+#
+#   # 豆包 (字节) 示例:
+#   # provider: doubao
+#   # model: doubao-pro-32k
+#   # base_url: https://ark.cn-beijing.volces.com/api/v3
+#   # api_key: "your-api-key-here"
 
 cv:
   output_format: "html" # "html" (default) or "latex"

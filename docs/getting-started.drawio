@@ -1,0 +1,108 @@
+<mxGraphModel>
+  <root>
+    <mxCell id="0"/>
+    <mxCell id="1" parent="0"/>
+    <mxCell id="t" value="yoCareer 上手指引" style="text;fontSize=20;fontStyle=1;align=center;fillColor=none;strokeColor=none;fontColor=#1A237E;" vertex="1" parent="1">
+      <mxGeometry x="120" y="10" width="560" height="30" as="geometry"/>
+    </mxCell>
+    <mxCell id="ts" value="把你的 AI 编程助手变成求职指挥中心" style="text;fontSize=12;align=center;fillColor=none;strokeColor=none;fontColor=#666;" vertex="1" parent="1">
+      <mxGeometry x="150" y="38" width="500" height="20" as="geometry"/>
+    </mxCell>
+    <mxCell id="start" value="首次使用？" style="rounded=1;fillColor=#E8EAF6;strokeColor=#3949AB;fontSize=12;fontStyle=1;align=center;" vertex="1" parent="1">
+      <mxGeometry x="300" y="75" width="200" height="35" as="geometry"/>
+    </mxCell>
+    <mxCell id="ob-label" value="首次配置（只需一次）" style="text;fontSize=10;fontStyle=1;fillColor=#FFF3E0;strokeColor=#FFB74D;rounded=1;align=center;" vertex="1" parent="1">
+      <mxGeometry x="40" y="130" width="720" height="20" as="geometry"/>
+    </mxCell>
+    <mxCell id="step1" value="① 提供简历&#xa;粘贴文本 / BOSS直聘链接 / 口述经验&#xa;→ 生成 cv.md" style="rounded=1;fillColor=#FFF3E0;strokeColor=#F57C00;fontSize=9;align=center;" vertex="1" parent="1">
+      <mxGeometry x="60" y="160" width="160" height="50" as="geometry"/>
+    </mxCell>
+    <mxCell id="step2" value="② 填写档案&#xa;姓名 / 邮箱 / 地点 / 目标岗位 / 薪资&#xa;→ 生成 config/profile.yml" style="rounded=1;fillColor=#FFF3E0;strokeColor=#F57C00;fontSize=9;align=center;" vertex="1" parent="1">
+      <mxGeometry x="240" y="160" width="170" height="50" as="geometry"/>
+    </mxCell>
+    <mxCell id="step3" value="③ 配置扫描器&#xa;预置 45+ 家公司 + 搜索词&#xa;→ 生成 portals.yml" style="rounded=1;fillColor=#FFF3E0;strokeColor=#F57C00;fontSize=9;align=center;" vertex="1" parent="1">
+      <mxGeometry x="430" y="160" width="155" height="50" as="geometry"/>
+    </mxCell>
+    <mxCell id="step4" value="④ 告诉系统更多&#xa;你的独特优势 / 兴奋点 / 硬性要求&#xa;→ 越说越准" style="rounded=1;fillColor=#FFF3E0;strokeColor=#F57C00;fontSize=9;align=center;" vertex="1" parent="1">
+      <mxGeometry x="600" y="160" width="155" height="50" as="geometry"/>
+    </mxCell>
+    <mxCell id="e-s1" style="endArrow=classic;exitX=1;exitY=0.5;entryX=0;entryY=0.5;strokeColor=#F57C00;" edge="1" parent="1">
+      <mxGeometry relative="1" as="geometry"><mxPoint x="220" y="185" as="sourcePoint"/><mxPoint x="240" y="185" as="targetPoint"/></mxGeometry>
+    </mxCell>
+    <mxCell id="e-s2" style="endArrow=classic;exitX=1;exitY=0.5;entryX=0;entryY=0.5;strokeColor=#F57C00;" edge="1" parent="1">
+      <mxGeometry relative="1" as="geometry"><mxPoint x="410" y="185" as="sourcePoint"/><mxPoint x="430" y="185" as="targetPoint"/></mxGeometry>
+    </mxCell>
+    <mxCell id="e-s3" style="endArrow=classic;exitX=1;exitY=0.5;entryX=0;entryY=0.5;strokeColor=#F57C00;" edge="1" parent="1">
+      <mxGeometry relative="1" as="geometry"><mxPoint x="585" y="185" as="sourcePoint"/><mxPoint x="600" y="185" as="targetPoint"/></mxGeometry>
+    </mxCell>
+    <mxCell id="ready" value="✅ 就绪！" style="rounded=1;fillColor=#E8F5E9;strokeColor=#43A047;fontSize=12;fontStyle=1;align=center;" vertex="1" parent="1">
+      <mxGeometry x="300" y="230" width="200" height="30" as="geometry"/>
+    </mxCell>
+    <mxCell id="e-s4" style="endArrow=classic;exitX=0.5;exitY=1;entryX=0.5;entryY=0;strokeColor=#F57C00;" edge="1" parent="1">
+      <mxGeometry relative="1" as="geometry"><mxPoint x="680" y="210" as="sourcePoint"/><mxPoint x="400" y="230" as="targetPoint"/></mxGeometry>
+    </mxCell>
+    <mxCell id="daily-label" value="日常使用——核心场景" style="text;fontSize=10;fontStyle=1;fillColor=#E8F5E9;strokeColor=#66BB6A;rounded=1;align=center;" vertex="1" parent="1">
+      <mxGeometry x="40" y="275" width="720" height="20" as="geometry"/>
+    </mxCell>
+    <mxCell id="sc1" value="粘贴一个职位链接" style="rounded=1;fillColor=#A5D6A7;strokeColor=#388E3C;fontSize=10;fontStyle=1;align=center;" vertex="1" parent="1">
+      <mxGeometry x="60" y="305" width="175" height="28" as="geometry"/>
+    </mxCell>
+    <mxCell id="sc1a" value="AI 自动读取职位描述&#xa;vs. 你的简历评分 (A-F)&#xa;→ 报告 + PDF + 收入 tracker" style="rounded=1;fillColor=#F1F8E9;strokeColor=#558B2F;fontSize=9;align=center;" vertex="1" parent="1">
+      <mxGeometry x="60" y="340" width="175" height="60" as="geometry"/>
+    </mxCell>
+    <mxCell id="sc1-score" value="评分 ≥ 4.0/5 → 建议申请&#xa;评分 &lt; 4.0/5 → 建议跳过" style="rounded=1;fillColor=#DCEDC8;strokeColor=#33691E;fontSize=8;align=center;" vertex="1" parent="1">
+      <mxGeometry x="60" y="408" width="175" height="30" as="geometry"/>
+    </mxCell>
+    <mxCell id="sc2" value="扫描招聘平台" style="rounded=1;fillColor=#A5D6A7;strokeColor=#388E3C;fontSize=10;fontStyle=1;align=center;" vertex="1" parent="1">
+      <mxGeometry x="280" y="305" width="150" height="28" as="geometry"/>
+    </mxCell>
+    <mxCell id="sc2a" value="/yoCareer scan&#xa;自动扫描 BOSS直聘 / 智联 / 前程无忧 / 猎聘 / 拉勾&#xa;+ 微博 / 小红书 / V2EX / GitHub 信号&#xa;→ 新职位流入 pipeline.md" style="rounded=1;fillColor=#F1F8E9;strokeColor=#558B2F;fontSize=9;align=center;" vertex="1" parent="1">
+      <mxGeometry x="270" y="340" width="170" height="60" as="geometry"/>
+    </mxCell>
+    <mxCell id="sc2b" value="每日自动扫描?&#xa;→ /schedule（远程定时任务）&#xa;或 /loop（本会话轮询）" style="rounded=1;fillColor=#DCEDC8;strokeColor=#33691E;fontSize=8;align=center;" vertex="1" parent="1">
+      <mxGeometry x="278" y="408" width="155" height="30" as="geometry"/>
+    </mxCell>
+    <mxCell id="sc3" value="批量处理" style="rounded=1;fillColor=#A5D6A7;strokeColor=#388E3C;fontSize=10;fontStyle=1;align=center;" vertex="1" parent="1">
+      <mxGeometry x="470" y="305" width="130" height="28" as="geometry"/>
+    </mxCell>
+    <mxCell id="sc3a" value="/yoCareer batch&#xa;claude -p 并行评估多个职位&#xa;自动合并到 tracker" style="rounded=1;fillColor=#F1F8E9;strokeColor=#558B2F;fontSize=9;align=center;" vertex="1" parent="1">
+      <mxGeometry x="470" y="340" width="145" height="60" as="geometry"/>
+    </mxCell>
+    <mxCell id="sc4" value="仪表盘" style="rounded=1;fillColor=#A5D6A7;strokeColor=#388E3C;fontSize=10;fontStyle=1;align=center;" vertex="1" parent="1">
+      <mxGeometry x="650" y="305" width="110" height="28" as="geometry"/>
+    </mxCell>
+    <mxCell id="sc4a" value="cd dashboard &amp;&amp; go build&#xa;TUI：浏览 / 筛选 / 排序&#xa;一键打开报告" style="rounded=1;fillColor=#F1F8E9;strokeColor=#558B2F;fontSize=9;align=center;" vertex="1" parent="1">
+      <mxGeometry x="635" y="340" width="125" height="60" as="geometry"/>
+    </mxCell>
+    <mxCell id="e-r2d" style="endArrow=classic;exitX=0.5;exitY=1;entryX=0.5;entryY=0;strokeColor=#388E3C;" edge="1" parent="1">
+      <mxGeometry relative="1" as="geometry"><mxPoint x="400" y="260" as="sourcePoint"/><mxPoint x="400" y="305" as="targetPoint"/></mxGeometry>
+    </mxCell>
+    <mxCell id="cmd-label" value="更多命令" style="text;fontSize=10;fontStyle=1;fillColor=#E1F5FE;strokeColor=#4FC3F7;rounded=1;align=center;" vertex="1" parent="1">
+      <mxGeometry x="40" y="465" width="720" height="20" as="geometry"/>
+    </mxCell>
+    <mxCell id="cmd1" value="/yoCareer&#xa;查看全部命令" style="rounded=1;fillColor=#E3F2FD;strokeColor=#1565C0;fontSize=9;align=center;" vertex="1" parent="1">
+      <mxGeometry x="60" y="495" width="100" height="35" as="geometry"/>
+    </mxCell>
+    <mxCell id="cmd2" value="/yoCareer oferta&#xa;对比多个offer" style="rounded=1;fillColor=#E3F2FD;strokeColor=#1565C0;fontSize=9;align=center;" vertex="1" parent="1">
+      <mxGeometry x="175" y="495" width="120" height="35" as="geometry"/>
+    </mxCell>
+    <mxCell id="cmd3" value="/yoCareer deep&#xa;深度公司调研" style="rounded=1;fillColor=#E3F2FD;strokeColor=#1565C0;fontSize=9;align=center;" vertex="1" parent="1">
+      <mxGeometry x="310" y="495" width="110" height="35" as="geometry"/>
+    </mxCell>
+    <mxCell id="cmd4" value="/yoCareer apply&#xa;填写申请表助手" style="rounded=1;fillColor=#E3F2FD;strokeColor=#1565C0;fontSize=9;align=center;" vertex="1" parent="1">
+      <mxGeometry x="435" y="495" width="115" height="35" as="geometry"/>
+    </mxCell>
+    <mxCell id="cmd5" value="/yoCareer contacto&#xa;LinkedIn 主动出击" style="rounded=1;fillColor=#E3F2FD;strokeColor=#1565C0;fontSize=9;align=center;" vertex="1" parent="1">
+      <mxGeometry x="565" y="495" width="110" height="35" as="geometry"/>
+    </mxCell>
+    <mxCell id="cmd6" value="/yoCareer tracker&#xa;查看申请状态" style="rounded=1;fillColor=#E3F2FD;strokeColor=#1565C0;fontSize=9;align=center;" vertex="1" parent="1">
+      <mxGeometry x="690" y="495" width="70" height="35" as="geometry"/>
+    </mxCell>
+    <mxCell id="end" value="永远记住：AI 负责评估和建议，你负责决策和行动。系统绝不会自动提交申请。最终决定始终在你手上。" style="text;fontSize=9;fillColor=#FFEBEE;strokeColor=#E53935;rounded=1;align=center;fontColor=#C62828;fontStyle=1;" vertex="1" parent="1">
+      <mxGeometry x="40" y="555" width="720" height="35" as="geometry"/>
+    </mxCell>
+    <mxCell id="tip" value="&#xa;贴士&#xa;━━━━━━━━━&#xa;• 越用越准：每次纠正评分时系统会自动学习&#xa;• 多语言支持：/de /fr /ja&#xa;• 自定义 archetype / 权重&#xa;• LaTeX CV 一键导出&#xa;• 面试故事库自动累积&#xa;• 数据 100% 本地 markdown&#xa;  没有数据库、没有服务端" style="rounded=1;fillColor=#37474F;strokeColor=#263238;fontSize=8;align=left;spacingLeft=8;fontColor=#ECEFF1;" vertex="1" parent="1">
+      <mxGeometry x="580" y="85" width="180" height="155" as="geometry"/>
+    </mxCell>
+  </root>
+</mxGraphModel>

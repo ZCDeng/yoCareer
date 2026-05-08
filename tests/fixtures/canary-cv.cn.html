@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>张伟 — 简历</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;600;700;900&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  body {
+    font-family: 'Noto Sans SC', 'PingFang SC', 'Microsoft YaHei', 'Hiragino Sans GB', sans-serif;
+    font-size: 11px; line-height: 1.75; color: #1a1a2e; background: #ffffff;
+    padding: 0; margin: 0; word-break: keep-all;
+  }
+  .page { width: 100%; max-width: 8.5in; margin: 0 auto; padding: 2px 0; }
+  .header { margin-bottom: 20px; }
+  .header h1 {
+    font-family: 'Noto Sans SC', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+    font-size: 26px; font-weight: 700; color: #1a1a2e;
+    letter-spacing: 0.04em; margin-bottom: 6px; line-height: 1.2;
+  }
+  .header-gradient { height: 2px; background: linear-gradient(to right, hsl(187, 74%, 32%), hsl(270, 70%, 45%)); border-radius: 1px; margin-bottom: 10px; }
+  .contact-row {
+    display: flex; flex-wrap: wrap; gap: 8px 14px;
+    font-family: 'Noto Sans SC', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+    font-size: 10.5px; line-height: 1.5; color: #555;
+  }
+  .contact-row a { color: #555; text-decoration: none; }
+  .contact-row .separator { color: #ccc; }
+  .section { margin-bottom: 16px; }
+  .section-title {
+    font-family: 'Noto Sans SC', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+    font-size: 12px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 0.08em; color: hsl(187, 74%, 32%);
+    border-bottom: 1.5px solid #e2e2e2; padding-bottom: 4px;
+    margin-bottom: 10px; line-height: 1.2;
+  }
+  .summary-text { font-size: 11px; line-height: 1.8; color: #2f2f2f; text-align: justify; }
+  a { white-space: nowrap; }
+  .job { margin-bottom: 14px; }
+  .job-header { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; margin-bottom: 4px; }
+  .job-company { font-family: 'Noto Sans SC', 'PingFang SC', 'Microsoft YaHei', sans-serif; font-size: 12px; font-weight: 600; color: hsl(270, 70%, 45%); }
+  .job-period { font-size: 10.5px; color: #777; white-space: nowrap; }
+  .job-role { font-size: 11px; font-weight: 600; color: #333; margin-bottom: 6px; }
+  .job ul { padding-left: 18px; margin-top: 6px; }
+  .job li { font-size: 10.5px; line-height: 1.7; color: #333; margin-bottom: 4px; }
+  .edu-item { margin-bottom: 8px; }
+  .edu-header { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; }
+  .edu-title { font-weight: 600; font-size: 11px; color: #333; }
+  .edu-org { color: hsl(270, 70%, 45%); font-weight: 500; }
+  .edu-year { font-size: 10px; color: #777; white-space: nowrap; }
+  .skills-grid { display: flex; flex-wrap: wrap; gap: 6px 14px; }
+  .skill-item { font-size: 10.5px; color: #444; }
+  .avoid-break, .job, .edu-item { break-inside: avoid; page-break-inside: avoid; }
+  @media print {
+    body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .page { padding: 0; }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <!-- HEADER -->
+  <div class="header avoid-break">
+    <h1>张伟</h1>
+    <div class="header-gradient"></div>
+    <div class="contact-row">
+      <span>+86-138-0013-8000</span>
+      <span class="separator">|</span>
+      <span>zhangwei@example.com</span>
+      <span class="separator">|</span>
+      <a href="https://linkedin.com/in/zhangwei">linkedin.com/in/zhangwei</a>
+      <span class="separator">|</span>
+      <a href="https://zhangwei.dev">zhangwei.dev</a>
+      <span class="separator">|</span>
+      <span>上海，中国</span>
+    </div>
+  </div>
+
+  <!-- PROFESSIONAL SUMMARY -->
+  <div class="section avoid-break">
+    <div class="section-title">个人总结</div>
+    <div class="summary-text">
+      5 年 SaaS 创业经验，专注大模型应用落地与工程化。擅长端到端 AI 产品交付，从需求分析到生产部署全流程把控。具备跨团队沟通与推动能力，曾带领 8 人团队完成核心产品重构。
+    </div>
+  </div>
+
+  <!-- WORK EXPERIENCE -->
+  <div class="section">
+    <div class="section-title">工作经历</div>
+    <div class="job">
+      <div class="job-header">
+        <span class="job-company">智云科技</span>
+        <span class="job-period">2022.03 - 至今</span>
+      </div>
+      <div class="job-role">高级算法工程师</div>
+      <ul>
+        <li>负责大模型推理优化，将延迟降低 40%，吞吐量提升 3 倍</li>
+        <li>设计并实现智能客服系统，覆盖 200+ 企业客户</li>
+        <li>主导 RAG 架构升级，检索准确率从 72% 提升至 91%</li>
+      </ul>
+    </div>
+    <div class="job">
+      <div class="job-header">
+        <span class="job-company">星辰数据</span>
+        <span class="job-period">2020.07 - 2022.02</span>
+      </div>
+      <div class="job-role">算法工程师</div>
+      <ul>
+        <li>开发 NLP 文本分类模型，F1 分数达 0.94</li>
+        <li>搭建 MLops 流水线，模型部署时间从 2 天缩短至 30 分钟</li>
+        <li>参与开源项目贡献，获得 GitHub 2K+ stars</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- EDUCATION -->
+  <div class="section avoid-break">
+    <div class="section-title">教育背景</div>
+    <div class="edu-item">
+      <div class="edu-header">
+        <span class="edu-title">清华大学 <span class="edu-org">计算机科学与技术</span></span>
+        <span class="edu-year">2016 - 2020</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- SKILLS -->
+  <div class="section avoid-break">
+    <div class="section-title">专业技能</div>
+    <div class="skills-grid">
+      <span class="skill-item">Python / PyTorch / TensorFlow</span>
+      <span class="skill-item">大模型微调（LoRA / QLoRA）</span>
+      <span class="skill-item">RAG / 向量检索（Milvus / FAISS）</span>
+      <span class="skill-item">LLM 推理优化（vLLM / TensorRT）</span>
+      <span class="skill-item">Kubernetes / Docker</span>
+      <span class="skill-item">Go / Rust</span>
+    </div>
+  </div>
+
+</div>
+</body>
+</html>
