@@ -1,7 +1,7 @@
 ---
 title: zh-cn 模式补齐与国内市场默认配置
 type: feat
-status: active
+status: completed
 date: 2026-05-08
 origin: docs/brainstorms/2026-05-08-zh-cn-modes-requirements.md
 ---
