@@ -210,6 +210,15 @@ Default modes are in `modes/` (English). Additional language-specific modes are 
 
 **When NOT to:** If the user applies to English-language roles, even at French, German, or Japanese companies, use the default English modes.
 
+**Chinese (China market):** `modes/zh-cn/` — native Chinese translations with China-market-specific vocabulary (五险一金, 试用期, 年终奖, 大小周, 外包, 驻场, 内推, 脉脉, BOSS直聘). Includes `_shared.md`, `evaluate.md` (evaluation), `apply.md` (apply), `pipeline.md`.
+
+**When to use Chinese modes:** If the user is targeting Chinese-language job postings, lives in China, or asks for Chinese output. Either:
+1. User says "use Chinese modes" → read from `modes/zh-cn/` instead of `modes/`
+2. User sets `language.modes_dir: modes/zh-cn` in `config/profile.yml` → always use Chinese modes
+3. The agent detects a Chinese JD → suggest switching to Chinese modes
+
+**When NOT to:** If the user applies to English-language roles, even at Chinese companies, use the default English modes.
+
 ### Skill Modes
 
 | If the user... | Mode |
