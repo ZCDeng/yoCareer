@@ -435,6 +435,78 @@ if (fileExists('VERSION')) {
   fail('VERSION file missing');
 }
 
+// ── 11. CV ATS SELF-TEST ─────────────────────────────────────────
+
+console.log('\n11. CV ATS self-test');
+
+const hasPlaywright = (() => {
+  try {
+    execFileSync('node', ['-e', 'require("playwright")'], { stdio: 'pipe' });
+    return true;
+  } catch { return false; }
+})();
+
+const hasPdftotext = (() => {
+  try {
+    execFileSync('pdftotext', ['-v'], { stdio: 'pipe' });
+    return true;
+  } catch { return false; }
+})();
+
+if (!hasPlaywright || !hasPdftotext) {
+  console.log(`   ⏭️  Skipping ATS self-test (${!hasPlaywright ? 'Playwright' : 'pdftotext'} not installed)`);
+} else {
+  const canaryHtml = 'tests/fixtures/canary-cv.cn.html';
+  const canaryPdf = 'tests/fixtures/canary-cv.cn.pdf';
+
+  // Generate PDF from canary HTML
+  let genResult;
+  try {
+    genResult = execFileSync('node', ['generate-pdf.mjs', canaryHtml, canaryPdf, '--format=a4'], {
+      cwd: ROOT, encoding: 'utf-8', timeout: 60000, stdio: ['pipe', 'pipe', 'pipe'],
+    }).trim();
+  } catch (e) {
+    genResult = null;
+  }
+
+  if (genResult !== null && fileExists(canaryPdf)) {
+    pass('Canary CV PDF generated');
+
+    // Run ATS self-test
+    let selftestResult;
+    try {
+      selftestResult = execFileSync('node', ['tests/cv-ats-selftest.mjs', canaryPdf, '--lang=zh-cn', '--name=张伟'], {
+        cwd: ROOT, encoding: 'utf-8', timeout: 30000, stdio: ['pipe', 'pipe', 'pipe'],
+      }).trim();
+    } catch (e) {
+      selftestResult = e.stdout?.toString()?.trim() || null;
+    }
+
+    if (selftestResult) {
+      try {
+        const report = JSON.parse(selftestResult);
+        if (report.passed) {
+          pass('ATS self-test passed');
+        } else {
+          fail(`ATS self-test failed: ${JSON.stringify(report.checks)}`);
+        }
+      } catch {
+        fail('ATS self-test returned invalid JSON');
+      }
+    } else {
+      fail('ATS self-test crashed');
+    }
+
+    // Clean up generated PDF
+    try {
+      const { rmSync } = await import('fs');
+      rmSync(join(ROOT, canaryPdf));
+    } catch {}
+  } else {
+    fail('Canary CV PDF generation failed');
+  }
+}
+
 // ── SUMMARY ─────────────────────────────────────────────────────
 
 console.log('\n' + '='.repeat(50));

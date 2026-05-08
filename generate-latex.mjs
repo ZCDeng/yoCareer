@@ -164,19 +164,36 @@ async function main() {
     mkdirSync(targetDir, { recursive: true });
   }
 
-  // Detect available engine: prefer tectonic, fall back to pdflatex
-  let engine = null;
-  for (const candidate of ['tectonic', 'pdflatex']) {
+  // Detect available engines
+  const availableEngines = [];
+  for (const candidate of ['tectonic', 'pdflatex', 'xelatex']) {
     try {
       execFileSync(candidate, ['--version'], { stdio: 'pipe' });
-      engine = candidate;
-      break;
+      availableEngines.push(candidate);
     } catch { /* not found */ }
+  }
+
+  // Check if the document declares a specific engine (e.g., CJK documents need xelatex)
+  const requiresXelatex = content.includes('% !TeX program = xelatex');
+  let engine = null;
+
+  if (requiresXelatex) {
+    if (availableEngines.includes('xelatex')) {
+      engine = 'xelatex';
+    } else {
+      report.compiled = false;
+      report.compileError = 'This document requires xelatex for CJK support, but xelatex is not installed.';
+      console.log(JSON.stringify(report, null, 2));
+      process.exit(1);
+    }
+  } else {
+    // Default priority: tectonic > pdflatex
+    engine = availableEngines.find(e => e === 'tectonic' || e === 'pdflatex') || availableEngines[0];
   }
 
   if (!engine) {
     report.compiled = false;
-    report.compileError = 'No LaTeX engine found. Install tectonic (brew install tectonic) or pdflatex.';
+    report.compileError = 'No LaTeX engine found. Install tectonic (brew install tectonic), pdflatex, or xelatex.';
     console.log(JSON.stringify(report, null, 2));
     process.exit(1);
   }
@@ -201,7 +218,7 @@ async function main() {
         stdio: 'pipe',
         timeout: 120_000,
       });
-    } else {
+    } else if (engine === 'pdflatex') {
       const pdflatexArgs = [
         '-no-shell-escape',
         '-interaction=nonstopmode',
@@ -211,8 +228,20 @@ async function main() {
       ];
       // First pass
       execFileSync('pdflatex', pdflatexArgs, { cwd: compileDir, stdio: 'pipe', timeout: 120_000 });
-      // Second pass (resolves referenceS))
+      // Second pass (resolves references)
       execFileSync('pdflatex', pdflatexArgs, { cwd: compileDir, stdio: 'pipe', timeout: 120_000 });
+    } else if (engine === 'xelatex') {
+      const xelatexArgs = [
+        '-no-shell-escape',
+        '-interaction=nonstopmode',
+        '-halt-on-error',
+        `-output-directory=${compileDir}`,
+        compilePath,
+      ];
+      // First pass
+      execFileSync('xelatex', xelatexArgs, { cwd: compileDir, stdio: 'pipe', timeout: 120_000 });
+      // Second pass (resolves references)
+      execFileSync('xelatex', xelatexArgs, { cwd: compileDir, stdio: 'pipe', timeout: 120_000 });
     }
 
     report.compiled = true;

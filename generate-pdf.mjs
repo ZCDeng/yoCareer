@@ -172,6 +172,11 @@ async function generatePDF() {
       if (canLoadRequest(requestUrl, allowedLocalDirs)) {
         return route.continue();
       }
+      // Allow Google Fonts CDN for CJK font loading (e.g., Noto Sans SC)
+      if (requestUrl.startsWith('https://fonts.googleapis.com') ||
+          requestUrl.startsWith('https://fonts.gstatic.com')) {
+        return route.continue();
+      }
       return route.abort();
     });
 
