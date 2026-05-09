@@ -74,6 +74,12 @@ function checkFieldPresence(text, fields, name) {
   return results;
 }
 
+// Canonical reading order: header (name → phone → email) → education → experience.
+// pdftotext -layout preserves the geometric order; ATS parsers consume top-down.
+// Mismatch indicates the PDF header was rendered below the body (e.g., right-sidebar
+// layout that broke text-order extraction).
+const CANONICAL_ORDER = ['name', 'phone', 'email', 'education', 'experience'];
+
 function checkFieldOrder(text, fields, name) {
   const positions = [];
   for (const [key, config] of Object.entries(fields)) {
@@ -88,8 +94,13 @@ function checkFieldOrder(text, fields, name) {
   }
   positions.sort((a, b) => a.index - b.index);
   const order = positions.map(p => p.key);
-  const passed = positions.length >= 3 && positions.every((p, i) => i === 0 || p.index >= positions[i - 1].index);
-  return { passed, order, positions };
+
+  // Compare against canonical order, ignoring missing fields.
+  const expected = CANONICAL_ORDER.filter(k => order.includes(k));
+  const matchesCanonical = order.length === expected.length
+    && order.every((k, i) => k === expected[i]);
+  const passed = positions.length >= 3 && matchesCanonical;
+  return { passed, order, expected, positions };
 }
 
 function checkChineseReadability(text) {

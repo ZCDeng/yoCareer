@@ -511,7 +511,16 @@ if (!hasPlaywright || !hasPdftotext) {
 
 console.log('\n12. Risk tiers integrity');
 
-const riskTiersResult = run('node', ['tests/risk-tiers-selftest.mjs']);
+// Capture stdout on non-zero exit too — selftest writes the error JSON to stdout
+// before exiting 1. The shared run() helper discards it on error.
+let riskTiersResult;
+try {
+  riskTiersResult = execFileSync('node', ['tests/risk-tiers-selftest.mjs'], {
+    cwd: ROOT, encoding: 'utf-8', timeout: 30000, stdio: ['pipe', 'pipe', 'pipe'],
+  }).trim();
+} catch (e) {
+  riskTiersResult = e.stdout?.toString()?.trim() || null;
+}
 if (riskTiersResult) {
   try {
     const report = JSON.parse(riskTiersResult);
