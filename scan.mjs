@@ -948,8 +948,7 @@ function normalizeSearchQueries(searchQueries) {
 
 // ── Main ────────────────────────────────────────────────────────────
 
-async function main() {
-  const args = process.argv.slice(2);
+async function runScanDirectly(args) {
   const dryRun = args.includes('--dry-run');
   const jsonOutput = args.includes('--json-output');
   const companyFlag = args.indexOf('--company');
@@ -1144,6 +1143,80 @@ async function main() {
     // Last line must be valid JSON for the daemon worker parser
     console.log(JSON.stringify(result));
   }
+}
+
+async function runScanViaDaemon(args) {
+  const { createDaemonClient } = await import('./lib/daemon-client.mjs');
+  const client = await createDaemonClient({ autoStart: true });
+
+  const dryRun = args.includes('--dry-run');
+  const companyFlag = args.indexOf('--company');
+  const filterCompany = companyFlag !== -1 ? args[companyFlag + 1] : undefined;
+
+  const scanRes = await client.post('/api/scan', {
+    dryRun,
+    company: filterCompany,
+  });
+  const taskId = scanRes.task_id;
+
+  console.log(`Scan task started: ${taskId}`);
+
+  // Handle Ctrl+C → cancel task
+  let cancelled = false;
+  process.on('SIGINT', async () => {
+    if (cancelled) return;
+    cancelled = true;
+    console.log('\nCancelling scan...');
+    try {
+      await client.tasks.cancel(taskId);
+    } catch {}
+    process.exit(0);
+  });
+
+  // Poll task status every second
+  let lastMessage = '';
+  while (true) {
+    await new Promise(r => setTimeout(r, 1000));
+    const task = await client.tasks.get(taskId);
+    const status = task.current_status;
+
+    if (status === 'running') {
+      const progress = Math.round((task.progress || 0) * 100);
+      const msg = task.message || '';
+      if (msg !== lastMessage) {
+        console.log(`  [${progress}%] ${msg}`);
+        lastMessage = msg;
+      }
+    } else if (status === 'completed') {
+      console.log('Scan completed.');
+      const result = typeof task.result_json === 'object' ? task.result_json : {};
+      if (result.new_signals !== undefined) {
+        console.log(`  New signals: ${result.new_signals}`);
+      }
+      if (result.held_signals !== undefined) {
+        console.log(`  Held for review: ${result.held_signals}`);
+      }
+      break;
+    } else if (status === 'failed') {
+      const err = typeof task.error_json === 'object' ? task.error_json : {};
+      console.error('Scan failed:', err.message || 'unknown error');
+      process.exit(1);
+    } else if (status === 'cancelled') {
+      console.log('Scan cancelled.');
+      process.exit(0);
+    }
+  }
+}
+
+async function main() {
+  const args = process.argv.slice(2);
+  const jsonOutput = args.includes('--json-output');
+
+  if (jsonOutput) {
+    return runScanDirectly(args);
+  }
+
+  return runScanViaDaemon(args);
 }
 
 main().catch(err => {
