@@ -18,6 +18,7 @@ import { resolve, basename, dirname, join } from 'path';
 import { execFileSync } from 'child_process';
 import { existsSync, mkdirSync } from 'fs';
 import { tmpdir } from 'os';
+import { createDaemonClient } from './lib/daemon-client.mjs';
 
 const REQUIRED_SECTIONS = [
   '\\\\section{Education}',
@@ -43,6 +44,8 @@ const FORBIDDEN_TEX_PATTERNS = [
 ];
 
 async function main() {
+  await createDaemonClient({ autoStart: true });
+
   const inputPath = process.argv[2];
   const outputPath = process.argv[3]; // optional
   if (!inputPath) {

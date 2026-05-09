@@ -18,6 +18,7 @@ import { readFileSync, writeFileSync, readdirSync, mkdirSync, renameSync, exists
 import { join, basename, dirname } from 'path';
 import { fileURLToPath } from 'url';
 import { execFileSync } from 'child_process';
+import { ensureDaemon } from './lib/ensure-daemon.mjs';
 import {
   canonicalStatusIds,
   loadStatusSchema,
@@ -232,6 +233,8 @@ if (!existsSync(APPS_FILE)) {
   console.log('No applications.md found. Nothing to merge into.');
   process.exit(0);
 }
+ensureDaemon();
+
 const appContent = readFileSync(APPS_FILE, 'utf-8');
 const appLines = appContent.split('\n');
 const existingApps = [];

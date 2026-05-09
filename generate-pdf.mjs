@@ -16,6 +16,7 @@ import { readFile } from 'fs/promises';
 import { mkdirSync, existsSync } from 'fs';
 import { fileURLToPath } from 'url';
 import { execFileSync } from 'child_process';
+import { createDaemonClient } from './lib/daemon-client.mjs';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
@@ -142,6 +143,8 @@ export function detectLang(html) {
 }
 
 async function generatePDF() {
+  await createDaemonClient({ autoStart: true });
+
   const args = process.argv.slice(2);
 
   // Parse arguments
