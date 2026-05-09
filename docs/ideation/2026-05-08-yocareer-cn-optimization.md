@@ -66,7 +66,7 @@ yoCareer is a local CLI job-search operations system for the China market (v1.6.
 **Downsides:** OCR 跨平台差异、截图隐私风险。
 **Confidence:** 85%
 **Complexity:** Medium
-**Status:** Explored (user selected for brainstorm)
+**Status:** Killed (2026-05-09): brainstorm 第一轮即收尾。理由：私域形态在微信群/朋友圈/公众号/小红书/脉脉之间差异极大，强行抽象会做出"哪个都不顺手"的工具；且用户自评"看到信号几乎不处理，过眼就忘"——意味着这是行为改变问题、非工具问题。MVP 不存在能让"过眼就忘"用户高频回访的合理形态。如未来 yoCareer 服务的用户群有明确"已经在每天截图整理招聘信号"的画像，可重启。
 
 ### 5. 零 LLM 初筛 + 每日 1 分钟仪表盘
 **Axis:** 本地化与上手体验
