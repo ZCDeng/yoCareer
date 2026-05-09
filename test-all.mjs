@@ -454,56 +454,64 @@ const hasPdftotext = (() => {
 })();
 
 if (!hasPlaywright || !hasPdftotext) {
-  console.log(`   ⏭️  Skipping ATS self-test (${!hasPlaywright ? 'Playwright' : 'pdftotext'} not installed)`);
+  // Hard-fail in CI so missing tooling can't silently skip the regression test.
+  // Local runs still warn rather than block, since most contributors won't have
+  // both Playwright and pdftotext installed.
+  const missing = !hasPlaywright ? 'Playwright' : 'pdftotext';
+  if (process.env.CI === 'true') {
+    fail(`ATS self-test cannot run in CI: ${missing} not installed`);
+  } else {
+    warn(`Skipping ATS self-test (${missing} not installed) — install for full coverage`);
+  }
 } else {
   const canaryHtml = 'tests/fixtures/canary-cv.cn.html';
   const canaryPdf = 'tests/fixtures/canary-cv.cn.pdf';
+  const { rmSync } = await import('fs');
 
-  // Generate PDF from canary HTML
-  let genResult;
   try {
-    genResult = execFileSync('node', ['generate-pdf.mjs', canaryHtml, canaryPdf, '--format=a4'], {
-      cwd: ROOT, encoding: 'utf-8', timeout: 60000, stdio: ['pipe', 'pipe', 'pipe'],
-    }).trim();
-  } catch (e) {
-    genResult = null;
-  }
-
-  if (genResult !== null && fileExists(canaryPdf)) {
-    pass('Canary CV PDF generated');
-
-    // Run ATS self-test
-    let selftestResult;
+    // Generate PDF from canary HTML
+    let genResult;
     try {
-      selftestResult = execFileSync('node', ['tests/cv-ats-selftest.mjs', canaryPdf, '--lang=zh-cn', '--name=张伟'], {
-        cwd: ROOT, encoding: 'utf-8', timeout: 30000, stdio: ['pipe', 'pipe', 'pipe'],
+      genResult = execFileSync('node', ['generate-pdf.mjs', canaryHtml, canaryPdf, '--format=a4'], {
+        cwd: ROOT, encoding: 'utf-8', timeout: 60000, stdio: ['pipe', 'pipe', 'pipe'],
       }).trim();
     } catch (e) {
-      selftestResult = e.stdout?.toString()?.trim() || null;
+      genResult = null;
     }
 
-    if (selftestResult) {
+    if (genResult !== null && fileExists(canaryPdf)) {
+      pass('Canary CV PDF generated');
+
+      // Run ATS self-test
+      let selftestResult;
       try {
-        const report = JSON.parse(selftestResult);
-        if (report.passed) {
-          pass('ATS self-test passed');
-        } else {
-          fail(`ATS self-test failed: ${JSON.stringify(report.checks)}`);
+        selftestResult = execFileSync('node', ['tests/cv-ats-selftest.mjs', canaryPdf, '--lang=zh-cn', '--name=张伟'], {
+          cwd: ROOT, encoding: 'utf-8', timeout: 30000, stdio: ['pipe', 'pipe', 'pipe'],
+        }).trim();
+      } catch (e) {
+        selftestResult = e.stdout?.toString()?.trim() || null;
+      }
+
+      if (selftestResult) {
+        try {
+          const report = JSON.parse(selftestResult);
+          if (report.passed) {
+            pass('ATS self-test passed');
+          } else {
+            fail(`ATS self-test failed: ${JSON.stringify(report.checks)}`);
+          }
+        } catch {
+          fail('ATS self-test returned invalid JSON');
         }
-      } catch {
-        fail('ATS self-test returned invalid JSON');
+      } else {
+        fail('ATS self-test crashed');
       }
     } else {
-      fail('ATS self-test crashed');
+      fail('Canary CV PDF generation failed');
     }
-
-    // Clean up generated PDF
-    try {
-      const { rmSync } = await import('fs');
-      rmSync(join(ROOT, canaryPdf));
-    } catch {}
-  } else {
-    fail('Canary CV PDF generation failed');
+  } finally {
+    // Always clean up — even on SIGINT, test-runner crash, or assertion failure.
+    try { rmSync(join(ROOT, canaryPdf)); } catch {}
   }
 }
 
@@ -534,6 +542,33 @@ if (riskTiersResult) {
   }
 } else {
   fail('Risk tiers self-test crashed');
+}
+
+// ── 13. URL ALLOWLIST REGRESSION ────────────────────────────────
+
+console.log('\n13. URL allowlist regression (CodeQL fix)');
+
+let urlAllowlistResult;
+try {
+  urlAllowlistResult = execFileSync('node', ['tests/url-allowlist-selftest.mjs'], {
+    cwd: ROOT, encoding: 'utf-8', timeout: 10000, stdio: ['pipe', 'pipe', 'pipe'],
+  }).trim();
+} catch (e) {
+  urlAllowlistResult = e.stdout?.toString()?.trim() || null;
+}
+if (urlAllowlistResult) {
+  try {
+    const report = JSON.parse(urlAllowlistResult);
+    if (report.passed) {
+      pass(`URL allowlist regression test passed (${report.total} cases)`);
+    } else {
+      fail(`URL allowlist regression failed: ${report.failed}/${report.total} cases`);
+    }
+  } catch {
+    fail('URL allowlist selftest returned invalid JSON');
+  }
+} else {
+  fail('URL allowlist selftest crashed');
 }
 
 // ── SUMMARY ─────────────────────────────────────────────────────

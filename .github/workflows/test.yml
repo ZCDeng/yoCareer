@@ -15,6 +15,10 @@ jobs:
       - uses: actions/setup-go@v6
         with:
           go-version-file: 'dashboard/go.mod'
+      - name: Install poppler-utils (pdftotext for ATS selftest)
+        run: sudo apt-get update && sudo apt-get install -y poppler-utils
       - run: npm ci
+      - name: Install Playwright Chromium
+        run: npx playwright install --with-deps chromium
       - run: node test-all.mjs --quick
       - run: cd dashboard && go test ./...
