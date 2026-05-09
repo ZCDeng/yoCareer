@@ -31,6 +31,9 @@ function parseRegexPattern(patternStr) {
   // Expects format: /pattern/flags
   const match = patternStr.match(/^\/(.*)\/([gimsuy]*)$/);
   if (!match) return null;
+  // Reject empty pattern — `new RegExp('','')` matches every string,
+  // turning any signal that uses `//` into a universal hit.
+  if (!match[1].trim()) return null;
   try {
     return new RegExp(match[1], match[2]);
   } catch {

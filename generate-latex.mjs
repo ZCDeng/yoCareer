@@ -154,7 +154,9 @@ async function main() {
   try {
     compileDir = await mkdtemp(join(tmpdir(), 'yocareer-tex-'));
   } catch (err) {
-    console.log(JSON.stringify({ compiled: false, error: `mkdtemp failed: ${err.message}` }));
+    report.compiled = false;
+    report.compileError = `mkdtemp failed: ${err.message}`;
+    console.log(JSON.stringify(report, null, 2));
     process.exit(1);
   }
 
