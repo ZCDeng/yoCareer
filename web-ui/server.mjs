@@ -121,7 +121,6 @@ function decodeRel(s) {
 
 const REPORT_NAME_RE = /^[A-Za-z0-9_.\-]+\.md$/;
 const PDF_NAME_RE = /^[A-Za-z0-9_.\-]+\.pdf$/;
-const STATIC_NAME_RE = /^[A-Za-z0-9_.\-]+\.(html|css|js|svg|json)$/;
 
 function send(res, status, body, headers = {}) {
   const finalHeaders = {
@@ -214,13 +213,24 @@ async function handleApi(_req, res, urlPath) {
   return sendJson(res, 404, { error: 'unknown_endpoint' });
 }
 
+// Static assets are a fixed set — use a hardcoded allow-list so the path
+// passed to readFile is a literal we control, not a user-derived value.
+// CodeQL js/path-injection is satisfied because the value flowing into
+// resolve() is selected from a static map, never directly from the URL.
+const STATIC_FILES = {
+  'index.html': '.html',
+  'main.js': '.js',
+  'styles.css': '.css',
+};
+
 async function handleStatic(_req, res, urlPath) {
-  const rel = urlPath === '/' ? 'index.html' : decodeRel(urlPath.slice(1));
-  if (!STATIC_NAME_RE.test(rel)) return send(res, 404, 'not found');
+  const rel = urlPath === '/' ? 'index.html' : urlPath.slice(1);
+  if (!Object.prototype.hasOwnProperty.call(STATIC_FILES, rel)) {
+    return send(res, 404, 'not found');
+  }
+  // rel is now a key from STATIC_FILES — a literal, not user-controlled.
+  const ext = STATIC_FILES[rel];
   const safe = resolve(STATIC_DIR, rel);
-  if (safe !== STATIC_DIR && !safe.startsWith(STATIC_DIR + sep)) return send(res, 404, 'not found');
-  if (!existsSync(safe)) return send(res, 404, 'not found');
-  const ext = '.' + safe.split('.').pop();
   const buf = await readFile(safe);
   return send(res, 200, buf, { 'Content-Type': MIME[ext] || 'application/octet-stream' });
 }
