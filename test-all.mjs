@@ -288,6 +288,7 @@ const expectedModes = [
   'batch.md', 'apply.md', 'auto-pipeline.md', 'contacto.md', 'deep.md',
   'ofertas.md', 'pipeline.md', 'project.md', 'tracker.md', 'training.md',
   'followup.md', 'interview-prep.md', 'latex.md', 'patterns.md',
+  'pdf-import.md',
 ];
 
 for (const mode of expectedModes) {
@@ -620,6 +621,96 @@ if (urlAllowlistResult) {
   }
 } else {
   fail('URL allowlist selftest crashed');
+}
+
+// ── 14. PDF INBOUND BRIDGE ──────────────────────────────────────
+
+console.log('\n14. PDF inbound bridge (bridges/pdf-extract.mjs)');
+
+if (!fileExists('bridges/pdf-extract.mjs')) {
+  fail('bridges/pdf-extract.mjs missing');
+} else if (!hasPlaywright) {
+  if (process.env.CI === 'true') {
+    fail('PDF inbound bridge cannot test in CI: Playwright not installed (cannot build fixtures)');
+  } else {
+    warn('Skipping PDF inbound bridge tests (Playwright not installed) — install for full coverage');
+  }
+} else {
+  // Build fixture PDFs from the HTML sources, run extraction, assert that
+  // classification + key fields land where expected. Cleanup is unconditional.
+  const { rmSync } = await import('fs');
+  const offerHtml = 'tests/fixtures/pdf-inbox/offer-zh.html';
+  const offerPdf = 'tests/fixtures/pdf-inbox/offer-zh.pdf';
+  const jdHtml = 'tests/fixtures/pdf-inbox/jd-zh.html';
+  const jdPdf = 'tests/fixtures/pdf-inbox/jd-zh.pdf';
+
+  try {
+    let buildOk = true;
+    for (const [src, out] of [[offerHtml, offerPdf], [jdHtml, jdPdf]]) {
+      try {
+        execFileSync('node', ['generate-pdf.mjs', src, out, '--format=a4', '--no-ats-check'], {
+          cwd: ROOT, encoding: 'utf-8', timeout: 60000, stdio: ['pipe', 'pipe', 'pipe'],
+        });
+      } catch (e) {
+        fail(`PDF inbound fixture build failed: ${src} → ${out}: ${e.message}`);
+        buildOk = false;
+      }
+    }
+
+    if (buildOk) {
+      pass('PDF inbound fixtures built');
+
+      // Import the bridge and run extraction directly so we can assert on the
+      // structured signal output rather than parsing CLI text.
+      const { extractPdf, pdfToSignal, classifyPdfText } = await import('./bridges/pdf-extract.mjs');
+
+      try {
+        const offerEx = await extractPdf(join(ROOT, offerPdf));
+        const offerSignal = pdfToSignal(offerEx, 'zh-cn');
+        if (offerSignal.pdf_classification === 'offer') {
+          pass('Chinese offer PDF classified as offer');
+        } else {
+          fail(`Chinese offer PDF misclassified as ${offerSignal.pdf_classification}`);
+        }
+        if (offerSignal.salary && offerSignal.salary.includes('35,000')) {
+          pass('Offer salary extracted');
+        } else {
+          fail(`Offer salary not extracted (got "${offerSignal.salary}")`);
+        }
+        const noteText = offerSignal.scoring_notes.join(' ');
+        if (noteText.includes('14薪')) pass('14薪 extracted');
+        else fail('14薪 not extracted');
+        if (noteText.includes('housing_fund')) pass('公积金 extracted');
+        else fail('公积金 not extracted');
+        if (noteText.includes('probation')) pass('试用期 extracted');
+        else fail('试用期 not extracted');
+        if (noteText.includes('equity_mentioned')) pass('期权 detected');
+        else fail('期权 not detected');
+      } catch (e) {
+        fail(`Offer PDF extraction crashed: ${e.message}`);
+      }
+
+      try {
+        const jdEx = await extractPdf(join(ROOT, jdPdf));
+        const jdSignal = pdfToSignal(jdEx, 'zh-cn');
+        if (jdSignal.pdf_classification === 'jd') {
+          pass('Chinese JD PDF classified as jd');
+        } else {
+          fail(`Chinese JD PDF misclassified as ${jdSignal.pdf_classification}`);
+        }
+      } catch (e) {
+        fail(`JD PDF extraction crashed: ${e.message}`);
+      }
+
+      // Sanity: classifyPdfText returns 'unknown' on noise.
+      const noiseLabel = classifyPdfText('lorem ipsum dolor sit amet '.repeat(20));
+      if (noiseLabel === 'unknown') pass('Noise text classified as unknown');
+      else fail(`Noise classification expected 'unknown', got '${noiseLabel}'`);
+    }
+  } finally {
+    try { rmSync(join(ROOT, offerPdf)); } catch {}
+    try { rmSync(join(ROOT, jdPdf)); } catch {}
+  }
 }
 
 // ── SUMMARY ─────────────────────────────────────────────────────

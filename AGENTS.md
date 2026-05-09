@@ -82,7 +82,10 @@ AI-powered job search automation: pipeline tracking, offer evaluation, CV genera
 | `followup-cadence.mjs` | Follow-up cadence calculator (JSON output) |
 | `data/follow-ups.md` | Follow-up history tracker |
 | `scan.mjs` | Zero-token portal scanner — China-first provider pipeline (`company_page` / `manual_signal_import` / `reach_signal_search` / `manual_only`), zero LLM cost |
-| `bridges/` | Provider bridges (Aditly, Reach signal search, manual import) |
+| `bridges/` | Provider bridges (Aditly, Reach signal search, manual import, PDF inbound) |
+| `bridges/pdf-extract.mjs` | PDF → text → manual_signal_import bridge (pdfjs-dist; offer/JD heuristic + CN field extraction; `npm run pdf:import`) |
+| `data/inbox/` | Drop folder for offer/JD PDFs (gitignored except `.gitkeep`); processed by `pdf-extract.mjs` |
+| `modes/pdf-import.md` | Agent flow for ingesting PDFs from `data/inbox/` |
 | `provider-health.mjs` | Provider connectivity check (`npm run providers`) |
 | `bridge-smoke.mjs` | End-to-end Aditly bridge smoke test (`npm run bridge:smoke`) |
 | `check-liveness.mjs` | Job posting liveness checker |
@@ -239,6 +242,7 @@ Default modes are in `modes/` (English). Additional language-specific modes are 
 | Batch processes offers | `batch` |
 | Asks about rejection patterns or wants to improve targeting | `patterns` |
 | Asks about follow-ups or application cadence | `followup` |
+| Drops PDF offer letters / JDs into `data/inbox/` | `pdf-import` |
 
 ### CV Source of Truth
 

@@ -18,6 +18,7 @@
     "rollback": "node update-system.mjs rollback",
     "liveness": "node check-liveness.mjs",
     "scan": "node scan.mjs",
+    "pdf:import": "node bridges/pdf-extract.mjs data/inbox --lang=zh-cn",
     "gemini:eval": "node gemini-eval.mjs",
     "models": "node model-health.mjs"
   },
@@ -40,6 +41,7 @@
     "@google/generative-ai": "^0.24.1",
     "dotenv": "^16.4.5",
     "js-yaml": "^4.1.1",
+    "pdfjs-dist": "^5.7.284",
     "playwright": "^1.58.1"
   }
 }
