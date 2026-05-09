@@ -86,6 +86,7 @@ AI-powered job search automation: pipeline tracking, offer evaluation, CV genera
 | `bridges/pdf-extract.mjs` | PDF → text → manual_signal_import bridge (pdfjs-dist; offer/JD heuristic + CN field extraction; `npm run pdf:import`) |
 | `data/inbox/` | Drop folder for offer/JD PDFs (gitignored except `.gitkeep`); processed by `pdf-extract.mjs` |
 | `modes/pdf-import.md` | Agent flow for ingesting PDFs from `data/inbox/` |
+| `web-ui/` | Read-only localhost browser dashboard (vanilla HTML/JS + Node http server, no deps; `npm run ui`). Coexists with the Go TUI in `dashboard/`. |
 | `provider-health.mjs` | Provider connectivity check (`npm run providers`) |
 | `bridge-smoke.mjs` | End-to-end Aditly bridge smoke test (`npm run bridge:smoke`) |
 | `check-liveness.mjs` | Job posting liveness checker |
