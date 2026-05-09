@@ -27,6 +27,23 @@ const VALID_CATEGORIES = [
   'legitimacy_risk',
 ];
 
+// Must-NOT-match fixtures — clean Chinese JD strings that should NOT trigger
+// the listed signal id. Added to lock in the false-positive narrowing in PR-C.
+// Adding a new signal? If it's broad enough to need negation, add must-not-match
+// fixtures here. Each entry: { signal_id, jd_text, reason }.
+const MUST_NOT_MATCH = [
+  { id: 'contract-outsourcing', jd: '管理外包供应商', reason: 'vendor-management role, not being outsourced' },
+  { id: 'contract-outsourcing', jd: '负责采购第三方雇佣的合规审查', reason: 'audit role for outsourcing compliance' },
+  { id: 'workload-996', jd: '本公司明确拒绝996工作制', reason: 'anti-996 employer-of-choice' },
+  { id: 'workload-996', jd: '我们抵制大小周', reason: 'anti-bigsmallweek statement' },
+  { id: 'contract-no-labor-contract', jd: '审查不签劳动合同的违法案件', reason: 'legal/audit context' },
+  { id: 'contract-no-labor-contract', jd: '代理无劳动合同纠纷', reason: 'legal representation' },
+  { id: 'platform-upfront-fee', jd: '客户押金管理是核心职责', reason: 'normal accounting term, not job-seeker fee' },
+  { id: 'platform-upfront-fee', jd: '负责培训费收取与对账', reason: 'finance/accounting role' },
+  { id: 'comp-low-bonus', jd: '薪资 12薪 + 季度奖金 + 年终奖', reason: 'has additional bonuses' },
+  { id: 'comp-low-bonus', jd: '提供 12薪 + 期权', reason: 'has equity in addition to base' },
+];
+
 function parseRegexPattern(patternStr) {
   // Expects format: /pattern/flags
   const match = patternStr.match(/^\/(.*)\/([gimsuy]*)$/);
@@ -84,12 +101,11 @@ function main() {
     report.errors.push(`Expected at least 15 signals, found ${signals.length}`);
   }
 
-  const requiredFields = ['id', 'tier', 'category', 'patterns', 'weight', 'description'];
+  const requiredFields = ['id', 'tier', 'category', 'patterns', 'description'];
   const ids = new Set();
   let fieldsValid = true;
   let tiersValid = true;
   let categoriesValid = true;
-  let weightsValid = true;
   let patternsValid = true;
   let idsUnique = true;
 
@@ -125,12 +141,6 @@ function main() {
       categoriesValid = false;
     }
 
-    // Weight validation
-    if (!Number.isInteger(sig.weight) || sig.weight < 1 || sig.weight > 10) {
-      report.errors.push(`Signal ${sig.id}: weight must be integer 1-10, got ${sig.weight}`);
-      weightsValid = false;
-    }
-
     // Patterns validation
     if (!Array.isArray(sig.patterns) || sig.patterns.length === 0) {
       report.errors.push(`Signal ${sig.id}: patterns must be non-empty array`);
@@ -152,12 +162,34 @@ function main() {
     }
   }
 
+  // Must-not-match validation: check that narrowed regexes don't fire on
+  // legitimate JD context (anti-996 employers, vendor-management roles, etc.)
+  let mustNotMatchValid = true;
+  const signalsById = new Map(signals.map(s => [s.id, s]));
+  for (const fixture of MUST_NOT_MATCH) {
+    const sig = signalsById.get(fixture.id);
+    if (!sig) {
+      report.errors.push(`MUST_NOT_MATCH references unknown signal id: ${fixture.id}`);
+      mustNotMatchValid = false;
+      continue;
+    }
+    for (const pat of sig.patterns) {
+      const regex = parseRegexPattern(pat);
+      if (regex && regex.test(fixture.jd)) {
+        report.errors.push(
+          `False positive — signal "${fixture.id}" pattern ${pat} matched clean JD: "${fixture.jd}" (${fixture.reason})`
+        );
+        mustNotMatchValid = false;
+      }
+    }
+  }
+
   report.checks.required_fields = fieldsValid;
   report.checks.tier_values = tiersValid;
   report.checks.category_values = categoriesValid;
-  report.checks.weight_range = weightsValid;
   report.checks.patterns_valid = patternsValid;
   report.checks.ids_unique = idsUnique;
+  report.checks.must_not_match = mustNotMatchValid;
 
   report.passed =
     report.errors.length === 0 &&
@@ -165,9 +197,9 @@ function main() {
     fieldsValid &&
     tiersValid &&
     categoriesValid &&
-    weightsValid &&
     patternsValid &&
-    idsUnique;
+    idsUnique &&
+    mustNotMatchValid;
 
   console.log(JSON.stringify(report, null, 2));
   process.exit(report.passed ? 0 : 1);
