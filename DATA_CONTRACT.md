@@ -49,20 +49,21 @@ These files contain system logic, scripts, templates, and instructions that impr
 | `modes/training.md` | Training evaluation instructions |
 | `modes/patterns.md` | Pattern analysis instructions |
 | `modes/followup.md` | Follow-up cadence instructions |
-| `modes/de/*` | German language modes |
-| `modes/fr/*` | French language modes |
-| `modes/ja/*` | Japanese language modes |
-| `modes/pt/*` | Portuguese language modes |
-| `modes/ru/*` | Russian language modes |
+| `modes/zh-cn/*` | Chinese (China market) language modes |
 | `CLAUDE.md` | Agent instructions |
 | `AGENTS.md` | Codex instructions |
 | `*.mjs` | Utility scripts |
 | `batch/batch-prompt.md` | Batch worker prompt |
 | `batch/batch-runner.sh` | Batch orchestrator |
-| `dashboard/*` | Go TUI dashboard |
+| `daemon/*` | HTTP daemon (REST API, SSE, task runner) |
+| `lib/*` | Shared libraries (db-helpers, daemon-client, v1-detect) |
+| `web-ui/*` | Browser SPA dashboard |
+| `extension/*` | Browser extension (Manifest V3) |
+| `dashboard/*` | Go TUI dashboard (legacy, v1) |
 | `templates/*` | Base templates |
 | `fonts/*` | Self-hosted fonts |
 | `.claude/skills/*` | Skill definitions |
+| `.agents/skills/*` | Skill definitions (agentskills.io) |
 | `docs/*` | Documentation |
 | `VERSION` | Current version number |
 | `DATA_CONTRACT.md` | This file |

@@ -1,0 +1,305 @@
+/* ═══════════════════════════════════════════════════════════════════════
+   Mirofish Design Tokens — yoCareer v2
+   ═══════════════════════════════════════════════════════════════════════
+
+   A three-tier token system:
+     1. Primitive  — raw values (colors, spacing, type scales)
+     2. Semantic   — meaning-driven aliases (bg, text, border)
+     3. Component  — component-specific overrides
+
+   Themes:
+     • Dark  (default) — high-contrast, reduced glare for long sessions
+     • Light           — paper-like for presentations / screenshots
+
+   Usage:
+     <link rel="stylesheet" href="tokens.css">
+     <link rel="stylesheet" href="styles.css">
+
+   Convention:  --mf-{layer}-{name}
+   ═══════════════════════════════════════════════════════════════════════ */
+
+/* ── 1. PRIMITIVE COLORS ────────────────────────────────────────────── */
+
+:root {
+  --mf-gray-50:  #fafafa;
+  --mf-gray-100: #f0f0f0;
+  --mf-gray-200: #e4e4e4;
+  --mf-gray-300: #d1d1d1;
+  --mf-gray-400: #a3a3a3;
+  --mf-gray-500: #737373;
+  --mf-gray-600: #525252;
+  --mf-gray-700: #404040;
+  --mf-gray-800: #262626;
+  --mf-gray-900: #171717;
+  --mf-gray-950: #0a0a0a;
+
+  --mf-blue-50:  #eff6ff;
+  --mf-blue-100: #dbeafe;
+  --mf-blue-200: #bfdbfe;
+  --mf-blue-300: #93c5fd;
+  --mf-blue-400: #60a5fa;
+  --mf-blue-500: #4a9eff;
+  --mf-blue-600: #2563eb;
+  --mf-blue-700: #1d4ed8;
+  --mf-blue-800: #1e40af;
+  --mf-blue-900: #1e3a8a;
+  --mf-blue-950: #172554;
+
+  --mf-green-50:  #f0fdf4;
+  --mf-green-100: #dcfce7;
+  --mf-green-200: #bbf7d0;
+  --mf-green-300: #86efac;
+  --mf-green-400: #4ade80;
+  --mf-green-500: #4caf50;
+  --mf-green-600: #16a34a;
+  --mf-green-700: #15803d;
+  --mf-green-800: #166534;
+  --mf-green-900: #14532d;
+  --mf-green-950: #052e16;
+
+  --mf-red-50:  #fef2f2;
+  --mf-red-100: #fee2e2;
+  --mf-red-200: #fecaca;
+  --mf-red-300: #fca5a5;
+  --mf-red-400: #f87171;
+  --mf-red-500: #f44336;
+  --mf-red-600: #dc2626;
+  --mf-red-700: #b91c1c;
+  --mf-red-800: #991b1b;
+  --mf-red-900: #7f1d1d;
+  --mf-red-950: #450a0a;
+
+  /* ── 2. SEMANTIC COLORS (Dark default) ───────────────────────────── */
+
+  --mf-bg:              var(--mf-gray-950);
+  --mf-surface:         var(--mf-gray-900);
+  --mf-surface-hover:   var(--mf-gray-800);
+  --mf-surface-raised:  var(--mf-gray-700);
+  --mf-border:          var(--mf-gray-800);
+  --mf-border-strong:   var(--mf-gray-700);
+
+  --mf-text:            var(--mf-gray-100);
+  --mf-text-muted:      var(--mf-gray-400);
+  --mf-text-dim:        var(--mf-gray-600);
+  --mf-text-inverse:    var(--mf-gray-950);
+
+  --mf-accent:          var(--mf-blue-500);
+  --mf-accent-soft:     rgba(74, 158, 255, 0.12);
+  --mf-accent-hover:    var(--mf-blue-400);
+  --mf-accent-active:   var(--mf-blue-600);
+
+  --mf-success:         var(--mf-green-500);
+  --mf-success-soft:    rgba(76, 175, 80, 0.12);
+  --mf-error:           var(--mf-red-500);
+  --mf-error-soft:      rgba(244, 67, 54, 0.08);
+  --mf-warning:         #ff9800;
+
+  /* ── 3. SPACING SCALE ────────────────────────────────────────────── */
+
+  --mf-space-1: 4px;
+  --mf-space-2: 8px;
+  --mf-space-3: 12px;
+  --mf-space-4: 16px;
+  --mf-space-5: 20px;
+  --mf-space-6: 24px;
+  --mf-space-8: 32px;
+  --mf-space-10: 40px;
+  --mf-space-12: 48px;
+  --mf-space-16: 64px;
+
+  /* ── 4. TYPOGRAPHY ───────────────────────────────────────────────── */
+
+  --mf-font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC",
+                  "Microsoft YaHei", "Noto Sans SC", sans-serif;
+  --mf-font-mono: "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+
+  --mf-text-xs:  12px;
+  --mf-text-sm:  13px;
+  --mf-text-base: 14px;
+  --mf-text-lg:  15px;
+  --mf-text-xl:  18px;
+  --mf-text-2xl: 24px;
+
+  --mf-leading-tight: 1.25;
+  --mf-leading-normal: 1.6;
+  --mf-leading-relaxed: 1.75;
+
+  --mf-weight-normal: 400;
+  --mf-weight-medium: 500;
+  --mf-weight-semibold: 600;
+  --mf-weight-bold: 700;
+
+  /* ── 5. RADIUS ───────────────────────────────────────────────────── */
+
+  --mf-radius-sm: 6px;
+  --mf-radius-md: 8px;
+  --mf-radius-lg: 12px;
+  --mf-radius-xl: 16px;
+  --mf-radius-full: 9999px;
+
+  /* ── 6. SHADOWS ──────────────────────────────────────────────────── */
+
+  --mf-shadow-sm:  0 1px 2px rgba(0, 0, 0, 0.3);
+  --mf-shadow-md:  0 4px 12px rgba(0, 0, 0, 0.4);
+  --mf-shadow-lg:  0 8px 32px rgba(0, 0, 0, 0.5);
+  --mf-shadow-glow: 0 0 20px rgba(74, 158, 255, 0.15);
+
+  /* ── 7. MOTION ───────────────────────────────────────────────────── */
+
+  --mf-duration-fast:   0.1s;
+  --mf-duration-base:   0.15s;
+  --mf-duration-slow:   0.25s;
+  --mf-duration-slower: 0.35s;
+
+  --mf-ease-out:    cubic-bezier(0.16, 1, 0.3, 1);
+  --mf-ease-in-out: cubic-bezier(0.45, 0, 0.55, 1);
+
+  /* ── 8. Z-INDEX SCALE ────────────────────────────────────────────── */
+
+  --mf-z-base:     0;
+  --mf-z-sticky:   10;
+  --mf-z-dropdown: 50;
+  --mf-z-modal:    100;
+  --mf-z-toast:    200;
+
+  /* ── 9. COMPONENT TOKENS ─────────────────────────────────────────── */
+
+  /* App header */
+  --mf-header-height: 64px;
+  --mf-header-border: 1px solid var(--mf-border);
+
+  /* Navigation */
+  --mf-nav-gap: var(--mf-space-2);
+  --mf-nav-radius: var(--mf-radius-lg);
+  --mf-nav-item-radius: var(--mf-radius-md);
+
+  /* Cards */
+  --mf-card-bg: var(--mf-surface);
+  --mf-card-border: 1px solid var(--mf-border);
+  --mf-card-radius: var(--mf-radius-lg);
+  --mf-card-padding: var(--mf-space-6);
+  --mf-card-shadow: none;
+
+  /* Buttons */
+  --mf-button-bg: var(--mf-surface);
+  --mf-button-bg-hover: var(--mf-surface-hover);
+  --mf-button-border: 1px solid var(--mf-border);
+  --mf-button-radius: var(--mf-radius-md);
+  --mf-button-padding: var(--mf-space-2) var(--mf-space-3);
+  --mf-button-text: var(--mf-text-muted);
+  --mf-button-text-hover: var(--mf-text);
+
+  /* Badges */
+  --mf-badge-bg: var(--mf-surface);
+  --mf-badge-border: 1px solid var(--mf-border);
+  --mf-badge-radius: var(--mf-radius-full);
+  --mf-badge-padding: var(--mf-space-1) var(--mf-space-3);
+  --mf-badge-text: var(--mf-text-muted);
+
+  /* Inputs */
+  --mf-input-bg: var(--mf-bg);
+  --mf-input-border: 1px solid var(--mf-border);
+  --mf-input-border-focus: 1px solid var(--mf-accent);
+  --mf-input-radius: var(--mf-radius-md);
+  --mf-input-padding: var(--mf-space-2) var(--mf-space-3);
+  --mf-input-text: var(--mf-text);
+  --mf-input-placeholder: var(--mf-text-dim);
+
+  /* Lists */
+  --mf-list-item-bg: var(--mf-bg);
+  --mf-list-item-bg-hover: var(--mf-surface-hover);
+  --mf-list-item-border: 1px solid var(--mf-border);
+  --mf-list-item-radius: var(--mf-radius-md);
+  --mf-list-item-padding: var(--mf-space-3) var(--mf-space-4);
+
+  /* Cmd+K dialog */
+  --mf-cmdk-backdrop: rgba(0, 0, 0, 0.6);
+  --mf-cmdk-blur: blur(4px);
+  --mf-cmdk-width: 560px;
+  --mf-cmdk-bg: var(--mf-surface);
+  --mf-cmdk-border: 1px solid var(--mf-border);
+  --mf-cmdk-radius: var(--mf-radius-lg);
+  --mf-cmdk-shadow: var(--mf-shadow-lg);
+
+  /* Error / success states */
+  --mf-state-error-bg: var(--mf-error-soft);
+  --mf-state-error-border: 1px solid rgba(244, 67, 54, 0.25);
+  --mf-state-success-text: var(--mf-success);
+}
+
+/* ── LIGHT THEME OVERRIDE ───────────────────────────────────────────── */
+
+@media (prefers-color-scheme: light) {
+  :root {
+    --mf-bg:              var(--mf-gray-50);
+    --mf-surface:         #ffffff;
+    --mf-surface-hover:   var(--mf-gray-100);
+    --mf-surface-raised:  var(--mf-gray-200);
+    --mf-border:          var(--mf-gray-200);
+    --mf-border-strong:   var(--mf-gray-300);
+
+    --mf-text:            var(--mf-gray-950);
+    --mf-text-muted:      var(--mf-gray-500);
+    --mf-text-dim:        var(--mf-gray-400);
+    --mf-text-inverse:    var(--mf-gray-50);
+
+    --mf-accent:          var(--mf-blue-600);
+    --mf-accent-soft:     rgba(37, 99, 235, 0.08);
+    --mf-accent-hover:    var(--mf-blue-500);
+    --mf-accent-active:   var(--mf-blue-700);
+
+    --mf-success:         var(--mf-green-600);
+    --mf-success-soft:    rgba(22, 163, 74, 0.08);
+    --mf-error:           var(--mf-red-600);
+    --mf-error-soft:      rgba(220, 38, 38, 0.06);
+    --mf-warning:         #d97706;
+
+    --mf-shadow-sm:  0 1px 2px rgba(0, 0, 0, 0.06);
+    --mf-shadow-md:  0 4px 16px rgba(0, 0, 0, 0.08);
+    --mf-shadow-lg:  0 8px 32px rgba(0, 0, 0, 0.12);
+    --mf-shadow-glow: 0 0 20px rgba(37, 99, 235, 0.12);
+
+    --mf-card-bg: var(--mf-surface);
+    --mf-card-shadow: var(--mf-shadow-sm);
+
+    --mf-list-item-bg: var(--mf-gray-50);
+    --mf-list-item-bg-hover: var(--mf-gray-100);
+  }
+}
+
+/* Manual theme toggle class (for JS-controlled switching) */
+[data-theme="light"] {
+  --mf-bg:              var(--mf-gray-50);
+  --mf-surface:         #ffffff;
+  --mf-surface-hover:   var(--mf-gray-100);
+  --mf-surface-raised:  var(--mf-gray-200);
+  --mf-border:          var(--mf-gray-200);
+  --mf-border-strong:   var(--mf-gray-300);
+
+  --mf-text:            var(--mf-gray-950);
+  --mf-text-muted:      var(--mf-gray-500);
+  --mf-text-dim:        var(--mf-gray-400);
+  --mf-text-inverse:    var(--mf-gray-50);
+
+  --mf-accent:          var(--mf-blue-600);
+  --mf-accent-soft:     rgba(37, 99, 235, 0.08);
+  --mf-accent-hover:    var(--mf-blue-500);
+  --mf-accent-active:   var(--mf-blue-700);
+
+  --mf-success:         var(--mf-green-600);
+  --mf-success-soft:    rgba(22, 163, 74, 0.08);
+  --mf-error:           var(--mf-red-600);
+  --mf-error-soft:      rgba(220, 38, 38, 0.06);
+  --mf-warning:         #d97706;
+
+  --mf-shadow-sm:  0 1px 2px rgba(0, 0, 0, 0.06);
+  --mf-shadow-md:  0 4px 16px rgba(0, 0, 0, 0.08);
+  --mf-shadow-lg:  0 8px 32px rgba(0, 0, 0, 0.12);
+  --mf-shadow-glow: 0 0 20px rgba(37, 99, 235, 0.12);
+
+  --mf-card-bg: var(--mf-surface);
+  --mf-card-shadow: var(--mf-shadow-sm);
+
+  --mf-list-item-bg: var(--mf-gray-50);
+  --mf-list-item-bg-hover: var(--mf-gray-100);
+}
