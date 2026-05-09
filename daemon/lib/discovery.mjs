@@ -15,7 +15,7 @@
 //     "pairing_code": "123456",
 //     "pairing_expires_at": "2026-05-11T01:00:00.000Z",
 //     "pairing_used_at": null,
-//     "db_path": "/Users/.../yocareer.db",
+//     "db_path": "<absolute-path-to>/yocareer.db",
 //     "started_at": "2026-05-10T01:00:00.000Z"
 //   }
 
