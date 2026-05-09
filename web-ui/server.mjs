@@ -105,28 +105,32 @@ function computeMetrics(apps) {
 
 // === Path safety ===
 //
-// Resolve `relPath` under `baseAbs`, then realpath() to follow any symlinks,
-// then re-check the result is still inside baseAbs. This is the pattern
-// CodeQL js/path-injection recognizes as effective sanitization — the
-// resolved path is the actual filesystem location, not just a syntactic
-// concatenation, so a symlink that points outside the base is caught.
-async function safeResolve(baseAbs, relPath) {
-  if (!relPath) return null;
-  let decoded;
-  try {
-    decoded = decodeURIComponent(relPath);
-  } catch {
-    return null;
-  }
-  if (decoded.includes('\0')) return null;
-  // resolve() collapses .. and . segments and produces an absolute path.
-  const candidate = resolve(baseAbs, decoded);
-  // Syntactic prefix check first — rejects path-traversal attempts before
-  // we touch the filesystem.
+// Two-layer defense:
+//   1. Whitelist the allowed filename shape with a strict regex BEFORE any
+//      filesystem operation. This is the sanitizer CodeQL js/path-injection
+//      recognizes — there is no path traversal a regex like ^[A-Za-z0-9_.-]+\.md$
+//      can let through.
+//   2. After resolving + realpath()ing, re-check the prefix as defense in
+//      depth (catches symlinks pointing outside the base — which the regex
+//      can't see).
+//
+// Each route picks the regex appropriate to its file kind.
+// Decodes a single URL path segment. Returns '' on malformed escape — callers
+// then fail the regex check below and the request is rejected. This isolates
+// decodeURIComponent's exception surface from the path-resolution logic.
+function decodeRel(s) {
+  try { return decodeURIComponent(s); } catch { return ''; }
+}
+
+const REPORT_NAME_RE = /^[A-Za-z0-9_.\-]+\.md$/;
+const PDF_NAME_RE = /^[A-Za-z0-9_.\-]+\.pdf$/;
+const STATIC_NAME_RE = /^[A-Za-z0-9_.\-]+\.(html|css|js|svg|json)$/;
+
+async function safeResolve(baseAbs, name, nameRe) {
+  if (!name || !nameRe.test(name)) return null;
+  const candidate = resolve(baseAbs, name);
   if (candidate !== baseAbs && !candidate.startsWith(baseAbs + sep)) return null;
   if (!existsSync(candidate)) return null;
-  // realpath() follows symlinks. If the file is a symlink pointing outside
-  // baseAbs, the syntactic check above missed it — catch it here.
   let real;
   try {
     real = await realpath(candidate);
@@ -192,11 +196,11 @@ async function handleApi(_req, res, urlPath) {
 
   // GET /api/reports/{filename}
   if (urlPath.startsWith('/api/reports/')) {
-    const rel = urlPath.slice('/api/reports/'.length);
+    const rel = decodeRel(urlPath.slice('/api/reports/'.length));
     const baseAbs = join(ROOT, 'reports');
     if (!existsSync(baseAbs)) return sendJson(res, 404, { error: 'reports_dir_missing' });
-    const safe = await safeResolve(baseAbs, rel);
-    if (!safe || !safe.endsWith('.md')) return sendJson(res, 404, { error: 'not_found' });
+    const safe = await safeResolve(baseAbs, rel, REPORT_NAME_RE);
+    if (!safe) return sendJson(res, 404, { error: 'not_found' });
     const content = await readFile(safe, 'utf-8');
     return sendJson(res, 200, { filename: rel, content });
   }
@@ -213,10 +217,10 @@ async function handleApi(_req, res, urlPath) {
 
   // GET /api/output/{filename} — stream the PDF inline
   if (urlPath.startsWith('/api/output/')) {
-    const rel = urlPath.slice('/api/output/'.length);
+    const rel = decodeRel(urlPath.slice('/api/output/'.length));
     const baseAbs = join(ROOT, 'output');
-    const safe = await safeResolve(baseAbs, rel);
-    if (!safe || !safe.endsWith('.pdf')) {
+    const safe = await safeResolve(baseAbs, rel, PDF_NAME_RE);
+    if (!safe) {
       return send(res, 404, 'not found', { 'Content-Type': 'text/plain' });
     }
     const buf = await readFile(safe);
@@ -230,8 +234,8 @@ async function handleApi(_req, res, urlPath) {
 }
 
 async function handleStatic(_req, res, urlPath) {
-  const rel = urlPath === '/' ? 'index.html' : urlPath.slice(1);
-  const safe = await safeResolve(STATIC_DIR, rel);
+  const rel = urlPath === '/' ? 'index.html' : decodeRel(urlPath.slice(1));
+  const safe = await safeResolve(STATIC_DIR, rel, STATIC_NAME_RE);
   if (!safe) return send(res, 404, 'not found');
   const ext = '.' + safe.split('.').pop();
   const buf = await readFile(safe);
