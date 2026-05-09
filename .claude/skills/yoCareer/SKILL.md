@@ -23,6 +23,7 @@ Determine the mode from `{{mode}}`:
 | `contacto` | `contacto` |
 | `deep` | `deep` |
 | `pdf` | `pdf` |
+| `pdf-import` | `pdf-import` |
 | `latex` | `latex` |
 | `training` | `training` |
 | `project` | `project` |
@@ -57,6 +58,7 @@ Available commands:
   /yoCareer contacto  → LinkedIn power move: find contacts + draft message
   /yoCareer deep      → Deep research prompt about company
   /yoCareer pdf       → PDF only, ATS-optimized CV
+  /yoCareer pdf-import → Extract data/inbox/*.pdf into signals.ndjson
   /yoCareer latex     → LaTeX/Overleaf .tex export
   /yoCareer training  → Evaluate course/cert against North Star
   /yoCareer project   → Evaluate portfolio project idea
@@ -86,7 +88,7 @@ Applies to: `auto-pipeline`, `oferta`, `ofertas`, `pdf`, `latex`, `contacto`, `a
 ### Standalone modes (only their mode file):
 Read `modes/{mode}.md`
 
-Applies to: `tracker`, `deep`, `training`, `project`, `patterns`, `followup`, `interview-prep`
+Applies to: `tracker`, `deep`, `training`, `project`, `patterns`, `followup`, `interview-prep`, `pdf-import`
 
 ### Modes delegated to subagent:
 For `scan`, `apply` (with Playwright), and `pipeline` (3+ URLs): launch as `Agent` / `Task` with the content of `_shared.md` + `modes/{mode}.md` injected into the subagent prompt.
@@ -105,10 +107,7 @@ Agent(
 
 If the user has set `language.modes_dir` in `config/profile.yml`, replace `modes/` with that directory in the lookups above. Supported defaults:
 
-- `modes/de/` — German (DACH market)
-- `modes/fr/` — French (FR/BE/CH/LU/QC)
-- `modes/ja/` — Japanese (Japan)
-- `modes/zh-cn/` — Chinese (China market). Use `templates/cv-template.cn.html` / `.cn.tex` for PDF generation; run `tests/cv-ats-selftest.mjs --lang=zh-cn` after generation.
+- `modes/zh-cn/` — Chinese (China market). Includes `pdf.md` (CJK CV generation, mandatory route for CJK content; Latin `modes/pdf.md` will produce boxes). Use `templates/cv-template.cn.html` / `.cn.tex`; run `tests/cv-ats-selftest.mjs --lang=zh-cn` after generation.
 
 ---
 

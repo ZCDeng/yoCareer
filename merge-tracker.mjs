@@ -18,6 +18,7 @@ import { readFileSync, writeFileSync, readdirSync, mkdirSync, renameSync, exists
 import { join, basename, dirname } from 'path';
 import { fileURLToPath } from 'url';
 import { execFileSync } from 'child_process';
+import { ensureDaemon } from './lib/ensure-daemon.mjs';
 import {
   canonicalStatusIds,
   loadStatusSchema,
@@ -34,9 +35,11 @@ const ADDITIONS_DIR = join(CAREER_OPS, 'batch/tracker-additions');
 const MERGED_DIR = join(ADDITIONS_DIR, 'merged');
 const DRY_RUN = process.argv.includes('--dry-run');
 const VERIFY = process.argv.includes('--verify');
-const STATES_FILE = existsSync(join(CAREER_OPS, 'templates/states.yml'))
-  ? join(CAREER_OPS, 'templates/states.yml')
-  : join(CAREER_OPS, 'states.yml');
+const STATES_FILE = existsSync(join(CAREER_OPS, 'templates/states.applications.yml'))
+  ? join(CAREER_OPS, 'templates/states.applications.yml')
+  : existsSync(join(CAREER_OPS, 'templates/states.yml'))
+    ? join(CAREER_OPS, 'templates/states.yml')
+    : join(CAREER_OPS, 'states.yml');
 const STATUS_SCHEMA = loadStatusSchema(STATES_FILE);
 const CANONICAL_STATUS_SET = new Set(canonicalStatusIds(STATUS_SCHEMA));
 
@@ -230,6 +233,8 @@ if (!existsSync(APPS_FILE)) {
   console.log('No applications.md found. Nothing to merge into.');
   process.exit(0);
 }
+ensureDaemon();
+
 const appContent = readFileSync(APPS_FILE, 'utf-8');
 const appLines = appContent.split('\n');
 const existingApps = [];

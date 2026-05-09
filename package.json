@@ -1,6 +1,6 @@
 {
   "name": "yocareer",
-  "version": "1.6.0",
+  "version": "2.0.0",
   "description": "Local AI job-search operations system for China-market workflows",
   "scripts": {
     "doctor": "node doctor.mjs",
@@ -18,8 +18,12 @@
     "rollback": "node update-system.mjs rollback",
     "liveness": "node check-liveness.mjs",
     "scan": "node scan.mjs",
+    "pdf:import": "node bridges/pdf-extract.mjs data/inbox --lang=zh-cn",
+    "ui": "node web-ui/server.mjs",
     "gemini:eval": "node gemini-eval.mjs",
-    "models": "node model-health.mjs"
+    "models": "node model-health.mjs",
+    "daemon": "node daemon-cli.mjs",
+    "extension:lint": "node tests/extension-manifest-selftest.mjs"
   },
   "keywords": [
     "ai",
@@ -38,8 +42,11 @@
   "license": "MIT",
   "dependencies": {
     "@google/generative-ai": "^0.24.1",
-    "dotenv": "^16.4.5",
+    "better-sqlite3": "^12.9.0",
+    "dotenv": "^17.4.2",
+    "fuse.js": "^7.3.0",
     "js-yaml": "^4.1.1",
+    "pdfjs-dist": "^5.7.284",
     "playwright": "^1.58.1"
   }
 }

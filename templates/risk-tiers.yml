@@ -2,6 +2,21 @@
 # yoCareer 中国市场招聘风险信号库
 # 用于结构化查表评估 JD 中的 red flags
 # 系统层文件，可独立更新
+#
+# Schema:
+#   id          — kebab-case 唯一标识
+#   tier        — critical / high / medium / low（仅 tier 进入扣分公式）
+#   category    — contract_risk / compensation_risk / workload_risk
+#                 / platform_risk / legitimacy_risk
+#   patterns    — 正则字符串数组，格式 /pattern/flags
+#                 命中即触发该信号；多 pattern 之间为 OR
+#                 使用 lookbehind/lookahead 避免常见误匹配
+#                 （例：拒绝 996 / 客户押金管理 / 审查不签劳动合同的违法案件）
+#   description — 一句话说明此信号代表什么风险
+#
+# 注意：早期 schema 含 weight 字段，但 evaluate.md 评分公式只消费 tier，
+# weight 被验证却从未被读取——已于 PR-C 移除以减少伪遮蔽。
+# 同 tier 内不同信号视为同等扣分；如需区分严重度，开新 tier 而非加 weight。
 
 version: 1
 
@@ -11,10 +26,10 @@ signals:
     tier: high
     category: contract_risk
     patterns:
-      - /外包|派遣|供应商|第三方雇佣|劳务外包/i
+      # 排除"管理/采购/客户外包"等正常 vendor-management 用法
+      - /(?<!管理|采购|客户|招标)\s*(外包|派遣|第三方雇佣|劳务外包)/i
       - /outsourc|contractor|third-party/i
-    weight: 8
-    description: 岗位为外包/派遣/供应商性质，非正式员工编制
+    description: 岗位为外包/派遣性质，非正式员工编制（不含 vendor-management 类正常使用）
 
   - id: contract-probation-long
     tier: medium
@@ -22,7 +37,6 @@ signals:
     patterns:
       - /试用期.{0,5}6个月|试用期.{0,5}六个月|试用期.{0,5}超过3个月/i
       - /试用期无转正|试用期不保证转正/i
-    weight: 5
     description: 试用期过长（6个月）或无明确转正条件
 
   - id: contract-no-social-insurance
@@ -30,17 +44,18 @@ signals:
     category: contract_risk
     patterns:
       - /不缴五险一金|无五险一金|五险一金.{0,3}自费|社保.{0,3}自理/i
-      - /no social insurance|no五险一金/i
-    weight: 9
+      - /no social insurance/i
     description: 不缴纳五险一金或社保公积金
 
   - id: contract-no-labor-contract
     tier: critical
     category: contract_risk
     patterns:
-      - /不签劳动合同|无劳动合同|第三方合同|劳务合同/i
+      # 排除"审查/查处/举报/起诉/涉及不签劳动合同"等法务/审计语境
+      - /(?<!审查|查处|举报|违法|起诉|涉及|代理|追诉)不签劳动合同/i
+      - /(?<!审查|查处|举报|违法|起诉|涉及|代理|追诉)无劳动合同/i
+      - /第三方合同(?!.*转正)/i
       - /no employment contract/i
-    weight: 10
     description: 不签订正式劳动合同
 
   # ── compensation_risk: 薪酬风险 ──
@@ -50,7 +65,6 @@ signals:
     patterns:
       - /薪资面议|薪酬面议|待遇面议|工资面议/i
       - /salary negotiable|compensation negotiable/i
-    weight: 5
     description: 薪资完全面议，无区间或基准
 
   - id: comp-no-range
@@ -59,15 +73,17 @@ signals:
     patterns:
       - /未提及薪资|未说明薪资|无薪资信息|薪酬结构.{0,3}不明确/i
       - /no salary information|salary not disclosed/i
-    weight: 4
     description: JD 中完全未提及薪资或薪酬结构
 
   - id: comp-low-bonus
     tier: low
     category: compensation_risk
     patterns:
-      - /12薪|十三薪以下|无年终奖|无绩效奖金/i
-    weight: 2
+      # 排除"12薪+其他奖金/+提成"等加项语境
+      - /12薪(?!\s*[+＋]|.*另.*奖|.*加.*奖)/i
+      - /十三薪以下/i
+      - /(?<!有|含|包含|另有|另外)无年终奖/i
+      - /(?<!有|含|包含|另有|另外)无绩效奖金/i
     description: 13薪以下且无其他补偿说明
 
   # ── workload_risk: 工作负荷风险 ──
@@ -75,9 +91,11 @@ signals:
     tier: high
     category: workload_risk
     patterns:
-      - /996|大小周|单休|做六休一|每周六天|月休四天/i
+      # 排除"拒绝/反对/杜绝/抵制 996"等正面表态
+      - /(?<!拒绝|反对|无需|杜绝|抵制|远离|不要求|没有|不存在)\s*996/i
+      - /(?<!拒绝|反对|无需|杜绝|抵制|远离|不要求|没有|不存在)\s*大小周/i
+      - /单休|做六休一|每周六天|月休四天/i
       - /high intensity|long working hours/i
-    weight: 8
     description: 996、大小周或单休等高强度工作制度
 
   - id: workload-oncall-uncompensated
@@ -86,7 +104,6 @@ signals:
     patterns:
       - /强制on-call|轮班.{0,3}无补贴|夜间值班.{0,3}无补偿/i
       - /mandatory on-call|uncompensated shift/i
-    weight: 5
     description: 强制 on-call 或轮班且无补偿
 
   - id: workload-frequent-travel
@@ -95,7 +112,6 @@ signals:
     patterns:
       - /高频出差|长期驻场|长期外派|出差.{0,3}频繁/i
       - /frequent travel|long-term onsite/i
-    weight: 4
     description: 高频出差或长期驻场/外派
 
   # ── platform_risk: 平台/渠道风险 ──
@@ -105,7 +121,6 @@ signals:
     patterns:
       - /个人招聘|非企业微信|私人账号|个人微信招聘/i
       - /personal recruitment|unofficial HR/i
-    weight: 5
     description: 使用非官方 HR 渠道（个人账号、非企微等）
 
   - id: platform-bulk-referral
@@ -114,17 +129,18 @@ signals:
     patterns:
       - /批量内推码|内推码.{0,3}出售|闲鱼.{0,3}内推/i
       - /bulk referral|referral code for sale/i
-    weight: 5
     description: 批量贩卖内推码，内推已 commoditized
 
   - id: platform-upfront-fee
     tier: critical
     category: platform_risk
     patterns:
-      - /先付费|押金|培训费|入职费|报名费/i
-      - /upfront fee|deposit required|pay before/i
-    weight: 10
-    description: 要求求职者先付费或交押金
+      # 必须与就业语境共现：求职/应聘/入职/报名 + 收费名词
+      # 单独的"押金""培训费"在客户/采购语境下是正常会计术语，不触发
+      - /(?:求职|应聘|入职|报名|加入|签约)[^。\n]{0,30}(?:先付费|押金|培训费|入职费|报名费)/i
+      - /(?:先付费|押金|培训费|入职费|报名费)[^。\n]{0,30}(?:才能|方可|后可|然后)/i
+      - /upfront fee|deposit required before|pay before/i
+    description: 要求求职者先付费或交押金（与就业语境共现）
 
   - id: platform-unofficial-channel
     tier: high
@@ -132,7 +148,6 @@ signals:
     patterns:
       - /微信转账|支付宝转账|私人收款|非对公账户/i
       - /personal payment|unofficial payment channel/i
-    weight: 8
     description: 使用非官方支付渠道（私人转账等）
 
   # ── legitimacy_risk: 合法性/真实性风险 ──
@@ -142,7 +157,6 @@ signals:
     patterns:
       - /职责.{0,5}模糊|JD.{0,5}过于简单|无具体工作内容|职责.{0,5}不详/i
       - /vague job description|unclear responsibilities/i
-    weight: 4
     description: JD 描述过于模糊，无具体职责
 
   - id: legit-frequent-repost
@@ -151,7 +165,6 @@ signals:
     patterns:
       - /长期招聘|常年招聘|急聘|大量招聘|长期有效/i
       - /always hiring|continuous recruitment|rolling basis/i
-    weight: 4
     description: 长期招聘或频繁重发，可能是虚假/ evergreen 岗位
 
   - id: legit-no-company-info
@@ -160,5 +173,4 @@ signals:
     patterns:
       - /无公司信息|公司.{0,3}未说明|公司名.{0,3}缺失|查不到公司/i
       - /no company information|company not specified/i
-    weight: 7
     description: JD 中无公司信息或公司无法查证

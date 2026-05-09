@@ -17,6 +17,7 @@
 import { readFileSync, readdirSync, existsSync, mkdirSync } from 'fs';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
+import { ensureDaemon } from './lib/ensure-daemon.mjs';
 import {
   canonicalStatusIds,
   loadStatusSchema,
@@ -30,9 +31,11 @@ const APPS_FILE = existsSync(join(CAREER_OPS, 'data/applications.md'))
   : join(CAREER_OPS, 'applications.md');
 const ADDITIONS_DIR = join(CAREER_OPS, 'batch/tracker-additions');
 const REPORTS_DIR = join(CAREER_OPS, 'reports');
-const STATES_FILE = existsSync(join(CAREER_OPS, 'templates/states.yml'))
-  ? join(CAREER_OPS, 'templates/states.yml')
-  : join(CAREER_OPS, 'states.yml');
+const STATES_FILE = existsSync(join(CAREER_OPS, 'templates/states.applications.yml'))
+  ? join(CAREER_OPS, 'templates/states.applications.yml')
+  : existsSync(join(CAREER_OPS, 'templates/states.yml'))
+    ? join(CAREER_OPS, 'templates/states.yml')
+    : join(CAREER_OPS, 'states.yml');
 const STATUS_SCHEMA = loadStatusSchema(STATES_FILE);
 const CANONICAL_STATUS_IDS = new Set(canonicalStatusIds(STATUS_SCHEMA));
 
@@ -42,6 +45,7 @@ mkdirSync(REPORTS_DIR, { recursive: true });
 
 let errors = 0;
 let warnings = 0;
+ensureDaemon();
 
 function error(msg) { console.log(`❌ ${msg}`); errors++; }
 function warn(msg) { console.log(`⚠️  ${msg}`); warnings++; }

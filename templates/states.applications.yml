@@ -1,0 +1,75 @@
+# yoCareer v2 — Applications lifecycle state machine
+#
+# Replaces v1's templates/states.yml (which served only the v1 markdown writer).
+# v2 uses this for daemon state-machine validation across all clients
+# (CLI / Web / extension / agent).
+#
+# Spanish aliases are intentionally retained for v1 backward compatibility
+# (existing applications.md may still contain `aplicada` / `oferta` etc.).
+# U8 (CN-only boundary hardening) will drop Spanish aliases and any other
+# non-CN-relevant aliases in a separate PR.
+#
+# Resolves origin R7 (state machine) for the application entity.
+
+states:
+  - id: evaluated
+    label: Evaluated
+    aliases: [evaluada]
+    description: 已生成评估报告，待决策投不投
+    dashboard_group: evaluated
+
+  - id: applied
+    label: Applied
+    aliases: [aplicado, aplicada, enviada, sent]
+    description: 已发出申请
+    dashboard_group: applied
+
+  - id: responded
+    label: Responded
+    aliases: [respondido]
+    description: 公司有回应（HR 联系 / 自动确认 / 笔试 invite 等），尚未进入面试
+    dashboard_group: responded
+
+  - id: interview
+    label: Interview
+    aliases: [entrevista]
+    description: 进入面试流程
+    dashboard_group: interview
+
+  - id: offer
+    label: Offer
+    aliases: [oferta]
+    description: 已拿到 offer
+    dashboard_group: offer
+
+  - id: rejected
+    label: Rejected
+    aliases: [rechazado, rechazada]
+    description: 公司拒了
+    dashboard_group: rejected
+
+  - id: discarded
+    label: Discarded
+    aliases: [descartado, descartada, cerrada, cancelada]
+    description: 候选人主动放弃 / 岗位关闭
+    dashboard_group: discarded
+
+  - id: skip
+    label: SKIP
+    aliases: [no_aplicar, no aplicar, monitor]
+    description: 不投（fit 不够 / 风控不过）
+    dashboard_group: skip
+
+# Transition matrix.
+# v1 老数据可能停在任意节点（v1 没有 transition 校验），所以从每个节点到任意
+# 后续节点都允许进入；但**用户撤销**只允许从 terminal 回到非 terminal 的合法
+# 撤销目标，避免任意跳。
+transitions:
+  evaluated: [applied, discarded, skip]
+  applied:   [responded, rejected, discarded]
+  responded: [interview, rejected, discarded]
+  interview: [offer, rejected, discarded]
+  offer:     [discarded]                       # accept = terminal-ish; can still 撤回 → discarded
+  rejected:  []                                 # terminal
+  discarded: [evaluated]                        # 用户后悔可拉回评估状态
+  skip:      [evaluated]                        # 同上

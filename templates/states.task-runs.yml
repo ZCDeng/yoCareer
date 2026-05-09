@@ -1,0 +1,36 @@
+# yoCareer v2 — Task runs lifecycle state machine
+#
+# A task_run tracks any long-running daemon operation (scan / batch_eval /
+# multi_step_eval / pdf_import / liveness_sweep …). Lifecycle answers:
+# "Is the task still going? Did the user cancel? Did it crash?"
+#
+# Note: cancellation is cooperative — the daemon checks `cancellation_requested`
+# at safe checkpoints (between LLM calls, between portal pages) and transitions
+# running → cancelled. There is no preemptive kill.
+
+states:
+  - id: running
+    label: Running
+    description: 任务进行中；daemon 在心跳上报 progress (0..1)
+    dashboard_group: running
+
+  - id: completed
+    label: Completed
+    description: 任务正常结束；result_json 已写入
+    dashboard_group: completed
+
+  - id: failed
+    label: Failed
+    description: 任务抛错；error_json 含 stack + 上下文
+    dashboard_group: failed
+
+  - id: cancelled
+    label: Cancelled
+    description: 用户在某个 checkpoint 触发 cancel；result_json 含部分进度
+    dashboard_group: cancelled
+
+transitions:
+  running:   [completed, failed, cancelled]
+  completed: []                     # terminal
+  failed:    []                     # terminal — retry by creating a NEW task_run
+  cancelled: []                     # terminal — same: new task_run, not resume

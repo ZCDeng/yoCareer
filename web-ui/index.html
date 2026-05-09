@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>yoCareer</title>
+  <link rel="stylesheet" href="tokens.css">
+  <link rel="stylesheet" href="styles.css">
+  <script src="https://cdn.jsdelivr.net/npm/fuse.js@7.3.0/dist/fuse.min.js"></script>
+</head>
+<body>
+  <div id="app">
+    <header class="app-header">
+      <h1>yoCareer</h1>
+      <div class="header-meta">
+        <span id="daemon-status" class="badge">Checking...</span>
+        <button id="btn-cmdk" class="btn-cmdk">⌘K</button>
+      </div>
+    </header>
+
+    <nav class="app-nav">
+      <button class="nav-item active" data-module="profile">Profile</button>
+      <button class="nav-item" data-module="portals">Portals</button>
+      <button class="nav-item" data-module="signals">Signals</button>
+      <button class="nav-item" data-module="applications">Applications</button>
+      <button class="nav-item" data-module="evaluations">Evaluations</button>
+    </nav>
+
+    <main id="main-content">
+      <div class="empty-state">
+        <p>Loading...</p>
+      </div>
+    </main>
+  </div>
+
+  <script type="module" src="main.js"></script>
+</body>
+</html>
