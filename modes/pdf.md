@@ -12,13 +12,24 @@
 5. Detecta ubicación empresa → formato papel:
    - US/Canada → `letter`
    - Resto del mundo → `a4`
+5b. **Selección de tema (`{{THEME}}`)** — lee `templates/cv-system/themes.md` y aplica el árbol de decisión:
+   - Finanzas / banca / consultoría / 央企 / 大厂 conservador → `corporate-navy`
+   - AI / startup / dev tools → `tech-indigo`
+   - Academia / research / PhD → `academia-forest`
+   - ATS estricto / B&W print → `minimal-mono`
+   - Sin señal fuerte → `default`
+5c. **Selección de layout** — lee `templates/cv-system/layouts.md`:
+   - >= 5 yr experiencia → Variant A (Senior)
+   - < 3 yr → Variant B (New grad, Education-first)
+   - Cambio de carrera con portfolio → Variant C
+   - Investigación / academia → Variant D
 6. Detecta arquetipo del rol → adapta framing
 7. Reescribe Professional Summary inyectando keywords del JD + exit narrative bridge ("Built and sold a business. Now applying systems thinking to [domain del JD].")
 8. Selecciona top 3-4 proyectos más relevantes para la oferta
 9. Reordena bullets de experiencia por relevancia al JD
 10. Construye competency grid desde requisitos del JD (6-8 keyword phrases)
 11. Inyecta keywords naturalmente en logros existentes (NUNCA inventa)
-12. Genera HTML completo desde template + contenido personalizado
+12. Genera HTML completo desde template + contenido personalizado. **Sustituye `{{THEME}}` con el theme escogido en 5b** (sin esto el `<html data-theme="">` queda vacío y CSS cae en `:root` default — funciona pero el theme no se "elige" deliberadamente).
 13. Lee `name` de `config/profile.yml` → normaliza a kebab-case lowercase (e.g. "John Doe" → "john-doe") → `{candidate}`
 14. Escribe HTML a `/tmp/cv-{candidate}-{company}.html`
 15. Ejecuta: `node generate-pdf.mjs /tmp/cv-{candidate}-{company}.html output/cv-{candidate}-{company}-{YYYY-MM-DD}.pdf --format={letter|a4}`
@@ -26,7 +37,8 @@
 16. **ATS selftest manual** (obligatorio para CJK como verificación cruzada del JSON; recomendado para Latin):
     `node tests/cv-ats-selftest.mjs output/cv-{candidate}-{company}-{YYYY-MM-DD}.pdf --lang={zh-cn|en} --name="{candidate-full-name}"`
     Si `passed: false` o cualquier `check.passed: false`, mostrar el JSON al usuario antes de marcar el PDF column ✅ en el tracker. Para zh-cn, `checkChineseReadability` y `checkFieldOrder` (header name → phone → email antes del body education/experience) son los reguardes contra fuentes CJK rotas y layouts que rompen el orden de extracción.
-17. Reporta: ruta del PDF, nº páginas, % cobertura de keywords, y resultado del ATS selftest.
+17. Reporta: ruta del PDF, nº páginas, **theme aplicado**, **layout aplicado**, % cobertura de keywords, y resultado del ATS selftest.
+18. **Checklist final** — corre los P0 / P1 listados en `templates/cv-system/checklist.md`. Los P0 ya están cubiertos automáticamente por el ATS selftest; los P1 son verificación manual (font-size >= 10px, line-height >= 1.5, márgenes >= 0.5in, etc.).
 
 ## Reglas ATS (parseo limpio)
 
