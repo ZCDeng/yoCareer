@@ -22,6 +22,11 @@ All scripts live in the project root as `.mjs` modules and are exposed via `npm 
 | `npm run rollback` | `update-system.mjs rollback` | Rollback last update |
 | `npm run liveness` | `check-liveness.mjs` | Test if job URLs are still active |
 | `npm run scan` | `scan.mjs` | Provider-based recruitment signal scanner |
+| `npm run daemon` | `daemon-cli.mjs` | Start the HTTP daemon (localhost:8650) |
+| `npm run ui` | `web-ui/server.mjs` | Start the Web SPA dashboard server |
+| `npm run gemini:eval` | `gemini-eval.mjs` | Evaluate a JD using Gemini API |
+| `npm run pdf:import` | `bridges/pdf-extract.mjs` | Import offer/JD PDFs from data/inbox/ |
+| `npm run extension:lint` | `tests/extension-manifest-selftest.mjs` | Self-test extension manifest |
 
 ---
 
@@ -282,3 +287,76 @@ YOCAREER_REACH_SIGNAL_SEARCH_CMD="reach signal-search" npm run scan -- --dry-run
 ```
 
 **Exit codes:** `0` scan completed, `1` configuration error or no portals.yml found.
+
+---
+
+## daemon
+
+Starts the yoCareer HTTP daemon on `localhost:8650`. The daemon is the central hub for all v2 operations: SQLite storage, REST API, SSE broadcast, and extension pairing.
+
+```bash
+npm run daemon
+```
+
+The daemon auto-creates the SQLite database and required directories on first start. All other scripts communicate with the daemon via HTTP.
+
+**Exit codes:** `0` clean shutdown, `1` port conflict or startup error.
+
+---
+
+## ui
+
+Starts the Web SPA dashboard server. Serves the dark-first vanilla JS application with module cards, Cmd+K palette, and SSE real-time updates.
+
+```bash
+npm run ui
+# Or bundled with daemon start:
+npx yocareer daemon start && npx yocareer ui
+```
+
+Opens automatically in your default browser. The UI communicates with the daemon at `localhost:8650`.
+
+**Exit codes:** `0` clean shutdown, `1` daemon unreachable or port conflict.
+
+---
+
+## gemini:eval
+
+Evaluates a job description using the Gemini API. Useful when you want a quick LLM assessment without running the full Claude Code pipeline.
+
+```bash
+npm run gemini:eval -- "JD text here"
+npm run gemini:eval -- --file ./jds/my-job.txt
+```
+
+Requires `GEMINI_API_KEY` in `.env`. Uses `gemini-2.0-flash` (free tier: 15 RPM, 1M tokens/day).
+
+**Exit codes:** `0` evaluation printed, `1` missing API key or request failed.
+
+---
+
+## pdf:import
+
+Processes offer/JD PDFs dropped into `data/inbox/`. Extracts text using `pdfjs-dist`, classifies as offer or JD, and outputs structured fields for manual review.
+
+```bash
+npm run pdf:import
+```
+
+Supports CN-market field extraction (五险一金, 试用期, 年终奖, etc.). Processed files are not deleted — review the output and move manually.
+
+**Exit codes:** `0` processed, `1` pdfjs-dist not installed or no PDFs found.
+
+---
+
+## extension:lint
+
+Self-test for the browser extension manifest. Validates Manifest V3 structure, required permissions, and content script matchers.
+
+```bash
+npm run extension:lint
+```
+
+Run this after modifying `extension/manifest.json` to catch syntax errors before loading into Chrome.
+
+**Exit codes:** `0` all checks passed, `1` validation errors found.
