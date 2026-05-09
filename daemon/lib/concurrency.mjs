@@ -17,6 +17,7 @@ export class ConcurrencyConflictError extends Error {
   constructor(currentAsOf, submittedAsOf) {
     super(`as_of mismatch: client sent "${submittedAsOf}", current is "${currentAsOf}"`);
     this.code = 'YOCAREER_AS_OF_CONFLICT';
+    this.status = 409;
     this.currentAsOf = currentAsOf;
     this.submittedAsOf = submittedAsOf;
   }
@@ -45,6 +46,7 @@ export function assertAsOf(currentAsOf, submittedAsOf) {
   if (!submittedAsOf) {
     const err = new Error('If-Match header is required for mutations');
     err.code = 'YOCAREER_PRECONDITION_REQUIRED';
+    err.status = 428;
     throw err;
   }
   if (submittedAsOf !== currentAsOf) {

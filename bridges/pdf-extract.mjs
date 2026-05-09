@@ -375,15 +375,85 @@ async function collectPdfPaths(target) {
   return [];
 }
 
+/**
+ * Try to read ~/.yocareer/daemon.json and POST signals to /api/signals.
+ *
+ * Returns { delivered: N, skipped: M, port } on success, or null when the
+ * daemon is unreachable / not running. The caller falls back to NDJSON
+ * write in that case.
+ *
+ * Daemon presence is checked via /healthz (200 = up). If the daemon exists
+ * but rejects the request (auth missing, schema mismatch), we still return
+ * null so the caller can offer a clear NDJSON fallback rather than dropping
+ * data on the floor.
+ */
+export async function tryDaemonUpsert(signals) {
+  const home = process.env.HOME || process.env.USERPROFILE;
+  if (!home) return null;
+  const infoFile = process.env.YOCAREER_INFO_FILE || join(home, '.yocareer', 'daemon.json');
+  if (!existsSync(infoFile)) return null;
+
+  let info;
+  try {
+    info = JSON.parse(await readFile(infoFile, 'utf-8'));
+  } catch {
+    return null;
+  }
+  if (!info.port || !info.token) return null;
+  const base = `http://127.0.0.1:${info.port}`;
+
+  // Confirm daemon is live before sending payloads.
+  try {
+    const ping = await fetch(`${base}/healthz`, {
+      signal: AbortSignal.timeout(2000),
+    });
+    if (!ping.ok) return null;
+  } catch {
+    return null;
+  }
+
+  let delivered = 0;
+  let skipped = 0;
+  for (const s of signals) {
+    const url = `pdf-local://${s.pdf_sha256}`;
+    const body = {
+      url,
+      title: `${s.pdf_classification.toUpperCase()} — ${s.company || 'unknown'} ${s.role || ''}`.trim(),
+      company_name: s.company || null,
+      role: s.role || null,
+      jd_md: typeof s.text === 'string' ? s.text.slice(0, 8000) : null,
+      payload: { source_kind: 'pdf', ...s },
+    };
+    try {
+      const res = await fetch(`${base}/api/signals`, {
+        method: 'POST',
+        headers: {
+          'x-yo-token': info.token,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(body),
+        signal: AbortSignal.timeout(5000),
+      });
+      if (res.status === 201) delivered++;
+      else if (res.status === 200) skipped++;          // upsert-by-url_hash matched existing
+      else return null;                                 // unexpected status — bail to NDJSON
+    } catch {
+      return null;                                      // network blip — fall back
+    }
+  }
+  return { delivered, skipped, port: info.port };
+}
+
 async function main() {
   const args = process.argv.slice(2);
   const target = args.find(a => !a.startsWith('--'));
   const outArg = args.find(a => a.startsWith('--out='))?.split('=')[1];
   const lang = args.find(a => a.startsWith('--lang='))?.split('=')[1] || 'zh-cn';
   const dryRun = args.includes('--dry-run');
+  const noDaemon = args.includes('--no-daemon');
 
   if (!target) {
-    console.error('Usage: node bridges/pdf-extract.mjs <pdf-file-or-directory> [--out=data/signals.ndjson] [--lang=zh-cn|en] [--dry-run]');
+    console.error('Usage: node bridges/pdf-extract.mjs <pdf-file-or-directory> [--out=data/signals.ndjson] [--lang=zh-cn|en] [--no-daemon] [--dry-run]');
     process.exit(1);
   }
 
@@ -427,6 +497,28 @@ async function main() {
   if (signals.length === 0) {
     console.log('No signals extracted.');
     return;
+  }
+
+  // U3 migration path: prefer daemon HTTP upsert when available; fall back to
+  // NDJSON when daemon is down or --no-daemon was passed.
+  if (!noDaemon) {
+    const daemonResult = await tryDaemonUpsert(signals);
+    if (daemonResult) {
+      console.log(
+        `\n✅ Delivered ${daemonResult.delivered} new signal(s) to daemon ` +
+        `(http://127.0.0.1:${daemonResult.port}/api/signals)`
+      );
+      if (daemonResult.skipped > 0) {
+        console.log(`⏭️  Skipped ${daemonResult.skipped} (url_hash already present in daemon).`);
+      }
+      if (empty.length) console.log(`⚠️  ${empty.length} PDF(s) skipped — extraction_empty.`);
+      console.log(`\nNext: open Web UI or run \`npx yocareer scan\` (U4 will wire CLI through daemon).`);
+      return;
+    }
+    console.log(
+      '\nℹ️  Daemon not running or unreachable; falling back to NDJSON write. ' +
+      'Start daemon with `node daemon/server.mjs` for live upsert.'
+    );
   }
 
   const result = await appendSignals(out, signals);

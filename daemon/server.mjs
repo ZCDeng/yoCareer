@@ -44,6 +44,28 @@ import { handleHealth } from './routes/api-health.mjs';
 import { handleEventsTicket } from './routes/api-events-ticket.mjs';
 import { handleEvents } from './routes/api-events.mjs';
 import { handleExtensionPair, handleExtensionRegister } from './routes/api-extension.mjs';
+import { handleProfileGet, handleProfilePut } from './routes/api-profile.mjs';
+import {
+  handlePortalsList, handlePortalGet, handlePortalCreate,
+  handlePortalUpdate, handlePortalDelete,
+} from './routes/api-portals.mjs';
+import {
+  handleCvVersionList, handleCvVersionGet, handleCvVersionCreate,
+} from './routes/api-cv-versions.mjs';
+import {
+  handleSignalList, handleSignalGet, handleSignalUpsert,
+  handleSignalPatch, handleSignalDelete,
+} from './routes/api-signals.mjs';
+import {
+  handleApplicationList, handleApplicationGet, handleApplicationCreate,
+  handleApplicationPatch, handleApplicationDelete,
+} from './routes/api-applications.mjs';
+import {
+  handleEvaluationList, handleEvaluationGet, handleEvaluationCreate,
+} from './routes/api-evaluations.mjs';
+import {
+  handleTaskGet, handleTaskCancel, handleTaskList,
+} from './routes/api-tasks.mjs';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(__dirname, '..');
@@ -58,20 +80,95 @@ function readVersion() {
 
 /**
  * Build the route table. Each entry is { method, pattern, handle }.
- * Pattern is a literal pathname (no :params yet — daemon's surface in U2 is small).
+ * Pattern is a literal pathname or `:id` placeholder pattern (e.g. /api/portals/:id).
+ * findRoute uses a simple segment-by-segment matcher.
  */
 function buildRoutes(ctx) {
   return [
+    // Health & infra
     { method: 'GET',  path: '/healthz',                handle: req => handleHealth(req, ctx) },
+
+    // SSE
     { method: 'POST', path: '/api/events/ticket',      handle: req => handleEventsTicket(req, ctx) },
     { method: 'GET',  path: '/api/events',             handle: (req, res, url) => handleEvents(req, res, url, ctx) },
+
+    // Extension pairing
     { method: 'POST', path: '/api/extension/pair',     handle: req => handleExtensionPair(req, ctx) },
     { method: 'POST', path: '/api/extension/register', handle: req => handleExtensionRegister(req, ctx) },
+
+    // Profile (singleton)
+    { method: 'GET',  path: '/api/profile',            handle: req => handleProfileGet(req, ctx) },
+    { method: 'PUT',  path: '/api/profile',            handle: req => handleProfilePut(req, ctx) },
+
+    // Portals
+    { method: 'GET',  path: '/api/portals',            handle: req => handlePortalsList(req, ctx) },
+    { method: 'POST', path: '/api/portals',            handle: req => handlePortalCreate(req, ctx) },
+    { method: 'GET',  path: '/api/portals/:id',        handle: req => handlePortalGet(req, ctx) },
+    { method: 'PUT',  path: '/api/portals/:id',        handle: req => handlePortalUpdate(req, ctx) },
+    { method: 'DELETE', path: '/api/portals/:id',      handle: req => handlePortalDelete(req, ctx) },
+
+    // CV versions (immutable-by-design; only POST creates new)
+    { method: 'GET',  path: '/api/cv-versions',        handle: req => handleCvVersionList(req, ctx) },
+    { method: 'POST', path: '/api/cv-versions',        handle: req => handleCvVersionCreate(req, ctx) },
+    { method: 'GET',  path: '/api/cv-versions/:id',    handle: req => handleCvVersionGet(req, ctx) },
+
+    // Signals
+    { method: 'GET',  path: '/api/signals',            handle: req => handleSignalList(req, ctx) },
+    { method: 'POST', path: '/api/signals',            handle: req => handleSignalUpsert(req, ctx) },
+    { method: 'GET',  path: '/api/signals/:id',        handle: req => handleSignalGet(req, ctx) },
+    { method: 'PATCH', path: '/api/signals/:id',       handle: req => handleSignalPatch(req, ctx) },
+    { method: 'DELETE', path: '/api/signals/:id',      handle: req => handleSignalDelete(req, ctx) },
+
+    // Applications
+    { method: 'GET',  path: '/api/applications',       handle: req => handleApplicationList(req, ctx) },
+    { method: 'POST', path: '/api/applications',       handle: req => handleApplicationCreate(req, ctx) },
+    { method: 'GET',  path: '/api/applications/:id',   handle: req => handleApplicationGet(req, ctx) },
+    { method: 'PATCH', path: '/api/applications/:id',  handle: req => handleApplicationPatch(req, ctx) },
+    { method: 'DELETE', path: '/api/applications/:id', handle: req => handleApplicationDelete(req, ctx) },
+
+    // Evaluations
+    { method: 'GET',  path: '/api/evaluations',        handle: req => handleEvaluationList(req, ctx) },
+    { method: 'POST', path: '/api/evaluations',        handle: req => handleEvaluationCreate(req, ctx) },
+    { method: 'GET',  path: '/api/evaluations/:id',    handle: req => handleEvaluationGet(req, ctx) },
+
+    // Tasks
+    { method: 'GET',  path: '/api/tasks',              handle: req => handleTaskList(req, ctx) },
+    { method: 'GET',  path: '/api/tasks/:id',          handle: req => handleTaskGet(req, ctx) },
+    { method: 'GET',  path: '/api/tasks/:id/status',   handle: req => handleTaskGet(req, ctx) },
+    { method: 'POST', path: '/api/tasks/:id/cancel',   handle: req => handleTaskCancel(req, ctx) },
   ];
 }
 
+/**
+ * Match a literal pathname against a route pattern that may contain `:id`
+ * placeholders. Returns matched route + extracted params, or null.
+ */
+function matchPattern(pattern, pathname) {
+  if (pattern === pathname) return { params: {} };
+  const pSegs = pattern.split('/');
+  const aSegs = pathname.split('/');
+  if (pSegs.length !== aSegs.length) return null;
+  const params = {};
+  for (let i = 0; i < pSegs.length; i++) {
+    const p = pSegs[i];
+    const a = aSegs[i];
+    if (p.startsWith(':')) {
+      if (!a) return null;
+      params[p.slice(1)] = decodeURIComponent(a);
+    } else if (p !== a) {
+      return null;
+    }
+  }
+  return { params };
+}
+
 function findRoute(routes, method, pathname) {
-  return routes.find(r => r.method === method && r.path === pathname) || null;
+  for (const r of routes) {
+    if (r.method !== method) continue;
+    const m = matchPattern(r.path, pathname);
+    if (m) return r;
+  }
+  return null;
 }
 
 /**
