@@ -37,7 +37,8 @@ function parseArgs(argv) {
   const pdfPath = args.find(a => !a.startsWith('--'));
   const lang = args.find(a => a.startsWith('--lang='))?.split('=')[1] || 'zh-cn';
   const name = args.find(a => a.startsWith('--name='))?.split('=')[1] || '';
-  return { pdfPath, lang, name };
+  const expectFail = args.includes('--expect-fail');
+  return { pdfPath, lang, name, expectFail };
 }
 
 function checkPdftotext() {
@@ -159,10 +160,10 @@ function checkChineseReadability(text) {
 }
 
 function main() {
-  const { pdfPath, lang, name } = parseArgs(process.argv);
+  const { pdfPath, lang, name, expectFail } = parseArgs(process.argv);
 
   if (!pdfPath) {
-    console.error('Usage: node tests/cv-ats-selftest.mjs <pdf-path> [--lang=zh-cn] [--name=<name>]');
+    console.error('Usage: node tests/cv-ats-selftest.mjs <pdf-path> [--lang=zh-cn] [--name=<name>] [--expect-fail]');
     process.exit(1);
   }
 
@@ -229,6 +230,12 @@ function main() {
   }
 
   console.log(JSON.stringify(report, null, 2));
+
+  // --expect-fail inverts the exit code so negative fixtures can be asserted in CI:
+  // a failing PDF (broken canary) exits 0, a passing PDF (regression) exits 1.
+  if (expectFail) {
+    process.exit(report.passed ? 1 : 0);
+  }
   process.exit(report.passed ? 0 : 1);
 }
 

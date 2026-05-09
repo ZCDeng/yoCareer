@@ -22,9 +22,10 @@
 13. Lee `name` de `config/profile.yml` → normaliza a kebab-case lowercase (e.g. "John Doe" → "john-doe") → `{candidate}`
 14. Escribe HTML a `/tmp/cv-{candidate}-{company}.html`
 15. Ejecuta: `node generate-pdf.mjs /tmp/cv-{candidate}-{company}.html output/cv-{candidate}-{company}-{YYYY-MM-DD}.pdf --format={letter|a4}`
-16. **ATS selftest** (obligatorio para CJK; recomendado para Latin):
+    > `generate-pdf.mjs` **auto-corre ATS selftest** al final (infiere lang del `<html lang>` y name del primer `<h1>`). Si `pdftotext` no está instalado, salta silenciosamente. Selftest falla → warning suave (PDF se escribe igual). Usa `--ats-strict` para bloquear la salida del PDF; `--no-ats-check` para desactivarlo.
+16. **ATS selftest manual** (obligatorio para CJK como verificación cruzada del JSON; recomendado para Latin):
     `node tests/cv-ats-selftest.mjs output/cv-{candidate}-{company}-{YYYY-MM-DD}.pdf --lang={zh-cn|en} --name="{candidate-full-name}"`
-    Si `passed: false` o cualquier `check.passed: false`, mostrar el JSON al usuario antes de marcar el PDF column ✅ en el tracker. Para zh-cn, `checkChineseReadability` y `checkFieldOrder` (orden canónico name → phone → email → education → experience) son los reguardes contra fuentes CJK rotas y layouts que rompen el orden de extracción.
+    Si `passed: false` o cualquier `check.passed: false`, mostrar el JSON al usuario antes de marcar el PDF column ✅ en el tracker. Para zh-cn, `checkChineseReadability` y `checkFieldOrder` (header name → phone → email antes del body education/experience) son los reguardes contra fuentes CJK rotas y layouts que rompen el orden de extracción.
 17. Reporta: ruta del PDF, nº páginas, % cobertura de keywords, y resultado del ATS selftest.
 
 ## Reglas ATS (parseo limpio)
