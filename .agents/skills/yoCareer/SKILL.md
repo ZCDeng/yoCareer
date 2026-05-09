@@ -114,7 +114,7 @@ If the user has set `language.modes_dir` in `config/profile.yml`, replace `modes
 - `modes/de/` — German (DACH market): `angebot.md` (eval), `bewerben.md` (apply), `pipeline.md`
 - `modes/fr/` — French (FR/BE/CH/LU/QC): `offre.md` (eval), `postuler.md` (apply), `pipeline.md`
 - `modes/ja/` — Japanese (Japan): `kyujin.md` (eval), `oubo.md` (apply), `pipeline.md`
-- `modes/zh-cn/` — Chinese (China market): `evaluate.md` (eval), `apply.md` (apply), `pipeline.md`. Use `templates/cv-template.cn.html` / `cv-template.cn.tex` for PDF generation, and run `tests/cv-ats-selftest.mjs --lang=zh-cn` after generation to verify CJK readability.
+- `modes/zh-cn/` — Chinese (China market): `evaluate.md` (eval), `apply.md` (apply), `pipeline.md`, `pdf.md` (CJK CV generation). Use `templates/cv-template.cn.html` / `cv-template.cn.tex` for PDF generation, and run `tests/cv-ats-selftest.mjs --lang=zh-cn` after generation to verify CJK readability. CJK content (zh-cn JD or CV) → ALWAYS route through `modes/zh-cn/pdf.md`, NOT default `modes/pdf.md` (Latin font stack will render CJK as boxes).
 
 When the user explicitly asks for a non-default language or the agent detects a JD in another language, suggest switching.
 

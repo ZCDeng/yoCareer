@@ -11,10 +11,11 @@
  */
 
 import { chromium } from 'playwright';
-import { resolve, dirname } from 'path';
+import { resolve, dirname, join } from 'path';
 import { readFile } from 'fs/promises';
-import { mkdirSync } from 'fs';
+import { mkdirSync, existsSync } from 'fs';
 import { fileURLToPath } from 'url';
+import { execFileSync } from 'child_process';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
@@ -111,15 +112,40 @@ export function isFontsAllowlistUrl(requestUrl) {
   }
 }
 
+// Best-effort extraction so the auto-embedded ATS selftest can pass --name=
+// without the agent having to recompute it. Reads the first <h1> body text
+// (strips inner tags). Returns '' if no h1 is present.
+export function extractCandidateName(html) {
+  const match = html.match(/<h1\b[^>]*>([\s\S]*?)<\/h1>/i);
+  if (!match) return '';
+  return match[1].replace(/<[^>]+>/g, '').replace(/\s+/g, ' ').trim();
+}
+
+// Reads the lang attribute from <html ...>. Defaults to 'zh-cn' for any
+// CJK / zh-* tag, 'en' otherwise. The ATS selftest only branches on these two.
+export function detectLang(html) {
+  const match = html.match(/<html\b[^>]*\blang=["']([^"']+)["']/i);
+  if (!match) return 'en';
+  const tag = match[1].toLowerCase();
+  if (tag.startsWith('zh') || tag.startsWith('ja') || tag.startsWith('ko')) return 'zh-cn';
+  return 'en';
+}
+
 async function generatePDF() {
   const args = process.argv.slice(2);
 
   // Parse arguments
   let inputPath, outputPath, format = 'a4';
+  let noAtsCheck = false;
+  let atsStrict = false;
 
   for (const arg of args) {
     if (arg.startsWith('--format=')) {
       format = arg.split('=')[1].toLowerCase();
+    } else if (arg === '--no-ats-check') {
+      noAtsCheck = true;
+    } else if (arg === '--ats-strict') {
+      atsStrict = true;
     } else if (!inputPath) {
       inputPath = arg;
     } else if (!outputPath) {
@@ -150,9 +176,10 @@ async function generatePDF() {
   let html = await readFile(inputPath, 'utf-8');
 
   // Resolve font paths relative to yoCareer/fonts/
+  // Handles both `./fonts/` (templates at root) and `../fonts/` (templates/ subdir)
   const fontsDir = resolve(__dirname, 'fonts');
   html = html.replace(
-    /url\(['"]?\.\/fonts\//g,
+    /url\(['"]?\.\.?\/fonts\//g,
     `url('file://${fontsDir}/`
   );
   // Close any unclosed quotes from the replacement (handles all font formats)
@@ -223,6 +250,58 @@ async function generatePDF() {
     console.log(`✅ PDF generated: ${outputPath}`);
     console.log(`📊 Pages: ${pageCount}`);
     console.log(`📦 Size: ${(pdfBuffer.length / 1024).toFixed(1)} KB`);
+
+    // Auto-run ATS selftest unless opted out. Required-step per modes/zh-cn/pdf.md
+    // and modes/pdf.md so CJK regressions can't slip through. Soft-fail by default
+    // (warns, exits 0) so PDF generation is not blocked; --ats-strict makes it
+    // hard-fail. Skips silently when pdftotext or the selftest is unavailable.
+    if (!noAtsCheck) {
+      const lang = detectLang(html);
+      const candidateName = extractCandidateName(html);
+      const selftestPath = join(__dirname, 'tests', 'cv-ats-selftest.mjs');
+
+      if (!existsSync(selftestPath)) {
+        console.log(`⚠️  ATS selftest skipped (not found at ${selftestPath})`);
+      } else {
+        const selftestArgs = [selftestPath, outputPath, `--lang=${lang}`];
+        if (candidateName) selftestArgs.push(`--name=${candidateName}`);
+        try {
+          const out = execFileSync(process.execPath, selftestArgs, {
+            encoding: 'utf-8',
+            timeout: 30000,
+            stdio: ['pipe', 'pipe', 'pipe'],
+          });
+          const report = JSON.parse(out);
+          if (report.warnings?.some(w => w.includes('pdftotext not found'))) {
+            console.log('⚠️  ATS selftest skipped (pdftotext not installed)');
+          } else if (report.passed) {
+            console.log(`🛡️  ATS selftest passed (lang=${lang}, name="${candidateName}")`);
+          } else {
+            console.log(`⚠️  ATS selftest FAILED — ${report.warnings?.join('; ') || 'see checks'}`);
+            console.log(JSON.stringify(report.checks, null, 2));
+            if (atsStrict) throw new Error('ATS selftest failed (--ats-strict)');
+          }
+        } catch (err) {
+          // execFileSync throws on non-zero exit. Selftest exits 1 on failure
+          // and writes the JSON report to stdout before exiting.
+          if (err.message?.startsWith('ATS selftest failed')) throw err;
+          const stdout = err.stdout?.toString() || '';
+          if (stdout.trim()) {
+            try {
+              const report = JSON.parse(stdout);
+              console.log(`⚠️  ATS selftest FAILED — ${report.warnings?.join('; ') || 'see checks'}`);
+              console.log(JSON.stringify(report.checks, null, 2));
+              if (atsStrict) throw new Error('ATS selftest failed (--ats-strict)');
+            } catch (parseErr) {
+              if (parseErr.message?.startsWith('ATS selftest failed')) throw parseErr;
+              console.log(`⚠️  ATS selftest crashed: ${err.message}`);
+            }
+          } else {
+            console.log(`⚠️  ATS selftest crashed: ${err.message}`);
+          }
+        }
+      }
+    }
 
     return { outputPath, pageCount, size: pdfBuffer.length };
   } finally {

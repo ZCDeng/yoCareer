@@ -513,6 +513,57 @@ if (!hasPlaywright || !hasPdftotext) {
     // Always clean up — even on SIGINT, test-runner crash, or assertion failure.
     try { rmSync(join(ROOT, canaryPdf)); } catch {}
   }
+
+  // Negative fixtures: each broken canary MUST be rejected by the selftest.
+  // --no-ats-check on PDF generation so we don't run the auto-embedded
+  // selftest twice; we run it explicitly with --expect-fail below.
+  const brokenFixtures = [
+    'canary-cv.cn-broken-no-name.html',
+    'canary-cv.cn-broken-no-phone.html',
+    'canary-cv.cn-broken-header-after-body.html',
+    'canary-cv.cn-broken-fffd.html',
+    'canary-cv.cn-broken-box-chars.html',
+  ];
+
+  for (const fixture of brokenFixtures) {
+    const inHtml = `tests/fixtures/${fixture}`;
+    const outPdf = `tests/fixtures/${fixture.replace(/\.html$/, '.pdf')}`;
+    try {
+      let genResult;
+      try {
+        genResult = execFileSync('node', ['generate-pdf.mjs', inHtml, outPdf, '--format=a4', '--no-ats-check'], {
+          cwd: ROOT, encoding: 'utf-8', timeout: 60000, stdio: ['pipe', 'pipe', 'pipe'],
+        }).trim();
+      } catch (e) {
+        genResult = null;
+      }
+
+      if (genResult === null || !fileExists(outPdf)) {
+        fail(`Broken-fixture PDF generation failed: ${fixture}`);
+        continue;
+      }
+
+      // --expect-fail: selftest exits 0 only when it correctly rejected the PDF.
+      let exitCode = 0;
+      try {
+        execFileSync(
+          'node',
+          ['tests/cv-ats-selftest.mjs', outPdf, '--lang=zh-cn', '--name=张伟', '--expect-fail'],
+          { cwd: ROOT, encoding: 'utf-8', timeout: 30000, stdio: ['pipe', 'pipe', 'pipe'] }
+        );
+      } catch (e) {
+        exitCode = e.status ?? 1;
+      }
+
+      if (exitCode === 0) {
+        pass(`Broken fixture rejected: ${fixture}`);
+      } else {
+        fail(`Broken fixture NOT rejected (regression): ${fixture} — selftest passed it`);
+      }
+    } finally {
+      try { rmSync(join(ROOT, outPdf)); } catch {}
+    }
+  }
 }
 
 // ── 12. RISK TIERS INTEGRITY ────────────────────────────────────
