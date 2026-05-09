@@ -21,7 +21,14 @@ let state = {
 // CV reports / applications.md tables / pipeline.md don't need GFM extensions.
 // Outputs are HTML-escaped before formatting characters are processed.
 function escapeHtml(s) {
-  return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  // Escape all 5 standard chars so the output is safe in both element bodies
+  // and double-quoted attributes (CodeQL js/incomplete-html-attribute-sanitization).
+  return String(s)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
 }
 
 function renderInline(text) {

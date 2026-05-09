@@ -18,9 +18,9 @@
  */
 
 import { createServer } from 'http';
-import { readFile, readdir, stat } from 'fs/promises';
+import { readFile, readdir, stat, realpath } from 'fs/promises';
 import { existsSync } from 'fs';
-import { join, resolve, dirname, normalize, sep } from 'path';
+import { join, resolve, dirname, sep } from 'path';
 import { fileURLToPath } from 'url';
 import { exec } from 'child_process';
 
@@ -105,23 +105,42 @@ function computeMetrics(apps) {
 
 // === Path safety ===
 //
-// Resolve `relPath` under `baseAbs`. Returns null if it escapes the base via
-// path traversal, symlinks, or absolute-path injection.
+// Resolve `relPath` under `baseAbs`, then realpath() to follow any symlinks,
+// then re-check the result is still inside baseAbs. This is the pattern
+// CodeQL js/path-injection recognizes as effective sanitization — the
+// resolved path is the actual filesystem location, not just a syntactic
+// concatenation, so a symlink that points outside the base is caught.
 async function safeResolve(baseAbs, relPath) {
   if (!relPath) return null;
-  const decoded = decodeURIComponent(relPath);
-  if (decoded.includes('\0')) return null;
-  const joined = normalize(join(baseAbs, decoded));
-  // Guard: ensure resolved path stays under baseAbs.
-  if (joined !== baseAbs && !joined.startsWith(baseAbs + sep)) return null;
-  if (!existsSync(joined)) return null;
+  let decoded;
   try {
-    const s = await stat(joined);
+    decoded = decodeURIComponent(relPath);
+  } catch {
+    return null;
+  }
+  if (decoded.includes('\0')) return null;
+  // resolve() collapses .. and . segments and produces an absolute path.
+  const candidate = resolve(baseAbs, decoded);
+  // Syntactic prefix check first — rejects path-traversal attempts before
+  // we touch the filesystem.
+  if (candidate !== baseAbs && !candidate.startsWith(baseAbs + sep)) return null;
+  if (!existsSync(candidate)) return null;
+  // realpath() follows symlinks. If the file is a symlink pointing outside
+  // baseAbs, the syntactic check above missed it — catch it here.
+  let real;
+  try {
+    real = await realpath(candidate);
+  } catch {
+    return null;
+  }
+  if (real !== baseAbs && !real.startsWith(baseAbs + sep)) return null;
+  try {
+    const s = await stat(real);
     if (!s.isFile()) return null;
   } catch {
     return null;
   }
-  return joined;
+  return real;
 }
 
 function send(res, status, body, headers = {}) {
