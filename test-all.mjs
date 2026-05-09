@@ -175,8 +175,12 @@ console.log('\n5. Data contract validation');
 const systemFiles = [
   'CLAUDE.md', 'VERSION', 'DATA_CONTRACT.md', 'AGENTS.md', 'GEMINI.md',
   'modes/_shared.md', 'modes/_profile.template.md',
-  'templates/states.yml', 'templates/cv-template.html',
+  'templates/states.yml', 'templates/cv-template.html', 'templates/capabilities.yml',
   '.agents/skills/yoCareer/SKILL.md', '.claude/skills/yoCareer/SKILL.md',
+  'lib/daemon-client.mjs', 'lib/ensure-daemon.mjs', 'lib/v1-detect.mjs',
+  'daemon-cli.mjs',
+  'web-ui/tokens.css', 'web-ui/cmdk.js', 'web-ui/sse-client.js',
+  'extension/manifest.json', 'extension/sw.js',
 ];
 
 for (const f of systemFiles) {
@@ -223,9 +227,8 @@ const leakPatterns = [
 
 const scanExtensions = ['md', 'yml', 'html', 'mjs', 'sh', 'go', 'json'];
 const allowedFiles = [
-  // English README + localized translations (all legitimately credit Santiago)
-  'README.md', 'README.es.md', 'README.ja.md', 'README.ko-KR.md',
-  'README.pt-BR.md', 'README.ru.md',
+  // English README + CN translations (all legitimately credit Santiago)
+  'README.md', 'README.cn.md', 'README.zh-TW.md', 'README.yocareer.md',
   // Standard project files
   'LICENSE', 'CITATION.cff', 'CONTRIBUTING.md',
   'package.json', '.github/FUNDING.yml', 'CLAUDE.md', 'go.mod', 'test-all.mjs',
@@ -809,6 +812,89 @@ if (!fileExists('web-ui/server.mjs') || !fileExists('web-ui/index.html') ||
       child.stdout.resume();
       child.stderr.resume();
     }
+  }
+}
+
+// ── 16. V2 ARCHITECTURE CHECKS ──────────────────────────────────
+
+console.log('\n16. v2 architecture checks');
+
+// Daemon directory structure
+const v2DaemonPaths = [
+  'daemon/routes',
+  'daemon/lib',
+];
+for (const p of v2DaemonPaths) {
+  if (fileExists(p)) {
+    pass(`v2 daemon path exists: ${p}`);
+  } else {
+    warn(`v2 daemon path missing: ${p}`);
+  }
+}
+
+// Extension manifest validation
+if (fileExists('extension/manifest.json')) {
+  try {
+    const manifest = JSON.parse(readFile('extension/manifest.json'));
+    if (manifest.manifest_version === 3) {
+      pass('Extension manifest is V3');
+    } else {
+      fail(`Extension manifest_version is ${manifest.manifest_version}, expected 3`);
+    }
+    if (manifest.permissions?.includes('activeTab')) {
+      pass('Extension has activeTab permission');
+    } else {
+      fail('Extension missing activeTab permission');
+    }
+  } catch {
+    fail('Extension manifest.json is invalid JSON');
+  }
+}
+
+// Mirofish tokens validation
+if (fileExists('web-ui/tokens.css')) {
+  const tokens = readFile('web-ui/tokens.css');
+  const requiredTokens = [
+    '--mf-bg', '--mf-surface', '--mf-text', '--mf-accent',
+    '--mf-success', '--mf-error', '--mf-border',
+    '--mf-radius-lg', '--mf-shadow-lg',
+  ];
+  for (const t of requiredTokens) {
+    if (tokens.includes(t)) {
+      pass(`Token defined: ${t}`);
+    } else {
+      fail(`Missing token: ${t}`);
+    }
+  }
+  // Check dark/light theme support
+  if (tokens.includes('prefers-color-scheme: light')) {
+    pass('Tokens support light theme');
+  } else {
+    warn('Tokens missing light theme support');
+  }
+}
+
+// Capabilities registry
+if (fileExists('templates/capabilities.yml')) {
+  const caps = readFile('templates/capabilities.yml');
+  if (caps.includes('version: 2.0.0')) {
+    pass('Capabilities registry is v2.0.0');
+  } else {
+    warn('Capabilities registry version mismatch');
+  }
+}
+
+// v1 detect module
+if (fileExists('lib/v1-detect.mjs')) {
+  try {
+    const { isV1Installation } = await import(join(ROOT, 'lib/v1-detect.mjs'));
+    if (typeof isV1Installation === 'function') {
+      pass('v1-detect.mjs exports isV1Installation');
+    } else {
+      fail('v1-detect.mjs does not export isV1Installation');
+    }
+  } catch (e) {
+    fail(`v1-detect.mjs import failed: ${e.message}`);
   }
 }
 

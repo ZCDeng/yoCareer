@@ -107,9 +107,6 @@ Agent(
 
 If the user has set `language.modes_dir` in `config/profile.yml`, replace `modes/` with that directory in the lookups above. Supported defaults:
 
-- `modes/de/` — German (DACH market)
-- `modes/fr/` — French (FR/BE/CH/LU/QC)
-- `modes/ja/` — Japanese (Japan)
 - `modes/zh-cn/` — Chinese (China market). Includes `pdf.md` (CJK CV generation, mandatory route for CJK content; Latin `modes/pdf.md` will produce boxes). Use `templates/cv-template.cn.html` / `.cn.tex`; run `tests/cv-ats-selftest.mjs --lang=zh-cn` after generation.
 
 ---

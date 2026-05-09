@@ -1,0 +1,100 @@
+# yoCareer Capabilities Registry (v2.0.0)
+#
+# Single source of truth for what yoCareer can do.
+# Consumed by: Web UI module router, CLI help, extension feature gates.
+
+version: 2.0.0
+
+modules:
+  profile:
+    label: Profile
+    description: Your CV, preferences, and targeting narrative
+    icon: user
+    api_path: /api/profile
+    writable: true
+
+  portals:
+    label: Portals
+    description: Job source configuration and health
+    icon: globe
+    api_path: /api/portals
+    writable: true
+
+  signals:
+    label: Signals
+    description: Inbound job postings from all sources
+    icon: rss
+    api_path: /api/signals
+    writable: false
+    actions:
+      - id: scan
+        label: Scan for new signals
+        shortcut: "⌘⇧S"
+
+  applications:
+    label: Applications
+    description: Application tracker and status pipeline
+    icon: briefcase
+    api_path: /api/applications
+    writable: true
+    actions:
+      - id: add
+        label: Add application
+      - id: export
+        label: Export tracker
+
+  evaluations:
+    label: Evaluations
+    description: AI-generated offer evaluations and reports
+    icon: file-text
+    api_path: /api/evaluations
+    writable: false
+    actions:
+      - id: batch
+        label: Batch evaluate
+
+  tasks:
+    label: Tasks
+    description: Background job queue and progress
+    icon: activity
+    api_path: /api/tasks
+    writable: false
+
+  pipeline:
+    label: Pipeline
+    description: Pending URLs and manual signal import
+    icon: inbox
+    api_path: /api/pipeline
+    writable: true
+
+cli_commands:
+  - name: daemon
+    description: Daemon lifecycle (start, stop, status, restart)
+    hidden: false
+
+  - name: scan
+    description: Search job portals for new signals
+    hidden: false
+
+  - name: pdf
+    description: Generate tailored CV PDF
+    hidden: false
+
+  - name: ui
+    description: Launch web dashboard
+    hidden: false
+
+extension:
+  manifest_version: 3
+  supported_platforms:
+    - zhipin.com
+    - lagou.com
+    - zhaopin.com
+  features:
+    - signal_extraction
+    - quick_evaluate
+    - daemon_pairing
+  permissions:
+    - activeTab
+    - storage
+    - host: http://127.0.0.1:*/*

@@ -86,7 +86,7 @@ AI-powered job search automation: pipeline tracking, offer evaluation, CV genera
 | `bridges/pdf-extract.mjs` | PDF → text → manual_signal_import bridge (pdfjs-dist; offer/JD heuristic + CN field extraction; `npm run pdf:import`) |
 | `data/inbox/` | Drop folder for offer/JD PDFs (gitignored except `.gitkeep`); processed by `pdf-extract.mjs` |
 | `modes/pdf-import.md` | Agent flow for ingesting PDFs from `data/inbox/` |
-| `web-ui/` | Read-only localhost browser dashboard (vanilla HTML/JS + Node http server, no deps; `npm run ui`). Coexists with the Go TUI in `dashboard/`. |
+| `web-ui/` | Dark-first SPA dashboard — module cards, Cmd+K palette, SSE real-time updates (`npm run ui`). Powered by daemon REST API. |
 | `provider-health.mjs` | Provider connectivity check (`npm run providers`) |
 | `bridge-smoke.mjs` | End-to-end Aditly bridge smoke test (`npm run bridge:smoke`) |
 | `check-liveness.mjs` | Job posting liveness checker |
@@ -191,32 +191,12 @@ This system is designed to be customized by the AI agent. When the user asks to 
 
 ### Language Modes
 
-Default modes are in `modes/` (English). Additional language-specific modes are available:
+yoCareer v2 is focused on the China market. Two language packs are maintained:
 
-- **German (DACH market):** `modes/de/` — native German translations with DACH-specific vocabulary (13. Monatsgehalt, Probezeit, Kündigungsfrist, AGG, Tarifvertrag, etc.). Includes `_shared.md`, `angebot.md` (evaluation), `bewerben.md` (apply), `pipeline.md`.
-- **French (Francophone market):** `modes/fr/` — native French translations with France/Belgium/Switzerland/Luxembourg-specific vocabulary (CDI/CDD, convention collective SYNTEC, RTT, mutuelle, prévoyance, 13e mois, intéressement/participation, titres-restaurant, CSE, portage salarial, etc.). Includes `_shared.md`, `offre.md` (evaluation), `postuler.md` (apply), `pipeline.md`.
-- **Japanese (Japan market):** `modes/ja/` — native Japanese translations with Japan-specific vocabulary (正社員, 業務委託, 賞与, 退職金, みなし残業, 年俸制, 36協定, 通勤手当, 住宅手当, etc.). Includes `_shared.md`, `kyujin.md` (evaluation), `oubo.md` (apply), `pipeline.md`.
+- **English (default):** `modes/` — Default evaluation, apply, and pipeline modes.
+- **Chinese (China market):** `modes/zh-cn/` — Native Chinese translations with China-market-specific vocabulary (五险一金, 试用期, 年终奖, 大小周, 外包, 驻场, 内推, 脉脉, BOSS直聘). Includes `_shared.md`, `evaluate.md` (evaluation), `apply.md` (apply), `pipeline.md`.
 
-**When to use German modes:** If the user is targeting German-language job postings, lives in DACH, or asks for German output. Either:
-1. User says "use German modes" → read from `modes/de/` instead of `modes/`
-2. User sets `language.modes_dir: modes/de` in `config/profile.yml` → always use German modes
-3. The agent detects a German JD → suggest switching to German modes
-
-**When to use French modes:** If the user is targeting French-language job postings, lives in France/Belgium/Switzerland/Luxembourg/Quebec, or asks for French output. Either:
-1. User says "use French modes" → read from `modes/fr/` instead of `modes/`
-2. User sets `language.modes_dir: modes/fr` in `config/profile.yml` → always use French modes
-3. The agent detects a French JD → suggest switching to French modes
-
-**When to use Japanese modes:** If the user is targeting Japanese-language job postings, lives in Japan, or asks for Japanese output. Either:
-1. User says "use Japanese modes" → read from `modes/ja/` instead of `modes/`
-2. User sets `language.modes_dir: modes/ja` in `config/profile.yml` → always use Japanese modes
-3. The agent detects a Japanese JD → suggest switching to Japanese modes
-
-**When NOT to:** If the user applies to English-language roles, even at French, German, or Japanese companies, use the default English modes.
-
-**Chinese (China market):** `modes/zh-cn/` — native Chinese translations with China-market-specific vocabulary (五险一金, 试用期, 年终奖, 大小周, 外包, 驻场, 内推, 脉脉, BOSS直聘). Includes `_shared.md`, `evaluate.md` (evaluation), `apply.md` (apply), `pipeline.md`.
-
-**When to use Chinese modes:** If the user is targeting Chinese-language job postings, lives in China, or asks for Chinese output. Either:
+**Switching to Chinese modes:**
 1. User says "use Chinese modes" → read from `modes/zh-cn/` instead of `modes/`
 2. User sets `language.modes_dir: modes/zh-cn` in `config/profile.yml` → always use Chinese modes
 3. The agent detects a Chinese JD → suggest switching to Chinese modes
