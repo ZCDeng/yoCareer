@@ -24,6 +24,7 @@ Determine the mode from `{{mode}}` (or `$ARGUMENTS` depending on host CLI):
 | `contacto` | `contacto` |
 | `deep` | `deep` |
 | `pdf` | `pdf` |
+| `pdf-import` | `pdf-import` |
 | `latex` | `latex` |
 | `training` | `training` |
 | `project` | `project` |
@@ -58,6 +59,7 @@ Available commands:
   /yoCareer contacto  → LinkedIn power move: find contacts + draft message
   /yoCareer deep      → Deep research prompt about company
   /yoCareer pdf       → PDF only, ATS-optimized CV
+  /yoCareer pdf-import → Extract data/inbox/*.pdf into signals.ndjson
   /yoCareer latex     → LaTeX/Overleaf .tex export
   /yoCareer training  → Evaluate course/cert against North Star
   /yoCareer project   → Evaluate portfolio project idea
@@ -89,7 +91,7 @@ Applies to: `auto-pipeline`, `oferta`, `ofertas`, `pdf`, `latex`, `contacto`, `a
 
 Read `modes/{mode}.md`.
 
-Applies to: `tracker`, `deep`, `training`, `project`, `patterns`, `followup`, `interview-prep`.
+Applies to: `tracker`, `deep`, `training`, `project`, `patterns`, `followup`, `interview-prep`, `pdf-import`.
 
 ### Modes delegated to a sub-agent
 
@@ -111,10 +113,7 @@ If the host CLI does not support parallel sub-agents, run sequentially.
 
 If the user has set `language.modes_dir` in `config/profile.yml`, replace `modes/` with that directory in the lookups above. Supported defaults:
 
-- `modes/de/` — German (DACH market): `angebot.md` (eval), `bewerben.md` (apply), `pipeline.md`
-- `modes/fr/` — French (FR/BE/CH/LU/QC): `offre.md` (eval), `postuler.md` (apply), `pipeline.md`
-- `modes/ja/` — Japanese (Japan): `kyujin.md` (eval), `oubo.md` (apply), `pipeline.md`
-- `modes/zh-cn/` — Chinese (China market): `evaluate.md` (eval), `apply.md` (apply), `pipeline.md`. Use `templates/cv-template.cn.html` / `cv-template.cn.tex` for PDF generation, and run `tests/cv-ats-selftest.mjs --lang=zh-cn` after generation to verify CJK readability.
+- `modes/zh-cn/` — Chinese (China market): `evaluate.md` (eval), `apply.md` (apply), `pipeline.md`, `pdf.md` (CJK CV generation). Use `templates/cv-template.cn.html` / `cv-template.cn.tex` for PDF generation, and run `tests/cv-ats-selftest.mjs --lang=zh-cn` after generation to verify CJK readability. CJK content (zh-cn JD or CV) → ALWAYS route through `modes/zh-cn/pdf.md`, NOT default `modes/pdf.md` (Latin font stack will render CJK as boxes).
 
 When the user explicitly asks for a non-default language or the agent detects a JD in another language, suggest switching.
 

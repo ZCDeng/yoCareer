@@ -14,6 +14,7 @@
 import { readFileSync, writeFileSync, copyFileSync, existsSync, mkdirSync } from 'fs';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
+import { ensureDaemon } from './lib/ensure-daemon.mjs';
 
 const CAREER_OPS = dirname(fileURLToPath(import.meta.url));
 // Support both layouts: data/applications.md (boilerplate) and applications.md (original)
@@ -91,6 +92,8 @@ if (!existsSync(APPS_FILE)) {
   console.log('No applications.md found. Nothing to normalize.');
   process.exit(0);
 }
+ensureDaemon();
+
 const content = readFileSync(APPS_FILE, 'utf-8');
 const lines = content.split('\n');
 

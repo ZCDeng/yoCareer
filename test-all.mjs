@@ -175,8 +175,12 @@ console.log('\n5. Data contract validation');
 const systemFiles = [
   'CLAUDE.md', 'VERSION', 'DATA_CONTRACT.md', 'AGENTS.md', 'GEMINI.md',
   'modes/_shared.md', 'modes/_profile.template.md',
-  'templates/states.yml', 'templates/cv-template.html',
+  'templates/states.yml', 'templates/cv-template.html', 'templates/capabilities.yml',
   '.agents/skills/yoCareer/SKILL.md', '.claude/skills/yoCareer/SKILL.md',
+  'lib/daemon-client.mjs', 'lib/ensure-daemon.mjs', 'lib/v1-detect.mjs',
+  'daemon-cli.mjs',
+  'web-ui/tokens.css', 'web-ui/cmdk.js', 'web-ui/sse-client.js',
+  'extension/manifest.json', 'extension/sw.js',
 ];
 
 for (const f of systemFiles) {
@@ -223,9 +227,8 @@ const leakPatterns = [
 
 const scanExtensions = ['md', 'yml', 'html', 'mjs', 'sh', 'go', 'json'];
 const allowedFiles = [
-  // English README + localized translations (all legitimately credit Santiago)
-  'README.md', 'README.es.md', 'README.ja.md', 'README.ko-KR.md',
-  'README.pt-BR.md', 'README.ru.md',
+  // English README + CN translations (all legitimately credit Santiago)
+  'README.md', 'README.cn.md', 'README.zh-TW.md', 'README.yocareer.md',
   // Standard project files
   'LICENSE', 'CITATION.cff', 'CONTRIBUTING.md',
   'package.json', '.github/FUNDING.yml', 'CLAUDE.md', 'go.mod', 'test-all.mjs',
@@ -288,6 +291,7 @@ const expectedModes = [
   'batch.md', 'apply.md', 'auto-pipeline.md', 'contacto.md', 'deep.md',
   'ofertas.md', 'pipeline.md', 'project.md', 'tracker.md', 'training.md',
   'followup.md', 'interview-prep.md', 'latex.md', 'patterns.md',
+  'pdf-import.md',
 ];
 
 for (const mode of expectedModes) {
@@ -513,6 +517,57 @@ if (!hasPlaywright || !hasPdftotext) {
     // Always clean up — even on SIGINT, test-runner crash, or assertion failure.
     try { rmSync(join(ROOT, canaryPdf)); } catch {}
   }
+
+  // Negative fixtures: each broken canary MUST be rejected by the selftest.
+  // --no-ats-check on PDF generation so we don't run the auto-embedded
+  // selftest twice; we run it explicitly with --expect-fail below.
+  const brokenFixtures = [
+    'canary-cv.cn-broken-no-name.html',
+    'canary-cv.cn-broken-no-phone.html',
+    'canary-cv.cn-broken-header-after-body.html',
+    'canary-cv.cn-broken-fffd.html',
+    'canary-cv.cn-broken-box-chars.html',
+  ];
+
+  for (const fixture of brokenFixtures) {
+    const inHtml = `tests/fixtures/${fixture}`;
+    const outPdf = `tests/fixtures/${fixture.replace(/\.html$/, '.pdf')}`;
+    try {
+      let genResult;
+      try {
+        genResult = execFileSync('node', ['generate-pdf.mjs', inHtml, outPdf, '--format=a4', '--no-ats-check'], {
+          cwd: ROOT, encoding: 'utf-8', timeout: 60000, stdio: ['pipe', 'pipe', 'pipe'],
+        }).trim();
+      } catch (e) {
+        genResult = null;
+      }
+
+      if (genResult === null || !fileExists(outPdf)) {
+        fail(`Broken-fixture PDF generation failed: ${fixture}`);
+        continue;
+      }
+
+      // --expect-fail: selftest exits 0 only when it correctly rejected the PDF.
+      let exitCode = 0;
+      try {
+        execFileSync(
+          'node',
+          ['tests/cv-ats-selftest.mjs', outPdf, '--lang=zh-cn', '--name=张伟', '--expect-fail'],
+          { cwd: ROOT, encoding: 'utf-8', timeout: 30000, stdio: ['pipe', 'pipe', 'pipe'] }
+        );
+      } catch (e) {
+        exitCode = e.status ?? 1;
+      }
+
+      if (exitCode === 0) {
+        pass(`Broken fixture rejected: ${fixture}`);
+      } else {
+        fail(`Broken fixture NOT rejected (regression): ${fixture} — selftest passed it`);
+      }
+    } finally {
+      try { rmSync(join(ROOT, outPdf)); } catch {}
+    }
+  }
 }
 
 // ── 12. RISK TIERS INTEGRITY ────────────────────────────────────
@@ -569,6 +624,278 @@ if (urlAllowlistResult) {
   }
 } else {
   fail('URL allowlist selftest crashed');
+}
+
+// ── 14. PDF INBOUND BRIDGE ──────────────────────────────────────
+
+console.log('\n14. PDF inbound bridge (bridges/pdf-extract.mjs)');
+
+if (!fileExists('bridges/pdf-extract.mjs')) {
+  fail('bridges/pdf-extract.mjs missing');
+} else if (!hasPlaywright) {
+  if (process.env.CI === 'true') {
+    fail('PDF inbound bridge cannot test in CI: Playwright not installed (cannot build fixtures)');
+  } else {
+    warn('Skipping PDF inbound bridge tests (Playwright not installed) — install for full coverage');
+  }
+} else {
+  // Build fixture PDFs from the HTML sources, run extraction, assert that
+  // classification + key fields land where expected. Cleanup is unconditional.
+  const { rmSync } = await import('fs');
+  const offerHtml = 'tests/fixtures/pdf-inbox/offer-zh.html';
+  const offerPdf = 'tests/fixtures/pdf-inbox/offer-zh.pdf';
+  const jdHtml = 'tests/fixtures/pdf-inbox/jd-zh.html';
+  const jdPdf = 'tests/fixtures/pdf-inbox/jd-zh.pdf';
+
+  try {
+    let buildOk = true;
+    for (const [src, out] of [[offerHtml, offerPdf], [jdHtml, jdPdf]]) {
+      try {
+        execFileSync('node', ['generate-pdf.mjs', src, out, '--format=a4', '--no-ats-check'], {
+          cwd: ROOT, encoding: 'utf-8', timeout: 60000, stdio: ['pipe', 'pipe', 'pipe'],
+        });
+      } catch (e) {
+        fail(`PDF inbound fixture build failed: ${src} → ${out}: ${e.message}`);
+        buildOk = false;
+      }
+    }
+
+    if (buildOk) {
+      pass('PDF inbound fixtures built');
+
+      // Import the bridge and run extraction directly so we can assert on the
+      // structured signal output rather than parsing CLI text.
+      const { extractPdf, pdfToSignal, classifyPdfText } = await import('./bridges/pdf-extract.mjs');
+
+      try {
+        const offerEx = await extractPdf(join(ROOT, offerPdf));
+        const offerSignal = pdfToSignal(offerEx, 'zh-cn');
+        if (offerSignal.pdf_classification === 'offer') {
+          pass('Chinese offer PDF classified as offer');
+        } else {
+          fail(`Chinese offer PDF misclassified as ${offerSignal.pdf_classification}`);
+        }
+        if (offerSignal.salary && offerSignal.salary.includes('35,000')) {
+          pass('Offer salary extracted');
+        } else {
+          fail(`Offer salary not extracted (got "${offerSignal.salary}")`);
+        }
+        const noteText = offerSignal.scoring_notes.join(' ');
+        if (noteText.includes('14薪')) pass('14薪 extracted');
+        else fail('14薪 not extracted');
+        if (noteText.includes('housing_fund')) pass('公积金 extracted');
+        else fail('公积金 not extracted');
+        if (noteText.includes('probation')) pass('试用期 extracted');
+        else fail('试用期 not extracted');
+        if (noteText.includes('equity_mentioned')) pass('期权 detected');
+        else fail('期权 not detected');
+      } catch (e) {
+        fail(`Offer PDF extraction crashed: ${e.message}`);
+      }
+
+      try {
+        const jdEx = await extractPdf(join(ROOT, jdPdf));
+        const jdSignal = pdfToSignal(jdEx, 'zh-cn');
+        if (jdSignal.pdf_classification === 'jd') {
+          pass('Chinese JD PDF classified as jd');
+        } else {
+          fail(`Chinese JD PDF misclassified as ${jdSignal.pdf_classification}`);
+        }
+      } catch (e) {
+        fail(`JD PDF extraction crashed: ${e.message}`);
+      }
+
+      // Sanity: classifyPdfText returns 'unknown' on noise.
+      const noiseLabel = classifyPdfText('lorem ipsum dolor sit amet '.repeat(20));
+      if (noiseLabel === 'unknown') pass('Noise text classified as unknown');
+      else fail(`Noise classification expected 'unknown', got '${noiseLabel}'`);
+    }
+  } finally {
+    try { rmSync(join(ROOT, offerPdf)); } catch {}
+    try { rmSync(join(ROOT, jdPdf)); } catch {}
+  }
+}
+
+// ── 15. WEB-UI SERVER ───────────────────────────────────────────
+
+console.log('\n15. Web-ui server (web-ui/server.mjs)');
+
+if (!fileExists('web-ui/server.mjs') || !fileExists('web-ui/index.html') ||
+    !fileExists('web-ui/main.js') || !fileExists('web-ui/styles.css')) {
+  fail('web-ui/ files missing');
+} else {
+  pass('web-ui/ files present');
+
+  // Spawn the server on an unused port, hit a few endpoints, verify the
+  // path-traversal guard, then tear down. Bound to 127.0.0.1 only.
+  const { spawn } = await import('child_process');
+  const port = 5179;
+  const child = spawn('node', ['web-ui/server.mjs', `--port=${port}`, '--no-open'], {
+    cwd: ROOT, stdio: ['ignore', 'pipe', 'pipe'],
+  });
+
+  // Wait briefly for the listen callback. The server prints its URL on
+  // success — we read stdout once to confirm rather than polling.
+  await new Promise((resolveStart, rejectStart) => {
+    const timer = setTimeout(() => rejectStart(new Error('startup_timeout')), 5000);
+    child.stdout.once('data', (buf) => {
+      if (buf.toString().includes(`:${port}`)) {
+        clearTimeout(timer);
+        resolveStart();
+      }
+    });
+    child.once('error', (err) => { clearTimeout(timer); rejectStart(err); });
+  }).catch((err) => {
+    fail(`web-ui server startup: ${err.message}`);
+    try { child.kill(); } catch {}
+  });
+
+  if (!child.killed) {
+    try {
+      const fetchJson = async (path) => {
+        const res = await fetch(`http://127.0.0.1:${port}${path}`);
+        return { status: res.status, text: await res.text() };
+      };
+      const fetchHead = async (path) => {
+        const res = await fetch(`http://127.0.0.1:${port}${path}`);
+        return res.status;
+      };
+
+      const apps = await fetchJson('/api/applications');
+      if (apps.status === 200 && JSON.parse(apps.text).apps !== undefined) {
+        pass('web-ui /api/applications responds');
+      } else {
+        fail(`/api/applications returned ${apps.status}`);
+      }
+
+      const metrics = await fetchJson('/api/metrics');
+      if (metrics.status === 200 && JSON.parse(metrics.text).total !== undefined) {
+        pass('web-ui /api/metrics responds');
+      } else {
+        fail(`/api/metrics returned ${metrics.status}`);
+      }
+
+      const reports = await fetchJson('/api/reports');
+      if (reports.status === 200 && Array.isArray(JSON.parse(reports.text).reports)) {
+        pass('web-ui /api/reports responds');
+      } else {
+        fail(`/api/reports returned ${reports.status}`);
+      }
+
+      const indexPage = await fetch(`http://127.0.0.1:${port}/`);
+      const indexBody = await indexPage.text();
+      if (indexPage.status === 200 && indexBody.includes('yoCareer')) {
+        pass('web-ui serves index.html');
+      } else {
+        fail(`/ returned ${indexPage.status}`);
+      }
+
+      // Path traversal: must reject. Try a URL-encoded `..` walk and a raw
+      // walk in the static path. Both must yield 404 (never 200 with content
+      // from outside the allowed directories).
+      const traverse1 = await fetchHead('/api/reports/..%2F..%2Fpackage.json');
+      const traverse2 = await fetchHead('/static/../package.json');
+      const traverse3 = await fetchHead('/api/output/..%2F..%2Fpackage.json');
+      if (traverse1 === 404 && traverse2 === 404 && traverse3 === 404) {
+        pass('web-ui rejects path traversal');
+      } else {
+        fail(`Path traversal not blocked (got ${traverse1}/${traverse2}/${traverse3})`);
+      }
+
+      // Method check: POST should be rejected.
+      const post = await fetch(`http://127.0.0.1:${port}/api/applications`, { method: 'POST' });
+      if (post.status === 405) pass('web-ui rejects non-GET methods');
+      else fail(`POST returned ${post.status} (expected 405)`);
+    } finally {
+      child.kill();
+      // Drain so the test runner doesn't hang on an unread stream.
+      child.stdout.resume();
+      child.stderr.resume();
+    }
+  }
+}
+
+// ── 16. V2 ARCHITECTURE CHECKS ──────────────────────────────────
+
+console.log('\n16. v2 architecture checks');
+
+// Daemon directory structure
+const v2DaemonPaths = [
+  'daemon/routes',
+  'daemon/lib',
+];
+for (const p of v2DaemonPaths) {
+  if (fileExists(p)) {
+    pass(`v2 daemon path exists: ${p}`);
+  } else {
+    warn(`v2 daemon path missing: ${p}`);
+  }
+}
+
+// Extension manifest validation
+if (fileExists('extension/manifest.json')) {
+  try {
+    const manifest = JSON.parse(readFile('extension/manifest.json'));
+    if (manifest.manifest_version === 3) {
+      pass('Extension manifest is V3');
+    } else {
+      fail(`Extension manifest_version is ${manifest.manifest_version}, expected 3`);
+    }
+    if (manifest.permissions?.includes('activeTab')) {
+      pass('Extension has activeTab permission');
+    } else {
+      fail('Extension missing activeTab permission');
+    }
+  } catch {
+    fail('Extension manifest.json is invalid JSON');
+  }
+}
+
+// Mirofish tokens validation
+if (fileExists('web-ui/tokens.css')) {
+  const tokens = readFile('web-ui/tokens.css');
+  const requiredTokens = [
+    '--mf-bg', '--mf-surface', '--mf-text', '--mf-accent',
+    '--mf-success', '--mf-error', '--mf-border',
+    '--mf-radius-lg', '--mf-shadow-lg',
+  ];
+  for (const t of requiredTokens) {
+    if (tokens.includes(t)) {
+      pass(`Token defined: ${t}`);
+    } else {
+      fail(`Missing token: ${t}`);
+    }
+  }
+  // Check dark/light theme support
+  if (tokens.includes('prefers-color-scheme: light')) {
+    pass('Tokens support light theme');
+  } else {
+    warn('Tokens missing light theme support');
+  }
+}
+
+// Capabilities registry
+if (fileExists('templates/capabilities.yml')) {
+  const caps = readFile('templates/capabilities.yml');
+  if (caps.includes('version: 2.0.0')) {
+    pass('Capabilities registry is v2.0.0');
+  } else {
+    warn('Capabilities registry version mismatch');
+  }
+}
+
+// v1 detect module
+if (fileExists('lib/v1-detect.mjs')) {
+  try {
+    const { isV1Installation } = await import(join(ROOT, 'lib/v1-detect.mjs'));
+    if (typeof isV1Installation === 'function') {
+      pass('v1-detect.mjs exports isV1Installation');
+    } else {
+      fail('v1-detect.mjs does not export isV1Installation');
+    }
+  } catch (e) {
+    fail(`v1-detect.mjs import failed: ${e.message}`);
+  }
 }
 
 // ── SUMMARY ─────────────────────────────────────────────────────

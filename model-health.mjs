@@ -11,6 +11,7 @@
 import { existsSync, readFileSync } from 'fs';
 import { spawnSync } from 'child_process';
 import yaml from 'js-yaml';
+import { createDaemonClient } from './lib/daemon-client.mjs';
 
 const CONFIG_PATH = existsSync('config/models.yml')
   ? 'config/models.yml'
@@ -77,7 +78,9 @@ function checkProvider(name, provider) {
   return { name, status: 'invalid', detail: `Unsupported provider type: ${provider.type || 'missing'}` };
 }
 
-function main() {
+async function main() {
+  await createDaemonClient({ autoStart: true });
+
   if (!existsSync(CONFIG_PATH)) {
     console.error('Error: no config/models.yml or config/models.example.yml found.');
     process.exit(1);
@@ -112,4 +115,7 @@ function main() {
   process.exit(invalid > 0 ? 1 : 0);
 }
 
-main();
+main().catch(err => {
+  console.error('model-health.mjs failed:', err.message);
+  process.exit(1);
+});
