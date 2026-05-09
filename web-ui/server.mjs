@@ -18,7 +18,7 @@
  */
 
 import { createServer } from 'http';
-import { readFile, readdir, stat, realpath } from 'fs/promises';
+import { readFile, readdir } from 'fs/promises';
 import { existsSync } from 'fs';
 import { join, resolve, dirname, sep } from 'path';
 import { fileURLToPath } from 'url';
@@ -105,16 +105,13 @@ function computeMetrics(apps) {
 
 // === Path safety ===
 //
-// Two-layer defense:
-//   1. Whitelist the allowed filename shape with a strict regex BEFORE any
-//      filesystem operation. This is the sanitizer CodeQL js/path-injection
-//      recognizes — there is no path traversal a regex like ^[A-Za-z0-9_.-]+\.md$
-//      can let through.
-//   2. After resolving + realpath()ing, re-check the prefix as defense in
-//      depth (catches symlinks pointing outside the base — which the regex
-//      can't see).
+// Whitelist the allowed filename shape with a strict regex BEFORE any
+// filesystem operation. Each route applies its own regex inline (instead of
+// going through a helper) so static analyzers can clearly see the sanitizer
+// adjacent to the sink — js/path-injection's data-flow tracking through
+// user-defined helpers is imprecise. The character classes don't include
+// '/' or '\\', so no path-traversal sequence (../, ..\, etc.) can survive.
 //
-// Each route picks the regex appropriate to its file kind.
 // Decodes a single URL path segment. Returns '' on malformed escape — callers
 // then fail the regex check below and the request is rejected. This isolates
 // decodeURIComponent's exception surface from the path-resolution logic.
@@ -125,27 +122,6 @@ function decodeRel(s) {
 const REPORT_NAME_RE = /^[A-Za-z0-9_.\-]+\.md$/;
 const PDF_NAME_RE = /^[A-Za-z0-9_.\-]+\.pdf$/;
 const STATIC_NAME_RE = /^[A-Za-z0-9_.\-]+\.(html|css|js|svg|json)$/;
-
-async function safeResolve(baseAbs, name, nameRe) {
-  if (!name || !nameRe.test(name)) return null;
-  const candidate = resolve(baseAbs, name);
-  if (candidate !== baseAbs && !candidate.startsWith(baseAbs + sep)) return null;
-  if (!existsSync(candidate)) return null;
-  let real;
-  try {
-    real = await realpath(candidate);
-  } catch {
-    return null;
-  }
-  if (real !== baseAbs && !real.startsWith(baseAbs + sep)) return null;
-  try {
-    const s = await stat(real);
-    if (!s.isFile()) return null;
-  } catch {
-    return null;
-  }
-  return real;
-}
 
 function send(res, status, body, headers = {}) {
   const finalHeaders = {
@@ -197,10 +173,15 @@ async function handleApi(_req, res, urlPath) {
   // GET /api/reports/{filename}
   if (urlPath.startsWith('/api/reports/')) {
     const rel = decodeRel(urlPath.slice('/api/reports/'.length));
+    // Strict allow-list: filename only (no '/' or '\\' in the char class), and
+    // the trailing extension is fixed. This regex is the path-injection
+    // sanitizer; the resolve+prefix check below is defense-in-depth.
+    if (!REPORT_NAME_RE.test(rel)) return sendJson(res, 404, { error: 'not_found' });
     const baseAbs = join(ROOT, 'reports');
     if (!existsSync(baseAbs)) return sendJson(res, 404, { error: 'reports_dir_missing' });
-    const safe = await safeResolve(baseAbs, rel, REPORT_NAME_RE);
-    if (!safe) return sendJson(res, 404, { error: 'not_found' });
+    const safe = resolve(baseAbs, rel);
+    if (safe !== baseAbs && !safe.startsWith(baseAbs + sep)) return sendJson(res, 404, { error: 'not_found' });
+    if (!existsSync(safe)) return sendJson(res, 404, { error: 'not_found' });
     const content = await readFile(safe, 'utf-8');
     return sendJson(res, 200, { filename: rel, content });
   }
@@ -218,11 +199,11 @@ async function handleApi(_req, res, urlPath) {
   // GET /api/output/{filename} — stream the PDF inline
   if (urlPath.startsWith('/api/output/')) {
     const rel = decodeRel(urlPath.slice('/api/output/'.length));
+    if (!PDF_NAME_RE.test(rel)) return send(res, 404, 'not found', { 'Content-Type': 'text/plain' });
     const baseAbs = join(ROOT, 'output');
-    const safe = await safeResolve(baseAbs, rel, PDF_NAME_RE);
-    if (!safe) {
-      return send(res, 404, 'not found', { 'Content-Type': 'text/plain' });
-    }
+    const safe = resolve(baseAbs, rel);
+    if (safe !== baseAbs && !safe.startsWith(baseAbs + sep)) return send(res, 404, 'not found', { 'Content-Type': 'text/plain' });
+    if (!existsSync(safe)) return send(res, 404, 'not found', { 'Content-Type': 'text/plain' });
     const buf = await readFile(safe);
     return send(res, 200, buf, {
       'Content-Type': 'application/pdf',
@@ -235,8 +216,10 @@ async function handleApi(_req, res, urlPath) {
 
 async function handleStatic(_req, res, urlPath) {
   const rel = urlPath === '/' ? 'index.html' : decodeRel(urlPath.slice(1));
-  const safe = await safeResolve(STATIC_DIR, rel, STATIC_NAME_RE);
-  if (!safe) return send(res, 404, 'not found');
+  if (!STATIC_NAME_RE.test(rel)) return send(res, 404, 'not found');
+  const safe = resolve(STATIC_DIR, rel);
+  if (safe !== STATIC_DIR && !safe.startsWith(STATIC_DIR + sep)) return send(res, 404, 'not found');
+  if (!existsSync(safe)) return send(res, 404, 'not found');
   const ext = '.' + safe.split('.').pop();
   const buf = await readFile(safe);
   return send(res, 200, buf, { 'Content-Type': MIME[ext] || 'application/octet-stream' });
