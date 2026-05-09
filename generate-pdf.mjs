@@ -74,7 +74,9 @@ function normalizeTextForATS(html) {
   }
 }
 
-function canLoadRequest(requestUrl, allowedLocalDirs) {
+// Allow file:// requests scoped to local fonts/CV-source directories,
+// plus data: and about: URIs (used by Playwright internals + inlined assets).
+export function canLoadRequest(requestUrl, allowedLocalDirs) {
   if (requestUrl.startsWith('data:') || requestUrl.startsWith('about:')) {
     return true;
   }
@@ -94,6 +96,19 @@ function canLoadRequest(requestUrl, allowedLocalDirs) {
   return allowedLocalDirs.some(dir =>
     localPath === dir || localPath.startsWith(`${dir}/`)
   );
+}
+
+// Allow Google Fonts CDN for CJK font loading (Noto Sans SC, etc.).
+// Hostname-equality match — `startsWith` would let `fonts.googleapis.com.evil.com`
+// through (CodeQL js/incomplete-url-substring-sanitization).
+export function isFontsAllowlistUrl(requestUrl) {
+  try {
+    const u = new URL(requestUrl);
+    return u.protocol === 'https:'
+      && (u.hostname === 'fonts.googleapis.com' || u.hostname === 'fonts.gstatic.com');
+  } catch {
+    return false;
+  }
 }
 
 async function generatePDF() {
@@ -169,17 +184,9 @@ async function generatePDF() {
 
     await page.route('**/*', (route) => {
       const requestUrl = route.request().url();
-      if (canLoadRequest(requestUrl, allowedLocalDirs)) {
+      if (canLoadRequest(requestUrl, allowedLocalDirs) || isFontsAllowlistUrl(requestUrl)) {
         return route.continue();
       }
-      // Allow Google Fonts CDN for CJK font loading (e.g., Noto Sans SC)
-      try {
-        const u = new URL(requestUrl);
-        if (u.protocol === 'https:' &&
-            (u.hostname === 'fonts.googleapis.com' || u.hostname === 'fonts.gstatic.com')) {
-          return route.continue();
-        }
-      } catch { /* fall through to abort */ }
       return route.abort();
     });
 
@@ -226,7 +233,10 @@ async function generatePDF() {
   }
 }
 
-generatePDF().catch((err) => {
-  console.error('❌ PDF generation failed:', err.message);
-  process.exit(1);
-});
+// Run as script only — skip when imported (e.g., from selftests).
+if (process.argv[1] === fileURLToPath(import.meta.url)) {
+  generatePDF().catch((err) => {
+    console.error('❌ PDF generation failed:', err.message);
+    process.exit(1);
+  });
+}

@@ -38,6 +38,7 @@ modes/_profile.md
 .resolved-prompt-*
 node_modules/
 bun.lock
+tests/fixtures/canary-cv.cn.pdf
 
 # OS
 .DS_Store
