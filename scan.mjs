@@ -736,12 +736,54 @@ function parseManualSignalContent(text, source) {
 
 async function scanManualSignalImport(source) {
   const path = source.path || 'data/signals.ndjson';
+  const errors = [];
+
+  // Optional auto-import: if `inbox` is set on the source, walk it for *.pdf
+  // files, extract via bridges/pdf-extract.mjs, and append signals to `path`
+  // before reading. Errors here are reported but never block the rest of the
+  // import — a PDF that fails extraction shouldn't take down the whole scan.
+  if (source.inbox) {
+    try {
+      const { extractPdf, pdfToSignal, appendSignals } = await import('./bridges/pdf-extract.mjs');
+      const { readdirSync, statSync } = await import('fs');
+      const inboxAbs = source.inbox;
+      if (existsSync(inboxAbs)) {
+        const entries = readdirSync(inboxAbs).filter(n => !n.startsWith('.') && n.endsWith('.pdf'));
+        const signals = [];
+        for (const name of entries) {
+          const full = `${inboxAbs.replace(/\/$/, '')}/${name}`;
+          if (!statSync(full).isFile()) continue;
+          try {
+            const extraction = await extractPdf(full);
+            if (!extraction.text || extraction.text.length < 30) continue;
+            signals.push(pdfToSignal(extraction, source.lang || 'zh-cn'));
+          } catch (err) {
+            errors.push({
+              company: source.name,
+              provider: 'manual_signal_import',
+              error: `pdf_extract_failed:${full}: ${err.message}`,
+            });
+          }
+        }
+        if (signals.length > 0) {
+          await appendSignals(path, signals);
+        }
+      }
+    } catch (err) {
+      errors.push({
+        company: source.name,
+        provider: 'manual_signal_import',
+        error: `pdf_inbox_failed: ${err.message}`,
+      });
+    }
+  }
+
   if (!existsSync(path)) {
     return {
       provider: 'manual_signal_import',
       signals: [],
       skipped: [{ company: source.name, reason: `missing_import_file:${path}` }],
-      errors: [],
+      errors,
       found: 0,
     };
   }
@@ -751,7 +793,7 @@ async function scanManualSignalImport(source) {
     provider: 'manual_signal_import',
     signals: parsed.signals,
     skipped: [],
-    errors: parsed.errors,
+    errors: [...errors, ...parsed.errors],
     found: parsed.signals.length,
   };
 }

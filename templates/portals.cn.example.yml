@@ -112,7 +112,12 @@ signal_imports:
     enabled: true
     provider: manual_signal_import
     path: data/signals.ndjson
-    notes: "每行一个 JSON。可导入微博、小红书、公众号、社区帖子、招聘者消息等公开信号。"
+    # 可选：自动扫描 data/inbox/*.pdf，用 bridges/pdf-extract.mjs 抽出 offer/JD
+    # 文本，落到 path 指向的 ndjson。中文 offer 会自动抽 13薪/公积金/试用期
+    # 等结构化字段。需先 mkdir data/inbox && 把 PDF 丢进去。
+    inbox: data/inbox
+    lang: zh-cn
+    notes: "每行一个 JSON。可导入微博、小红书、公众号、社区帖子、招聘者消息等公开信号；如配置 inbox，跑 npm run scan 会先自动扫 PDF。"
 
 signal_searches:
   - name: V2EX AI hiring signals

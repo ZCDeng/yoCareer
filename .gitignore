@@ -6,6 +6,8 @@ data/scan-history.tsv
 data/signals.ndjson
 data/signal-review.md
 data/signal-review-archive.md
+data/inbox/*
+!data/inbox/.gitkeep
 reports/*.md
 !reports/.gitkeep
 output/*
@@ -39,6 +41,7 @@ modes/_profile.md
 node_modules/
 bun.lock
 tests/fixtures/canary-cv.cn.pdf
+tests/fixtures/pdf-inbox/*.pdf
 
 # OS
 .DS_Store

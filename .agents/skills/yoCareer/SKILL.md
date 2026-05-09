@@ -24,6 +24,7 @@ Determine the mode from `{{mode}}` (or `$ARGUMENTS` depending on host CLI):
 | `contacto` | `contacto` |
 | `deep` | `deep` |
 | `pdf` | `pdf` |
+| `pdf-import` | `pdf-import` |
 | `latex` | `latex` |
 | `training` | `training` |
 | `project` | `project` |
@@ -58,6 +59,7 @@ Available commands:
   /yoCareer contacto  → LinkedIn power move: find contacts + draft message
   /yoCareer deep      → Deep research prompt about company
   /yoCareer pdf       → PDF only, ATS-optimized CV
+  /yoCareer pdf-import → Extract data/inbox/*.pdf into signals.ndjson
   /yoCareer latex     → LaTeX/Overleaf .tex export
   /yoCareer training  → Evaluate course/cert against North Star
   /yoCareer project   → Evaluate portfolio project idea
@@ -89,7 +91,7 @@ Applies to: `auto-pipeline`, `oferta`, `ofertas`, `pdf`, `latex`, `contacto`, `a
 
 Read `modes/{mode}.md`.
 
-Applies to: `tracker`, `deep`, `training`, `project`, `patterns`, `followup`, `interview-prep`.
+Applies to: `tracker`, `deep`, `training`, `project`, `patterns`, `followup`, `interview-prep`, `pdf-import`.
 
 ### Modes delegated to a sub-agent
 
