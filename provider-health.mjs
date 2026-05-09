@@ -170,7 +170,7 @@ async function main() {
   console.log('========================\n');
 
   const capabilities = [
-    ok('ats_api', 'Greenhouse, Ashby, and Lever public APIs'),
+    ok('ats_api', 'Greenhouse, Ashby, Lever (international ATS APIs — no domestic equivalent)'),
     await checkPlaywright(),
     await checkAditlyMcp(),
     checkManualImports(config),
