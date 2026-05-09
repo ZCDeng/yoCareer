@@ -128,19 +128,23 @@ test('cloud-sync-refuses-dropbox', () => {
 });
 
 test('cloud-sync-refuses-icloud', () => {
-  const fakePath = '/Users/test/Library/Mobile Documents/com~apple~CloudDocs/yocareer.db';
+  // Synthetic path under tmp that contains the iCloud suffix substring
+  // (`/Library/Mobile Documents/`). detectCloudSync uses substring includes()
+  // so any path with that segment matches, regardless of $HOME.
+  const fakePath = join(tmpRoot, 'fake-icloud', 'Library', 'Mobile Documents',
+    'com~apple~CloudDocs', 'yocareer.db');
   const hit = detectCloudSync(fakePath);
   if (!hit) throw new Error(`expected detection hit on iCloud path`);
 });
 
 test('cloud-sync-refuses-jianguo', () => {
-  const fakePath = '/Users/test/坚果云/yocareer.db';
+  const fakePath = join(tmpRoot, 'fake-home', '坚果云', 'yocareer.db');
   const hit = detectCloudSync(fakePath);
   if (!hit) throw new Error(`expected detection hit on 坚果云 path`);
 });
 
 test('cloud-sync-allows-normal', () => {
-  const fakePath = '/Users/test/code/project/data/yocareer.db';
+  const fakePath = join(tmpRoot, 'normal', 'data', 'yocareer.db');
   const hit = detectCloudSync(fakePath);
   if (hit) throw new Error(`expected no hit, got ${hit}`);
 });
