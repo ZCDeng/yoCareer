@@ -951,11 +951,17 @@ function normalizeSearchQueries(searchQueries) {
 async function main() {
   const args = process.argv.slice(2);
   const dryRun = args.includes('--dry-run');
+  const jsonOutput = args.includes('--json-output');
   const companyFlag = args.indexOf('--company');
   const filterCompany = companyFlag !== -1 ? args[companyFlag + 1]?.toLowerCase() : null;
 
   if (!existsSync(PORTALS_PATH)) {
-    console.error('Error: portals.yml not found. Run onboarding first.');
+    const errMsg = 'Error: portals.yml not found. Run onboarding first.';
+    if (jsonOutput) {
+      console.log(JSON.stringify({ ok: false, error: errMsg }));
+    } else {
+      console.error(errMsg);
+    }
     process.exit(1);
   }
 
@@ -1114,10 +1120,37 @@ async function main() {
     if (!dryRun) console.log(`\nReview queue saved to ${SIGNAL_REVIEW_PATH}`);
   }
 
-  console.log('\n→ Run /yoCareer pipeline to evaluate new signals promoted to the pipeline.');
+  if (!jsonOutput) {
+    console.log('\n→ Run /yoCareer pipeline to evaluate new signals promoted to the pipeline.');
+  }
+
+  if (jsonOutput) {
+    const result = {
+      ok: true,
+      date,
+      companies_scanned: companies.length,
+      signal_imports: signalImports.length,
+      signal_searches: signalSearches.length,
+      restricted_platforms: restrictedPlatforms.length,
+      signals_found: totalFound,
+      filtered: totalFiltered,
+      held_for_review: totalHeldForReview,
+      duplicates: totalDupes,
+      new_signals: newSignals.length,
+      held_signals: heldSignals.length,
+      errors: errors.length,
+      skipped: skipped.length,
+    };
+    // Last line must be valid JSON for the daemon worker parser
+    console.log(JSON.stringify(result));
+  }
 }
 
 main().catch(err => {
-  console.error('Fatal:', err.message);
+  if (process.argv.slice(2).includes('--json-output')) {
+    console.log(JSON.stringify({ ok: false, error: err.message }));
+  } else {
+    console.error('Fatal:', err.message);
+  }
   process.exit(1);
 });

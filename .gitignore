@@ -33,6 +33,15 @@ modes/_profile.md
 .update-dismissed
 .update-lock
 
+# SQLite database (user data layer)
+data/*.db
+data/*.db-shm
+data/*.db-wal
+
+# Claude Code ephemeral
+data/.claude/
+.claude/homunculus/
+
 # Secrets (never commit — use .env.example as template)
 .env
 

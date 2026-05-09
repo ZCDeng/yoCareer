@@ -21,7 +21,8 @@
     "pdf:import": "node bridges/pdf-extract.mjs data/inbox --lang=zh-cn",
     "ui": "node web-ui/server.mjs",
     "gemini:eval": "node gemini-eval.mjs",
-    "models": "node model-health.mjs"
+    "models": "node model-health.mjs",
+    "daemon": "node daemon-cli.mjs"
   },
   "keywords": [
     "ai",
