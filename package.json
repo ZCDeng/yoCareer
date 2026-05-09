@@ -22,7 +22,8 @@
     "ui": "node web-ui/server.mjs",
     "gemini:eval": "node gemini-eval.mjs",
     "models": "node model-health.mjs",
-    "daemon": "node daemon-cli.mjs"
+    "daemon": "node daemon-cli.mjs",
+    "extension:lint": "node tests/extension-manifest-selftest.mjs"
   },
   "keywords": [
     "ai",

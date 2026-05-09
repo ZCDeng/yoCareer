@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      width: 320px;
+      padding: 16px;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      font-size: 14px;
+      background: #1a1a1a;
+      color: #e0e0e0;
+    }
+    .header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 16px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid #333;
+    }
+    .header h1 {
+      font-size: 16px;
+      font-weight: 600;
+    }
+    .status {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 12px;
+      border-radius: 8px;
+      background: #252525;
+      margin-bottom: 12px;
+      font-size: 13px;
+    }
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #666;
+    }
+    .status-dot.ok { background: #4caf50; }
+    .status-dot.error { background: #f44336; }
+    .btn {
+      width: 100%;
+      padding: 10px;
+      border: none;
+      border-radius: 8px;
+      background: #333;
+      color: #fff;
+      font-size: 14px;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+    .btn:hover { background: #444; }
+    .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+    .btn-primary { background: #2d7ff9; }
+    .btn-primary:hover { background: #1a6fd9; }
+    .section { margin-bottom: 12px; }
+    .field {
+      display: flex;
+      justify-content: space-between;
+      padding: 6px 0;
+      border-bottom: 1px solid #2a2a2a;
+      font-size: 13px;
+    }
+    .field label { color: #999; }
+    .field span { color: #e0e0e0; }
+    .pairing-form {
+      display: none;
+      margin-top: 12px;
+    }
+    .pairing-form.active { display: block; }
+    .pairing-form input {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #444;
+      border-radius: 8px;
+      background: #252525;
+      color: #fff;
+      font-size: 14px;
+      text-align: center;
+      letter-spacing: 4px;
+      margin-bottom: 8px;
+    }
+    .pairing-form input:focus {
+      outline: none;
+      border-color: #2d7ff9;
+    }
+    .message {
+      padding: 8px 12px;
+      border-radius: 8px;
+      font-size: 13px;
+      margin-top: 8px;
+    }
+    .message.error { background: #3d1f1f; color: #ff8a80; }
+    .message.success { background: #1f3d1f; color: #a5d6a7; }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <span style="font-size: 18px;">&#9874;</span>
+    <h1>yoCareer</h1>
+  </div>
+
+  <div class="status" id="daemon-status">
+    <div class="status-dot" id="status-dot"></div>
+    <span id="status-text">Checking daemon...</span>
+  </div>
+
+  <div id="auth-section" class="section" style="display: none;">
+    <button class="btn" id="btn-pair-toggle">Enter pairing code</button>
+    <div class="pairing-form" id="pairing-form">
+      <input type="text" id="pairing-code" placeholder="000000" maxlength="6" inputmode="numeric">
+      <button class="btn btn-primary" id="btn-pair">Pair</button>
+    </div>
+    <div id="pairing-message"></div>
+  </div>
+
+  <div id="main-section" class="section" style="display: none;">
+    <div class="field">
+      <label>Platform</label>
+      <span id="platform-name">-</span>
+    </div>
+    <div class="field">
+      <label>Company</label>
+      <span id="company-name">-</span>
+    </div>
+    <div class="field">
+      <label>Role</label>
+      <span id="role-name">-</span>
+    </div>
+    <button class="btn btn-primary" id="btn-save" style="margin-top: 12px;">
+      Save to yoCareer
+    </button>
+    <div id="save-message"></div>
+  </div>
+
+  <script src="popup.js" type="module"></script>
+</body>
+</html>
