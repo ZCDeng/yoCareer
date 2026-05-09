@@ -1,0 +1,59 @@
+# yoCareer v2 — Signals lifecycle state machine
+#
+# A signal is a captured offer/JD/lead from any portal (BOSS / 拉勾 /
+# manual import / GitHub / V2EX / 微信文章 …). Lifecycle answers:
+# "Has the user looked at this? Did they decide to act?"
+#
+# Resolves G1 from docs/plans/2026-05-10-001 (signal lifecycle states).
+#
+# Loaded by lib/status-schema.mjs and validated by daemon/lib/state-machines.mjs.
+# Daemon refuses any UPDATE that asks for a transition not declared in `transitions:`.
+
+states:
+  - id: captured
+    label: Captured
+    description: 抓到原始 URL + 标题，未做任何增强 / 评估
+    dashboard_group: inbox
+
+  - id: enriched
+    label: Enriched
+    description: LLM / 解析器已抽取 company / role / jd / 薪资字段
+    dashboard_group: inbox
+
+  - id: reviewed
+    label: Reviewed
+    description: 用户亲自看过，但还未决定是否投递
+    dashboard_group: review
+
+  - id: promoted
+    label: Promoted
+    description: 用户决定投 → 已为该 signal 建 application 行
+    dashboard_group: promoted
+
+  - id: discarded
+    label: Discarded
+    description: 用户主动剔除（不感兴趣 / 重复 / 不靠谱）
+    dashboard_group: discarded
+
+  - id: stale_url
+    label: Stale URL
+    description: liveness check 发现页面 404 / DNS 失效
+    dashboard_group: discarded
+
+  - id: liveness_dead
+    label: Liveness dead
+    description: 页面活着但内容已是 zombie posting（无 Apply / 无 JD）
+    dashboard_group: discarded
+
+# Transition matrix.
+# Format: <from>: [<allowed_to_states>...]
+# Daemon validates every UPDATE current_status against this table.
+# Empty list = terminal state (no further transitions allowed).
+transitions:
+  captured:      [enriched, discarded, stale_url, liveness_dead]
+  enriched:      [reviewed, discarded, stale_url, liveness_dead]
+  reviewed:      [promoted, discarded, stale_url, liveness_dead]
+  promoted:      [discarded]                  # rare: cancel after promotion
+  discarded:     [reviewed]                   # user undo
+  stale_url:     [reviewed]                   # URL came back
+  liveness_dead: [reviewed]                   # posting refreshed

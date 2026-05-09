@@ -1,0 +1,35 @@
+# yoCareer v2 — Evaluations lifecycle state machine
+#
+# An evaluation is one (signal × cv_version) scoring run. Lifecycle answers:
+# "Is the score ready? Is it stale? Did the LLM call fail?"
+#
+# Note: the `stale` BOOL column on evaluations is orthogonal to current_status
+# (a completed evaluation can also be stale). current_status reflects the
+# *most recent run*; stale reflects whether downstream invalidation has fired.
+
+states:
+  - id: pending
+    label: Pending
+    description: 已创建评估行但 LLM 还没开跑
+    dashboard_group: pending
+
+  - id: running
+    label: Running
+    description: LLM call 进行中 / Block A-G 拼装中
+    dashboard_group: running
+
+  - id: completed
+    label: Completed
+    description: 已落 score + blocks_json + report_md
+    dashboard_group: completed
+
+  - id: failed
+    label: Failed
+    description: LLM call 异常 / 拼装失败；error_json 含原因
+    dashboard_group: failed
+
+transitions:
+  pending:   [running, failed]      # failed before run starts (e.g. dep missing)
+  running:   [completed, failed]
+  completed: [pending]              # stale invalidation 触发重跑
+  failed:    [pending, running]     # 重试
