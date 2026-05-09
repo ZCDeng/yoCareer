@@ -43,7 +43,7 @@
   "dependencies": {
     "@google/generative-ai": "^0.24.1",
     "better-sqlite3": "^12.9.0",
-    "dotenv": "^16.4.5",
+    "dotenv": "^17.4.2",
     "fuse.js": "^7.3.0",
     "js-yaml": "^4.1.1",
     "pdfjs-dist": "^5.7.284",
