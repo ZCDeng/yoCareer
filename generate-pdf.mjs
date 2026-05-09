@@ -115,10 +115,20 @@ export function isFontsAllowlistUrl(requestUrl) {
 // Best-effort extraction so the auto-embedded ATS selftest can pass --name=
 // without the agent having to recompute it. Reads the first <h1> body text
 // (strips inner tags). Returns '' if no h1 is present.
+//
+// Loops the tag strip to fixpoint — a single pass on input like
+// "<scr<script>ipt>" would re-form "<script>" by collapsing fragments
+// (CodeQL js/incomplete-multi-character-sanitization).
 export function extractCandidateName(html) {
   const match = html.match(/<h1\b[^>]*>([\s\S]*?)<\/h1>/i);
   if (!match) return '';
-  return match[1].replace(/<[^>]+>/g, '').replace(/\s+/g, ' ').trim();
+  let stripped = match[1];
+  let prev;
+  do {
+    prev = stripped;
+    stripped = stripped.replace(/<[^>]+>/g, '');
+  } while (stripped !== prev);
+  return stripped.replace(/\s+/g, ' ').trim();
 }
 
 // Reads the lang attribute from <html ...>. Defaults to 'zh-cn' for any
