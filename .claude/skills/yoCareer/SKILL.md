@@ -108,6 +108,7 @@ If the user has set `language.modes_dir` in `config/profile.yml`, replace `modes
 - `modes/de/` — German (DACH market)
 - `modes/fr/` — French (FR/BE/CH/LU/QC)
 - `modes/ja/` — Japanese (Japan)
+- `modes/zh-cn/` — Chinese (China market). Use `templates/cv-template.cn.html` / `.cn.tex` for PDF generation; run `tests/cv-ats-selftest.mjs --lang=zh-cn` after generation.
 
 ---
 

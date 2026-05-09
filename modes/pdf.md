@@ -6,6 +6,9 @@
 2. Pide al usuario el JD si no está en contexto (texto o URL)
 3. Extrae 15-20 keywords del JD
 4. Detecta idioma del JD → idioma del CV (EN default)
+4b. **Selección de template según idioma:**
+   - `language.modes_dir == modes/zh-cn`, JD/CV en chino, o cualquier contenido CJK → usar `templates/cv-template.cn.html` y `templates/cv-template.cn.tex` (Noto Sans SC + xeCJK; las latinas no renderizan caracteres CJK y el ATS verá cajas o caracteres reemplazo U+FFFD)
+   - Cualquier otro caso → `templates/cv-template.html` y `templates/cv-template.tex` (default Latin)
 5. Detecta ubicación empresa → formato papel:
    - US/Canada → `letter`
    - Resto del mundo → `a4`
@@ -19,7 +22,10 @@
 13. Lee `name` de `config/profile.yml` → normaliza a kebab-case lowercase (e.g. "John Doe" → "john-doe") → `{candidate}`
 14. Escribe HTML a `/tmp/cv-{candidate}-{company}.html`
 15. Ejecuta: `node generate-pdf.mjs /tmp/cv-{candidate}-{company}.html output/cv-{candidate}-{company}-{YYYY-MM-DD}.pdf --format={letter|a4}`
-15. Reporta: ruta del PDF, nº páginas, % cobertura de keywords
+16. **ATS selftest** (obligatorio para CJK; recomendado para Latin):
+    `node tests/cv-ats-selftest.mjs output/cv-{candidate}-{company}-{YYYY-MM-DD}.pdf --lang={zh-cn|en} --name="{candidate-full-name}"`
+    Si `passed: false` o cualquier `check.passed: false`, mostrar el JSON al usuario antes de marcar el PDF column ✅ en el tracker. Para zh-cn, `checkChineseReadability` y `checkFieldOrder` (orden canónico name → phone → email → education → experience) son los reguardes contra fuentes CJK rotas y layouts que rompen el orden de extracción.
+17. Reporta: ruta del PDF, nº páginas, % cobertura de keywords, y resultado del ATS selftest.
 
 ## Reglas ATS (parseo limpio)
 

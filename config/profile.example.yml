@@ -67,6 +67,17 @@ location:
   # For remote roles outside your country:
   # onsite_availability: "1 周/月，任何城市"
 
+# Optional: Language mode override
+# Tells the agent to read mode files from a non-default directory and to use
+# locale-specific CV templates (e.g. cv-template.cn.html) and ATS selftests.
+# Uncomment ONE of the supported modes_dir values below if you want to lock
+# the agent to a specific language regardless of JD detection.
+# language:
+#   modes_dir: modes/zh-cn   # Chinese (China market) — uses cv-template.cn.html
+#   # modes_dir: modes/de    # German (DACH market)
+#   # modes_dir: modes/fr    # French (FR/BE/CH/LU/QC)
+#   # modes_dir: modes/ja    # Japanese (Japan)
+
 # Optional: LLM provider configuration for China-market users
 # Uncomment and fill in if you want to use a domestic LLM instead of the default.
 # llm:
