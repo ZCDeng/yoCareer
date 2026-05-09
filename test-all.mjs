@@ -713,6 +713,105 @@ if (!fileExists('bridges/pdf-extract.mjs')) {
   }
 }
 
+// ── 15. WEB-UI SERVER ───────────────────────────────────────────
+
+console.log('\n15. Web-ui server (web-ui/server.mjs)');
+
+if (!fileExists('web-ui/server.mjs') || !fileExists('web-ui/index.html') ||
+    !fileExists('web-ui/main.js') || !fileExists('web-ui/styles.css')) {
+  fail('web-ui/ files missing');
+} else {
+  pass('web-ui/ files present');
+
+  // Spawn the server on an unused port, hit a few endpoints, verify the
+  // path-traversal guard, then tear down. Bound to 127.0.0.1 only.
+  const { spawn } = await import('child_process');
+  const port = 5179;
+  const child = spawn('node', ['web-ui/server.mjs', `--port=${port}`, '--no-open'], {
+    cwd: ROOT, stdio: ['ignore', 'pipe', 'pipe'],
+  });
+
+  // Wait briefly for the listen callback. The server prints its URL on
+  // success — we read stdout once to confirm rather than polling.
+  await new Promise((resolveStart, rejectStart) => {
+    const timer = setTimeout(() => rejectStart(new Error('startup_timeout')), 5000);
+    child.stdout.once('data', (buf) => {
+      if (buf.toString().includes(`:${port}`)) {
+        clearTimeout(timer);
+        resolveStart();
+      }
+    });
+    child.once('error', (err) => { clearTimeout(timer); rejectStart(err); });
+  }).catch((err) => {
+    fail(`web-ui server startup: ${err.message}`);
+    try { child.kill(); } catch {}
+  });
+
+  if (!child.killed) {
+    try {
+      const fetchJson = async (path) => {
+        const res = await fetch(`http://127.0.0.1:${port}${path}`);
+        return { status: res.status, text: await res.text() };
+      };
+      const fetchHead = async (path) => {
+        const res = await fetch(`http://127.0.0.1:${port}${path}`);
+        return res.status;
+      };
+
+      const apps = await fetchJson('/api/applications');
+      if (apps.status === 200 && JSON.parse(apps.text).apps !== undefined) {
+        pass('web-ui /api/applications responds');
+      } else {
+        fail(`/api/applications returned ${apps.status}`);
+      }
+
+      const metrics = await fetchJson('/api/metrics');
+      if (metrics.status === 200 && JSON.parse(metrics.text).total !== undefined) {
+        pass('web-ui /api/metrics responds');
+      } else {
+        fail(`/api/metrics returned ${metrics.status}`);
+      }
+
+      const reports = await fetchJson('/api/reports');
+      if (reports.status === 200 && Array.isArray(JSON.parse(reports.text).reports)) {
+        pass('web-ui /api/reports responds');
+      } else {
+        fail(`/api/reports returned ${reports.status}`);
+      }
+
+      const indexPage = await fetch(`http://127.0.0.1:${port}/`);
+      const indexBody = await indexPage.text();
+      if (indexPage.status === 200 && indexBody.includes('yoCareer')) {
+        pass('web-ui serves index.html');
+      } else {
+        fail(`/ returned ${indexPage.status}`);
+      }
+
+      // Path traversal: must reject. Try a URL-encoded `..` walk and a raw
+      // walk in the static path. Both must yield 404 (never 200 with content
+      // from outside the allowed directories).
+      const traverse1 = await fetchHead('/api/reports/..%2F..%2Fpackage.json');
+      const traverse2 = await fetchHead('/static/../package.json');
+      const traverse3 = await fetchHead('/api/output/..%2F..%2Fpackage.json');
+      if (traverse1 === 404 && traverse2 === 404 && traverse3 === 404) {
+        pass('web-ui rejects path traversal');
+      } else {
+        fail(`Path traversal not blocked (got ${traverse1}/${traverse2}/${traverse3})`);
+      }
+
+      // Method check: POST should be rejected.
+      const post = await fetch(`http://127.0.0.1:${port}/api/applications`, { method: 'POST' });
+      if (post.status === 405) pass('web-ui rejects non-GET methods');
+      else fail(`POST returned ${post.status} (expected 405)`);
+    } finally {
+      child.kill();
+      // Drain so the test runner doesn't hang on an unread stream.
+      child.stdout.resume();
+      child.stderr.resume();
+    }
+  }
+}
+
 // ── SUMMARY ─────────────────────────────────────────────────────
 
 console.log('\n' + '='.repeat(50));

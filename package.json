@@ -19,6 +19,7 @@
     "liveness": "node check-liveness.mjs",
     "scan": "node scan.mjs",
     "pdf:import": "node bridges/pdf-extract.mjs data/inbox --lang=zh-cn",
+    "ui": "node web-ui/server.mjs",
     "gemini:eval": "node gemini-eval.mjs",
     "models": "node model-health.mjs"
   },
