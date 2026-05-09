@@ -22,7 +22,8 @@
     "ui": "node web-ui/server.mjs",
     "gemini:eval": "node gemini-eval.mjs",
     "models": "node model-health.mjs",
-    "daemon": "node daemon-cli.mjs"
+    "daemon": "node daemon-cli.mjs",
+    "extension:lint": "node tests/extension-manifest-selftest.mjs"
   },
   "keywords": [
     "ai",
@@ -43,6 +44,7 @@
     "@google/generative-ai": "^0.24.1",
     "better-sqlite3": "^12.9.0",
     "dotenv": "^16.4.5",
+    "fuse.js": "^7.3.0",
     "js-yaml": "^4.1.1",
     "pdfjs-dist": "^5.7.284",
     "playwright": "^1.58.1"

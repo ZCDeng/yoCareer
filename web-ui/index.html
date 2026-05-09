@@ -1,34 +1,37 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="zh-CN">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>yoCareer · localhost dashboard</title>
-<link rel="stylesheet" href="/styles.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>yoCareer</title>
+  <link rel="stylesheet" href="styles.css">
+  <script src="https://cdn.jsdelivr.net/npm/fuse.js@7.3.0/dist/fuse.min.js"></script>
 </head>
 <body>
-<header class="topbar">
-  <div class="brand">yoCareer · <span class="muted">localhost dashboard</span></div>
-  <nav class="tabs">
-    <button data-tab="apps" class="tab active">Applications</button>
-    <button data-tab="reports" class="tab">Reports</button>
-    <button data-tab="pipeline" class="tab">Pipeline</button>
-    <button data-tab="output" class="tab">CV PDFs</button>
-  </nav>
-  <div class="metrics" id="metrics"><span class="muted">loading…</span></div>
-</header>
+  <div id="app">
+    <header class="app-header">
+      <h1>yoCareer</h1>
+      <div class="header-meta">
+        <span id="daemon-status" class="badge">Checking...</span>
+        <button id="btn-cmdk" class="btn-cmdk">⌘K</button>
+      </div>
+    </header>
 
-<main class="layout">
-  <aside class="sidebar" id="sidebar"></aside>
-  <section class="viewer" id="viewer">
-    <div class="empty">Select an item from the left.</div>
-  </section>
-</main>
+    <nav class="app-nav">
+      <button class="nav-item active" data-module="profile">Profile</button>
+      <button class="nav-item" data-module="portals">Portals</button>
+      <button class="nav-item" data-module="signals">Signals</button>
+      <button class="nav-item" data-module="applications">Applications</button>
+      <button class="nav-item" data-module="evaluations">Evaluations</button>
+    </nav>
 
-<footer class="footnote">
-  <span class="muted">Read-only · 127.0.0.1 only · Mutations stay in the CLI</span>
-</footer>
+    <main id="main-content">
+      <div class="empty-state">
+        <p>Loading...</p>
+      </div>
+    </main>
+  </div>
 
-<script src="/main.js"></script>
+  <script type="module" src="main.js"></script>
 </body>
 </html>
