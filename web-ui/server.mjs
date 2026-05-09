@@ -32,15 +32,6 @@ const args = process.argv.slice(2);
 const port = Number(args.find(a => a.startsWith('--port='))?.split('=')[1] || 5173);
 const skipOpen = args.includes('--no-open');
 
-const MIME = {
-  '.html': 'text/html; charset=utf-8',
-  '.css': 'text/css; charset=utf-8',
-  '.js': 'application/javascript; charset=utf-8',
-  '.json': 'application/json; charset=utf-8',
-  '.pdf': 'application/pdf',
-  '.svg': 'image/svg+xml',
-};
-
 // === Markdown table parser (for data/applications.md) ===
 //
 // Tracker schema per AGENTS.md:
@@ -213,26 +204,28 @@ async function handleApi(_req, res, urlPath) {
   return sendJson(res, 404, { error: 'unknown_endpoint' });
 }
 
-// Static assets are a fixed set — use a hardcoded allow-list so the path
-// passed to readFile is a literal we control, not a user-derived value.
-// CodeQL js/path-injection is satisfied because the value flowing into
-// resolve() is selected from a static map, never directly from the URL.
-const STATIC_FILES = {
-  'index.html': '.html',
-  'main.js': '.js',
-  'styles.css': '.css',
-};
-
+// Static assets are a fixed set. Switch on the URL path literal so the
+// argument to readFile is a constant string the analyzer can fully resolve;
+// no user-controlled value reaches the path operation. CodeQL
+// js/path-injection has nothing to flag because the path is always one of
+// three string literals.
 async function handleStatic(_req, res, urlPath) {
-  const rel = urlPath === '/' ? 'index.html' : urlPath.slice(1);
-  if (!Object.prototype.hasOwnProperty.call(STATIC_FILES, rel)) {
+  let absPath;
+  let contentType;
+  if (urlPath === '/' || urlPath === '/index.html') {
+    absPath = resolve(STATIC_DIR, 'index.html');
+    contentType = 'text/html; charset=utf-8';
+  } else if (urlPath === '/main.js') {
+    absPath = resolve(STATIC_DIR, 'main.js');
+    contentType = 'application/javascript; charset=utf-8';
+  } else if (urlPath === '/styles.css') {
+    absPath = resolve(STATIC_DIR, 'styles.css');
+    contentType = 'text/css; charset=utf-8';
+  } else {
     return send(res, 404, 'not found');
   }
-  // rel is now a key from STATIC_FILES — a literal, not user-controlled.
-  const ext = STATIC_FILES[rel];
-  const safe = resolve(STATIC_DIR, rel);
-  const buf = await readFile(safe);
-  return send(res, 200, buf, { 'Content-Type': MIME[ext] || 'application/octet-stream' });
+  const buf = await readFile(absPath);
+  return send(res, 200, buf, { 'Content-Type': contentType });
 }
 
 const server = createServer(async (req, res) => {
