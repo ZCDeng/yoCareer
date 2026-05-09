@@ -1,6 +1,6 @@
 {
   "name": "yocareer",
-  "version": "2.0.0",
+  "version": "1.7.0",
   "description": "Local AI job-search operations system for China-market workflows",
   "scripts": {
     "doctor": "node doctor.mjs",
