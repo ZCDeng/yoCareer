@@ -34,9 +34,11 @@ const ADDITIONS_DIR = join(CAREER_OPS, 'batch/tracker-additions');
 const MERGED_DIR = join(ADDITIONS_DIR, 'merged');
 const DRY_RUN = process.argv.includes('--dry-run');
 const VERIFY = process.argv.includes('--verify');
-const STATES_FILE = existsSync(join(CAREER_OPS, 'templates/states.yml'))
-  ? join(CAREER_OPS, 'templates/states.yml')
-  : join(CAREER_OPS, 'states.yml');
+const STATES_FILE = existsSync(join(CAREER_OPS, 'templates/states.applications.yml'))
+  ? join(CAREER_OPS, 'templates/states.applications.yml')
+  : existsSync(join(CAREER_OPS, 'templates/states.yml'))
+    ? join(CAREER_OPS, 'templates/states.yml')
+    : join(CAREER_OPS, 'states.yml');
 const STATUS_SCHEMA = loadStatusSchema(STATES_FILE);
 const CANONICAL_STATUS_SET = new Set(canonicalStatusIds(STATUS_SCHEMA));
 
