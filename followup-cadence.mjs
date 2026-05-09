@@ -14,6 +14,7 @@
 import { readFileSync, existsSync } from 'fs';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
+import { ensureDaemon } from './lib/ensure-daemon.mjs';
 
 const CAREER_OPS = dirname(fileURLToPath(import.meta.url));
 const APPS_FILE = existsSync(join(CAREER_OPS, 'data/applications.md'))
@@ -328,6 +329,7 @@ function printSummary(result) {
 }
 
 // --- Run ---
+ensureDaemon();
 const result = analyze();
 
 if (summaryMode) {

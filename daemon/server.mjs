@@ -66,6 +66,7 @@ import {
 import {
   handleTaskGet, handleTaskCancel, handleTaskList,
 } from './routes/api-tasks.mjs';
+import { handleScan } from './routes/api-scan.mjs';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(__dirname, '..');
@@ -136,6 +137,9 @@ function buildRoutes(ctx) {
     { method: 'GET',  path: '/api/tasks/:id',          handle: req => handleTaskGet(req, ctx) },
     { method: 'GET',  path: '/api/tasks/:id/status',   handle: req => handleTaskGet(req, ctx) },
     { method: 'POST', path: '/api/tasks/:id/cancel',   handle: req => handleTaskCancel(req, ctx) },
+
+    // Scan
+    { method: 'POST', path: '/api/scan',               handle: req => handleScan(req, ctx) },
   ];
 }
 

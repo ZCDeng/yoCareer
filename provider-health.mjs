@@ -12,6 +12,7 @@ import { existsSync, readFileSync } from 'fs';
 import { spawnSync } from 'child_process';
 import yaml from 'js-yaml';
 import { parseBool } from './lib/bridge-runner.mjs';
+import { createDaemonClient } from './lib/daemon-client.mjs';
 
 const PORTALS_PATH = 'portals.yml';
 const ADITLY_BASE_URL = String(process.env.YOCAREER_ADITLY_BASE_URL || 'http://127.0.0.1:8643').trim().replace(/\/+$/, '');
@@ -158,12 +159,49 @@ function printCapability(capability) {
 }
 
 async function main() {
-  if (!existsSync(PORTALS_PATH)) {
-    console.error('Error: portals.yml not found. Run onboarding first.');
-    process.exit(1);
+  // Ensure daemon is available for data queries
+  const client = await createDaemonClient({ autoStart: true });
+
+  let config = null;
+  try {
+    const portalsRes = await client.portals.list();
+    // Convert daemon portal list back to portals.yml shape for compatibility
+    const portals = portalsRes.portals || [];
+    config = {
+      tracked_companies: portals.filter(p => p.kind === 'company').map(p => ({
+        name: p.name,
+        careers_url: p.url,
+        provider: p.provider,
+        enabled: p.enabled !== false,
+        api: p.api,
+      })),
+      restricted_platforms: portals.filter(p => p.kind === 'restricted').map(p => ({
+        name: p.name,
+        reason: p.reason,
+        enabled: p.enabled !== false,
+      })),
+      signal_imports: portals.filter(p => p.kind === 'signal_import').map(p => ({
+        path: p.path,
+        enabled: p.enabled !== false,
+      })),
+      signal_searches: portals.filter(p => p.kind === 'signal_search').map(p => ({
+        platform: p.platform,
+        query: p.query,
+        enabled: p.enabled !== false,
+      })),
+    };
+  } catch {
+    // Fallback to file if daemon has no portals or is unreachable
   }
 
-  const config = yaml.load(readFileSync(PORTALS_PATH, 'utf-8')) || {};
+  if (!config) {
+    if (!existsSync(PORTALS_PATH)) {
+      console.error('Error: portals.yml not found. Run onboarding first.');
+      process.exit(1);
+    }
+    config = yaml.load(readFileSync(PORTALS_PATH, 'utf-8')) || {};
+  }
+
   const counts = countProviders(config);
 
   console.log('\nyoCareer provider health');

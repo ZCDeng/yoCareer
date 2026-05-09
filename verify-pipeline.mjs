@@ -17,6 +17,7 @@
 import { readFileSync, readdirSync, existsSync, mkdirSync } from 'fs';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
+import { ensureDaemon } from './lib/ensure-daemon.mjs';
 import {
   canonicalStatusIds,
   loadStatusSchema,
@@ -44,6 +45,7 @@ mkdirSync(REPORTS_DIR, { recursive: true });
 
 let errors = 0;
 let warnings = 0;
+ensureDaemon();
 
 function error(msg) { console.log(`❌ ${msg}`); errors++; }
 function warn(msg) { console.log(`⚠️  ${msg}`); warnings++; }

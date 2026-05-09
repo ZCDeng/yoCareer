@@ -17,6 +17,7 @@
 import { chromium } from 'playwright';
 import { readFile } from 'fs/promises';
 import { classifyLiveness } from './liveness-core.mjs';
+import { createDaemonClient } from './lib/daemon-client.mjs';
 
 async function checkUrl(page, url) {
   try {
@@ -70,6 +71,8 @@ async function checkUrl(page, url) {
 }
 
 async function main() {
+  await createDaemonClient({ autoStart: true });
+
   const args = process.argv.slice(2);
 
   if (args.length === 0) {
