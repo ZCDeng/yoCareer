@@ -74,11 +74,17 @@ function checkFieldPresence(text, fields, name) {
   return results;
 }
 
-// Canonical reading order: header (name → phone → email) → education → experience.
-// pdftotext -layout preserves the geometric order; ATS parsers consume top-down.
-// Mismatch indicates the PDF header was rendered below the body (e.g., right-sidebar
-// layout that broke text-order extraction).
-const CANONICAL_ORDER = ['name', 'phone', 'email', 'education', 'experience'];
+// Reading-order rules:
+//   1. Header order is fixed: name → phone → email (top of every CV).
+//   2. Body sections (education, experience) can appear in either order —
+//      "experience-first" is normal for senior candidates; "education-first"
+//      is normal for new grads. Both pass.
+//   3. All header fields must precede all body fields. The actual ATS regression
+//      we want to catch is when name/contact ends up in a sidebar that
+//      pdftotext extracts AFTER the body (the canary fixture is single-column,
+//      so this should never happen if the template is intact).
+const HEADER_ORDER = ['name', 'phone', 'email'];
+const BODY_FIELDS = new Set(['education', 'experience']);
 
 function checkFieldOrder(text, fields, name) {
   const positions = [];
@@ -95,12 +101,26 @@ function checkFieldOrder(text, fields, name) {
   positions.sort((a, b) => a.index - b.index);
   const order = positions.map(p => p.key);
 
-  // Compare against canonical order, ignoring missing fields.
-  const expected = CANONICAL_ORDER.filter(k => order.includes(k));
-  const matchesCanonical = order.length === expected.length
-    && order.every((k, i) => k === expected[i]);
-  const passed = positions.length >= 3 && matchesCanonical;
-  return { passed, order, expected, positions };
+  // Partition into header / body in observed order.
+  const headerInOrder = order.filter(k => !BODY_FIELDS.has(k));
+  const bodyInOrder = order.filter(k => BODY_FIELDS.has(k));
+
+  // Header must match canonical order (over fields that were found).
+  const expectedHeader = HEADER_ORDER.filter(k => headerInOrder.includes(k));
+  const headerOk = headerInOrder.length === expectedHeader.length
+    && headerInOrder.every((k, i) => k === expectedHeader[i]);
+
+  // Header must precede body. Find the last header position and the first body
+  // position in the observed order; lastHeaderIdx must be < firstBodyIdx.
+  let headerBeforeBody = true;
+  if (headerInOrder.length > 0 && bodyInOrder.length > 0) {
+    const lastHeaderKey = headerInOrder[headerInOrder.length - 1];
+    const firstBodyKey = bodyInOrder[0];
+    headerBeforeBody = order.lastIndexOf(lastHeaderKey) < order.indexOf(firstBodyKey);
+  }
+
+  const passed = positions.length >= 3 && headerOk && headerBeforeBody;
+  return { passed, order, expectedHeader, headerOk, headerBeforeBody, positions };
 }
 
 function checkChineseReadability(text) {
