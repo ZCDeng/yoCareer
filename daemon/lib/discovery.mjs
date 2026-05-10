@@ -19,7 +19,10 @@
 //     "started_at": "2026-05-10T01:00:00.000Z"
 //   }
 
-import { existsSync, mkdirSync, readFileSync, unlinkSync, writeFileSync, chmodSync } from 'node:fs';
+import {
+  existsSync, mkdirSync, readFileSync, unlinkSync, writeFileSync,
+  chmodSync, openSync, closeSync,
+} from 'node:fs';
 import { homedir } from 'node:os';
 import { join } from 'node:path';
 import net from 'node:net';
@@ -116,4 +119,56 @@ export function findRunningDaemon(file = DEFAULT_FILE) {
   if (!info) return null;
   if (!isProcessAlive(info.pid)) return null;
   return info;
+}
+
+/**
+ * Atomically claim daemon.json on behalf of the current process.
+ *
+ * Why this exists: `findRunningDaemon` (called once at startup) and
+ * `writeDaemonInfo` (called later) form a TOCTOU window. Two daemons
+ * starting in close succession can both observe "no daemon running",
+ * each pick a free port, then race to overwrite daemon.json — leaving
+ * the on-disk record pointing at whichever wrote last (often the one
+ * that subsequently dies), while the other daemon stays alive but is
+ * no longer discoverable via daemon.json.
+ *
+ * Atomic claim closes that window: we open the file with `O_EXCL` so
+ * only one process can create it. If a holder is alive, we yield. If
+ * the file is stale (PID dead), we delete and retry once.
+ *
+ * Returns:
+ *   { claimed: true }                       — file written, caller owns it
+ *   { claimed: false, holder: <info> }      — another live daemon holds it
+ *
+ * Caller is responsible for `clearDaemonInfo` on shutdown OR if subsequent
+ * setup (e.g. `server.listen`) fails after claim succeeds.
+ */
+export function claimDaemonInfo(info, file = DEFAULT_FILE) {
+  const dir = file.substring(0, file.lastIndexOf('/')) || DEFAULT_DIR;
+  mkdirSync(dir, { recursive: true });
+  const payload = JSON.stringify(info, null, 2);
+
+  for (let attempt = 0; attempt < 2; attempt++) {
+    let fd;
+    try {
+      fd = openSync(file, 'wx', 0o600);
+    } catch (err) {
+      if (err.code !== 'EEXIST') throw err;
+      const existing = readDaemonInfo(file);
+      if (existing && isProcessAlive(existing.pid)) {
+        return { claimed: false, holder: existing };
+      }
+      try { unlinkSync(file); } catch { /* race with another cleaner — fine */ }
+      continue;
+    }
+    try {
+      writeFileSync(fd, payload, 'utf-8');
+    } finally {
+      try { closeSync(fd); } catch { /* fd already closed */ }
+    }
+    try { chmodSync(file, 0o600); } catch { /* best-effort on FAT/SMB */ }
+    return { claimed: true };
+  }
+  // Two consecutive EEXIST→stale cycles is extraordinary; treat as collision.
+  return { claimed: false, holder: readDaemonInfo(file) };
 }

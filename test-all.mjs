@@ -898,6 +898,34 @@ if (fileExists('lib/v1-detect.mjs')) {
   }
 }
 
+// ── 17. DAEMON DISCOVERY ATOMIC CLAIM ───────────────────────────
+
+console.log('\n17. Daemon discovery atomic claim (Bug B regression)');
+
+let discoveryClaimResult;
+try {
+  discoveryClaimResult = execFileSync('node', ['tests/discovery-claim-selftest.mjs'], {
+    cwd: ROOT, encoding: 'utf-8', timeout: 10000, stdio: ['pipe', 'pipe', 'pipe'],
+  }).trim();
+} catch (e) {
+  discoveryClaimResult = e.stdout?.toString()?.trim() || null;
+}
+if (discoveryClaimResult) {
+  try {
+    const report = JSON.parse(discoveryClaimResult);
+    if (report.passed) {
+      pass(`Daemon discovery claim test passed (${report.total} cases)`);
+    } else {
+      const failedCases = report.cases.filter(c => !c.ok).map(c => c.name).join(', ');
+      fail(`Daemon discovery claim regression: ${report.failed}/${report.total} — ${failedCases}`);
+    }
+  } catch {
+    fail('Daemon discovery claim selftest returned invalid JSON');
+  }
+} else {
+  fail('Daemon discovery claim selftest crashed');
+}
+
 // ── SUMMARY ─────────────────────────────────────────────────────
 
 console.log('\n' + '='.repeat(50));

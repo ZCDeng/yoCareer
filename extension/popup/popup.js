@@ -23,6 +23,31 @@ document.addEventListener('DOMContentLoaded', async () => {
   statusDot.className = 'status-dot ok';
   statusText.textContent = `Daemon v${daemonStatus.version} on port ${daemonStatus.port}`;
 
+  // ── Pairing UI (bind before auth check so they work in unpaired state) ──
+  btnPairToggle.addEventListener('click', () => {
+    pairingForm.classList.toggle('active');
+  });
+
+  btnPair.addEventListener('click', async () => {
+    const code = pairingCode.value.trim();
+    if (code.length !== 6 || !/^\d{6}$/.test(code)) {
+      pairingMsg.className = 'message error';
+      pairingMsg.textContent = 'Enter 6-digit code';
+      return;
+    }
+    btnPair.disabled = true;
+    const res = await chrome.runtime.sendMessage({ type: 'pair', code });
+    if (res.ok) {
+      pairingMsg.className = 'message success';
+      pairingMsg.textContent = 'Paired! Reloading...';
+      setTimeout(() => window.location.reload(), 800);
+    } else {
+      pairingMsg.className = 'message error';
+      pairingMsg.textContent = res.error || 'Pairing failed';
+      btnPair.disabled = false;
+    }
+  });
+
   // ── Check auth ──
   const auth = await chrome.runtime.sendMessage({ type: 'check_auth' });
   if (!auth.authenticated) {
@@ -78,31 +103,6 @@ document.addEventListener('DOMContentLoaded', async () => {
       saveMsg.textContent = res.error || 'Save failed';
     }
     btnSave.disabled = false;
-  });
-
-  // ── Pairing UI ──
-  btnPairToggle.addEventListener('click', () => {
-    pairingForm.classList.toggle('active');
-  });
-
-  btnPair.addEventListener('click', async () => {
-    const code = pairingCode.value.trim();
-    if (code.length !== 6 || !/^\d{6}$/.test(code)) {
-      pairingMsg.className = 'message error';
-      pairingMsg.textContent = 'Enter 6-digit code';
-      return;
-    }
-    btnPair.disabled = true;
-    const res = await chrome.runtime.sendMessage({ type: 'pair', code });
-    if (res.ok) {
-      pairingMsg.className = 'message success';
-      pairingMsg.textContent = 'Paired! Reloading...';
-      setTimeout(() => window.location.reload(), 800);
-    } else {
-      pairingMsg.className = 'message error';
-      pairingMsg.textContent = res.error || 'Pairing failed';
-      btnPair.disabled = false;
-    }
   });
 });
 

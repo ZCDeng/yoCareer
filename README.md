@@ -240,7 +240,17 @@ Dark-first 网页仪表盘，功能包括：
 
 ### 浏览器扩展（可选）
 
-一键提取 BOSS直聘 / 拉勾 / 智联职位信息到 daemon：
+一键提取 BOSS直聘 / 拉勾 / 智联职位信息到 daemon。
+
+**一键安装（推荐）：**
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/ZCDeng/yoCareer/main/scripts/install-extension.sh | bash
+```
+
+脚本会自动将扩展安装到 `~/.yocareer/extension/`，并输出浏览器加载步骤。
+
+**手动安装（如果你已经 clone 了仓库）：**
 
 ```bash
 # 1. 在 Chrome 中打开 chrome://extensions
