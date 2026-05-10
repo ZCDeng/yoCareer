@@ -153,6 +153,9 @@ async function loadModule(name) {
   if (!mod) return;
   currentModule = name;
 
+  const hero = document.getElementById('hero');
+  if (hero) hero.style.display = 'none';
+
   navItems.forEach(btn => {
     btn.classList.toggle('active', btn.dataset.module === name);
   });
@@ -261,7 +264,7 @@ async function init() {
   });
   registerCmdK();
 
-  await loadModule('profile');
+  // Hero is shown by default; user clicks nav to load a module
   startSse();
 }
 
