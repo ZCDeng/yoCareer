@@ -30,7 +30,7 @@ import {
   DEFAULT_PORT,
   choosePort,
   findRunningDaemon,
-  writeDaemonInfo,
+  claimDaemonInfo,
   clearDaemonInfo,
   infoPath,
 } from './lib/discovery.mjs';
@@ -289,7 +289,18 @@ async function main(argv = process.argv.slice(2)) {
     db_path: resolve(dbPath),
     started_at: startedAt,
   };
-  writeDaemonInfo(info);
+
+  // Atomic claim closes the TOCTOU race between findRunningDaemon() above
+  // and the choosePort/write sequence: two daemons that both see "no
+  // running daemon" can no longer both write daemon.json — only one wins
+  // O_EXCL. The other yields here and exits.
+  const claim = claimDaemonInfo(info);
+  if (!claim.claimed) {
+    process.stderr.write(
+      `yoCareer daemon already running (pid ${claim.holder?.pid ?? '?'}, port ${claim.holder?.port ?? '?'})\n`
+    );
+    process.exit(2);
+  }
 
   // Wire libs.
   const ticketStore = createTicketStore({
@@ -309,6 +320,14 @@ async function main(argv = process.argv.slice(2)) {
   ctx.routes = buildRoutes(ctx);
 
   const server = createServer((req, res) => dispatch(req, res, ctx));
+  // If listen fails (e.g. another process bound the port between choosePort
+  // and listen), release the daemon.json claim before exiting — otherwise
+  // the file would point at this dead PID and confuse later starts.
+  server.once('error', err => {
+    clearDaemonInfo(ctx.infoFile);
+    process.stderr.write(`yoCareer daemon failed to bind ${port}: ${err.message}\n`);
+    process.exit(3);
+  });
   server.listen(port, '127.0.0.1', () => {
     process.stderr.write(
       `yoCareer daemon v${version} listening on http://127.0.0.1:${port}\n` +
