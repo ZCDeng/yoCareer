@@ -56,51 +56,33 @@ cp -R "${SRC_DIR}/." "${INSTALL_DIR}/"
 ok "Extension installed to ${INSTALL_DIR}"
 
 # ── Print browser-specific instructions ─────────────────────────────
-echo ""
-echo "───────────────────────────────────────────────────────────────────"
-echo "  浏览器扩展安装完成。请按以下步骤加载："
-echo "───────────────────────────────────────────────────────────────────"
-echo ""
+# NOTE: use printf for any line containing ${green}/${yellow}/${reset};
+# bash's builtin `echo` does not interpret \033 escapes by default and
+# would print them as literal text.
+printf "\n"
+printf "───────────────────────────────────────────────────────────────────\n"
+printf "  浏览器扩展安装完成。请按以下步骤加载：\n"
+printf "───────────────────────────────────────────────────────────────────\n\n"
 
-# Detect browser
-if [[ "$OSTYPE" == "darwin"* ]]; then
-  BROWSER_DIR="${HOME}/Library/Application Support"
-  CHROME_EXT="Google/Chrome/Default/Extensions"
-  EDGE_EXT="Microsoft Edge/Default/Extensions"
-  echo "  ${green}Chrome${reset}:"
-  echo "    1. 打开 chrome://extensions"
-  echo "    2. 开启「开发者模式」（右上角开关）"
-  echo "    3. 点击「加载已解压的扩展程序」"
-  echo "    4. 选择: ${INSTALL_DIR}"
-  echo ""
-  echo "  ${green}Edge${reset}:"
-  echo "    1. 打开 edge://extensions"
-  echo "    2. 开启「开发人员模式」（左下角开关）"
-  echo "    3. 点击「加载解压缩的扩展」"
-  echo "    4. 选择: ${INSTALL_DIR}"
-  echo ""
-elif [[ "$OSTYPE" == "linux-gnu"* ]]; then
-  echo "  ${green}Chrome${reset}:"
-  echo "    1. 打开 chrome://extensions"
-  echo "    2. 开启「开发者模式」（右上角开关）"
-  echo "    3. 点击「加载已解压的扩展程序」"
-  echo "    4. 选择: ${INSTALL_DIR}"
-  echo ""
-  echo "  ${green}Edge${reset}:"
-  echo "    1. 打开 edge://extensions"
-  echo "    2. 开启「开发人员模式」（左下角开关）"
-  echo "    3. 点击「加载解压缩的扩展」"
-  echo "    4. 选择: ${INSTALL_DIR}"
-  echo ""
+print_browser_block() {
+  local browser="$1" url="$2" devmode="$3" load="$4"
+  printf "  ${green}%s${reset}:\n" "$browser"
+  printf "    1. 打开 %s\n" "$url"
+  printf "    2. 开启「%s」\n" "$devmode"
+  printf "    3. 点击「%s」\n" "$load"
+  printf "    4. 选择: %s\n\n" "$INSTALL_DIR"
+}
+
+if [[ "$OSTYPE" == "darwin"* || "$OSTYPE" == "linux-gnu"* ]]; then
+  print_browser_block "Chrome" "chrome://extensions" "开发者模式（右上角开关）" "加载已解压的扩展程序"
+  print_browser_block "Edge"   "edge://extensions"   "开发人员模式（左下角开关）" "加载解压缩的扩展"
 else
-  echo "  ${green}Chrome${reset}: chrome://extensions → 开发者模式 → 加载已解压 → ${INSTALL_DIR}"
-  echo "  ${green}Edge${reset}:   edge://extensions → 开发人员模式 → 加载解压缩 → ${INSTALL_DIR}"
-  echo ""
+  printf "  ${green}Chrome${reset}: chrome://extensions → 开发者模式 → 加载已解压 → %s\n" "$INSTALL_DIR"
+  printf "  ${green}Edge${reset}:   edge://extensions → 开发人员模式 → 加载解压缩 → %s\n\n" "$INSTALL_DIR"
 fi
 
-echo "  ${yellow}首次使用需配对：${reset}"
-echo "    1. 确保 daemon 正在运行（npm run daemon）"
-echo "    2. 在 BOSS直聘 / 拉勾 / 智联页面点击扩展图标"
-echo "    3. 弹出面板输入 6 位配对码 → 自动注册"
-echo ""
-echo "───────────────────────────────────────────────────────────────────"
+printf "  ${yellow}首次使用需配对：${reset}\n"
+printf "    1. 确保 daemon 正在运行（npm run daemon）\n"
+printf "    2. 在 BOSS直聘 / 拉勾 / 智联页面点击扩展图标\n"
+printf "    3. 弹出面板输入 6 位配对码 → 自动注册\n\n"
+printf "───────────────────────────────────────────────────────────────────\n"
